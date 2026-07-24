@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>未来智能家居体验馆 · 单元3第1课 走进智能家居——畅想未来生活</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6; --purple-d:#6d34e8;
+    --bg:#f0f0fb; --card:#ffffff; --ink:#26304b; --ink-2:#5c6a86;
+    --line:#dcdff0; --soft:#f4f4fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#6d34e8,#2b7de9); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(70,40,150,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--purple-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--purple);}
+  nav button.on{background:var(--purple); border-color:var(--purple); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(60,50,120,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--purple-d); border:2px solid var(--purple);}
+  .btn.gray{background:#8a93b5;}
+  .btn:disabled{background:#c6cbe0; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#eeeafd; border:1px solid var(--purple); color:var(--purple-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .why{background:#f2edff; border-left:4px solid var(--purple); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+  /* ---------- 模块一:体验屋 ---------- */
+  .lab1{display:grid; grid-template-columns:1fr 320px; gap:14px;}
+  @media(max-width:1000px){.lab1{grid-template-columns:1fr;}}
+  .house{display:grid; grid-template-columns:1.25fr 1fr; grid-template-rows:1fr 1fr; gap:10px;}
+  @media(max-width:700px){.house{grid-template-columns:1fr; grid-template-rows:auto;}}
+  .room{position:relative; border:3px solid #c9b89a; border-radius:14px; background:#fdf7ec; padding:10px; min-height:210px; overflow:hidden; transition:box-shadow .3s;}
+  .room.liv{grid-row:1 / span 2;}
+  .room.flash{box-shadow:0 0 0 4px #b9f5d0; animation:roomFlash .6s;}
+  @keyframes roomFlash{0%{box-shadow:0 0 0 8px #7ce3a6;}100%{box-shadow:0 0 0 4px #b9f5d0;}}
+  .room .shade{position:absolute; inset:0; background:#0b1230; opacity:0; transition:opacity .5s; pointer-events:none; z-index:3; border-radius:10px;}
+  .room .glow{position:absolute; top:0; left:30%; width:40%; height:60%; background:radial-gradient(ellipse at top,rgba(255,225,120,.75),transparent 70%); opacity:0; transition:opacity .4s; pointer-events:none; z-index:4;}
+  .rname{font-weight:800; font-size:15.5px; position:relative; z-index:5; display:flex; justify-content:space-between; align-items:center;}
+  .rname .rtag{font-size:12.5px; color:var(--ink-2); font-weight:400;}
+  .rwin{position:relative; width:112px; height:74px; border:4px solid #9c8358; border-radius:8px; margin:8px 0 6px; overflow:hidden; z-index:2;}
+  .rwin .sky{position:absolute; inset:0; transition:background 1s;}
+  .rwin .star{position:absolute; color:#fff; font-size:9px; top:8px; left:12px; opacity:0; transition:opacity .8s;}
+  .rwin .star2{top:22px; left:64px;}
+  .rwin .sun{position:absolute; top:6px; right:8px; font-size:18px; opacity:0; transition:opacity .8s;}
+  .rwin .cpanel{position:absolute; top:0; bottom:0; width:50%; background:repeating-linear-gradient(90deg,#c98c5a 0 8px,#b97b49 8px 16px); transition:width .7s; z-index:2;}
+  .rwin .cpanel.L{left:0;} .rwin .cpanel.R{right:0;}
+  .rwin.open .cpanel{width:8%;}
+  .devs{display:flex; flex-wrap:wrap; gap:6px; position:relative; z-index:5;}
+  .dev{display:flex; flex-direction:column; align-items:center; gap:1px; border:2px solid var(--line); background:rgba(255,255,255,.92); border-radius:12px; padding:6px 9px; min-width:74px; cursor:pointer; transition:.15s; font-family:inherit;}
+  .dev:hover{border-color:var(--purple); transform:translateY(-2px);}
+  .dev .di{font-size:24px; line-height:1.15;}
+  .dev .dl{font-size:12.5px; font-weight:700; color:var(--ink);}
+  .dev .ds{font-size:11.5px; color:var(--ink-2);}
+  .dev.on{border-color:var(--green); background:#eafcf1;}
+  .dev.on .ds{color:var(--green-d); font-weight:700;}
+  .dev.alert{border-color:var(--red); background:#ffecec; animation:blink .6s infinite;}
+  @keyframes blink{50%{background:#ffc9c9;}}
+  .dev.work .di{animation:roam 1.6s infinite ease-in-out; display:inline-block;}
+  @keyframes roam{0%{transform:translateX(-10px);}50%{transform:translateX(10px) rotate(8deg);}100%{transform:translateX(-10px);}}
+  .dev.play .di{animation:bounceNote .8s infinite;}
+  @keyframes bounceNote{50%{transform:scale(1.18);}}
+  .acwind{font-size:12px; color:var(--blue-d); visibility:hidden; position:relative; z-index:5;}
+  .acwind.on{visibility:visible; animation:windmove 1.2s infinite;}
+  @keyframes windmove{0%{transform:translateX(0); opacity:.4;}50%{opacity:1;}100%{transform:translateX(10px); opacity:.4;}}
+  .roomstats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px;}
+  @media(max-width:700px){.roomstats{grid-template-columns:1fr;}}
+  .rstat{background:var(--soft); border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:13.5px;}
+  .rstat b{color:var(--purple-d);}
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--purple-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--purple); height:26px;}
+  /* ---------- 模块二:规则工坊 ---------- */
+  .chips{display:flex; flex-wrap:wrap; gap:7px; padding:10px; background:var(--soft); border-radius:12px; min-height:52px;}
+  .chip{border:2px solid var(--line); background:#fff; border-radius:20px; padding:7px 14px; font-size:14.5px; font-weight:700; cursor:pointer; transition:.15s; font-family:inherit; color:var(--ink);}
+  .chip:hover{border-color:var(--purple);}
+  .chip.sel{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 3px #fde9c2;}
+  .rulePrev{background:#eef6ff; border:2px dashed var(--blue); border-radius:12px; padding:10px 14px; margin:10px 0; font-size:16px; font-weight:700; text-align:center;}
+  .ruleItem{display:flex; align-items:center; gap:8px; background:#fff; border:2px solid var(--line); border-radius:12px; padding:9px 12px; margin:6px 0; font-size:15px;}
+  .ruleItem .rtxt{flex:1;}
+  .ruleItem .cnt{font-size:12.5px; color:var(--ink-2); white-space:nowrap;}
+  .ruleItem.fired{border-color:var(--green); background:#f2fcf6;}
+  .fflog{max-height:220px; overflow:auto; background:#26304b; color:#cfe0ff; border-radius:10px; padding:10px 12px; font-size:13.5px; margin-top:8px;}
+  .fflog div{padding:1px 0; border-bottom:1px dashed #3d4a6e;}
+  .ffclock{font-size:15px; background:#26304b; color:#b7a6ff; font-weight:700; border-radius:10px; padding:6px 12px; display:inline-block; font-family:monospace;}
+  /* ---------- 模块三:需求匹配 ---------- */
+  .ptabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+  .ptabs button{border:2px solid var(--line); background:#fff; border-radius:10px; padding:8px 14px; font-size:14.5px; font-weight:700; cursor:pointer; font-family:inherit;}
+  .ptabs button.on{background:var(--purple); border-color:var(--purple); color:#fff;}
+  .ptabs button.passed::after{content:" ✅";}
+  .pdesc{background:#eef6ff; border-left:4px solid var(--blue); border-radius:0 10px 10px 0; padding:10px 14px; font-size:15px; margin-bottom:10px;}
+  .pool{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  @media(max-width:700px){.pool{grid-template-columns:repeat(2,1fr);}}
+  .pdev{display:flex; align-items:center; gap:8px; border:2px solid var(--line); background:#fff; border-radius:12px; padding:9px 12px; font-size:14.5px; font-weight:700; cursor:pointer; transition:.15s; font-family:inherit; text-align:left;}
+  .pdev:hover{border-color:var(--purple); transform:translateY(-2px);}
+  .pdev.sel{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 3px #fde9c2;}
+  .pdev .pi{font-size:24px;}
+  .matchline{background:var(--soft); border-radius:10px; padding:7px 11px; margin:5px 0; font-size:14.5px;}
+  /* ---------- 模块四:分析台 ---------- */
+  .radarWrap{text-align:center;}
+  canvas{max-width:100%;}
+  .scoreRow{display:flex; justify-content:space-between; align-items:center; background:var(--soft); border-radius:10px; padding:8px 12px; margin:6px 0; font-size:14.5px;}
+  .scoreRow b{color:var(--purple-d); font-size:17px;}
+  /* ---------- 日志 / 报告 ---------- */
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{border:1px solid var(--line); padding:6px 8px; text-align:center;}
+  th{background:var(--soft);}
+  .logwrap{max-height:300px; overflow:auto; border-radius:10px; border:1px solid var(--line);}
+  textarea{width:100%; min-height:74px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  textarea:focus{outline:none; border-color:var(--purple);}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:24px; color:var(--purple-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  pre.saved{background:#26304b; color:#cfe0ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏠 未来智能家居体验馆</h1>
+  <p>清华版《信息科技》五年级下册 · 第3单元 第1课 走进智能家居——畅想未来生活(教材 P82—90)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 体验屋探索</span>
+    <span class="badge" id="bg2">② 规则工坊</span>
+    <span class="badge" id="bg3">③ 需求匹配 <span id="bgMatch">0</span>/3</span>
+    <span class="badge" id="bg4">④ 四维分析</span>
+    <span class="badge" id="bg5">⑤ 畅想报告</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">🏠 ① 智能体验屋</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">🧩 ② 自动化规则工坊</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">👨‍👩‍👧 ③ 需求匹配任务</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">📊 ④ 四维分析台</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">📑 ⑤ 畅想报告</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:智能家居体验屋 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>🏠 任务一:走进智能体验屋</h2>
+    <div class="task"><b>任务:</b>这是一间虚拟的智能屋。请<b>点击房间里的智能设备</b>控制它们(至少试 5 种不同设备),再<b>拖动右侧的环境滑块</b>(时间、室外温度、室外光线),观察屋子发生了什么变化。传统家居要人跑来跑去按开关,智能家居轻轻一点就搞定!</div>
+    <div class="lab1">
+      <div>
+        <div class="house">
+          <!-- 客厅 -->
+          <div class="room liv" id="room-liv">
+            <div class="shade" id="shade-liv"></div>
+            <div class="glow" id="glow-liv"></div>
+            <div class="rname"><span>🛋️ 客厅</span><span class="rtag" id="tag-liv">—</span></div>
+            <div class="rwin" id="win-liv"><div class="sky" id="sky-liv"></div><span class="star" id="starA-liv">✦</span><span class="star star2" id="starB-liv">✧</span><span class="sun" id="sun-liv">☀️</span><div class="cpanel L"></div><div class="cpanel R"></div></div>
+            <div class="acwind" id="wind-liv">🌬️🌬️🌬️</div>
+            <div class="devs">
+              <button class="dev" id="dvLivLight" onclick="tgl('liv','light')"><span class="di">💡</span><span class="dl">智能灯</span><span class="ds" id="stLivLight">关</span></button>
+              <button class="dev" id="dvLivCurt" onclick="tgl('liv','curtain')"><span class="di">🪟</span><span class="dl">电动窗帘</span><span class="ds" id="stLivCurt">已拉上</span></button>
+              <button class="dev" id="dvLivAc" onclick="tgl('liv','ac')"><span class="di">❄️</span><span class="dl">智能空调</span><span class="ds" id="stLivAc">关</span></button>
+              <button class="dev" id="dvLivRobot" onclick="tgl('liv','robot')"><span class="di">🤖</span><span class="dl">扫地机器人</span><span class="ds" id="stLivRobot">待机</span></button>
+              <button class="dev" id="dvLivSpk" onclick="tgl('liv','speaker')"><span class="di">🔊</span><span class="dl">智能音箱</span><span class="ds" id="stLivSpk">安静</span></button>
+            </div>
+          </div>
+          <!-- 卧室 -->
+          <div class="room" id="room-bed">
+            <div class="shade" id="shade-bed"></div>
+            <div class="glow" id="glow-bed"></div>
+            <div class="rname"><span>🛏️ 卧室</span><span class="rtag" id="tag-bed">—</span></div>
+            <div class="rwin" id="win-bed"><div class="sky" id="sky-bed"></div><span class="star" id="starA-bed">✦</span><span class="star star2" id="starB-bed">✧</span><span class="sun" id="sun-bed">☀️</span><div class="cpanel L"></div><div class="cpanel R"></div></div>
+            <div class="acwind" id="wind-bed">🌬️🌬️🌬️</div>
+            <div class="devs">
+              <button class="dev" id="dvBedLight" onclick="tgl('bed','light')"><span class="di">💡</span><span class="dl">智能灯</span><span class="ds" id="stBedLight">关</span></button>
+              <button class="dev" id="dvBedCurt" onclick="tgl('bed','curtain')"><span class="di">🪟</span><span class="dl">电动窗帘</span><span class="ds" id="stBedCurt">已拉上</span></button>
+              <button class="dev" id="dvBedAc" onclick="tgl('bed','ac')"><span class="di">❄️</span><span class="dl">智能空调</span><span class="ds" id="stBedAc">关</span></button>
+            </div>
+          </div>
+          <!-- 厨房 -->
+          <div class="room" id="room-kit">
+            <div class="shade" id="shade-kit"></div>
+            <div class="glow" id="glow-kit"></div>
+            <div class="rname"><span>🍳 厨房</span><span class="rtag" id="tag-kit">—</span></div>
+            <div class="rwin" id="win-kit"><div class="sky" id="sky-kit"></div><span class="star" id="starA-kit">✦</span><span class="star star2" id="starB-kit">✧</span><span class="sun" id="sun-kit">☀️</span><div class="cpanel L"></div><div class="cpanel R"></div></div>
+            <div class="devs">
+              <button class="dev" id="dvKitLight" onclick="tgl('kit','light')"><span class="di">💡</span><span class="dl">智能灯</span><span class="ds" id="stKitLight">关</span></button>
+              <button class="dev" id="dvKitValve" onclick="tgl('kit','valve')"><span class="di">🔥</span><span class="dl">智能燃气阀</span><span class="ds" id="stKitValve">打开</span></button>
+              <button class="dev" id="dvKitAlarm" onclick="tgl('kit','alarm')"><span class="di">🚨</span><span class="dl">燃气报警器</span><span class="ds" id="stKitAlarm">正常</span></button>
+              <button class="dev" id="dvKitFridge" onclick="tgl('kit','fridge')"><span class="di">🧊</span><span class="dl">智能冰箱</span><span class="ds" id="stKitFridge">运行中</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="roomstats">
+          <div class="rstat" id="rs-liv">客厅</div>
+          <div class="rstat" id="rs-bed">卧室</div>
+          <div class="rstat" id="rs-kit">厨房</div>
+        </div>
+      </div>
+      <!-- 环境控制面板 -->
+      <div class="card ctl" style="margin:0">
+        <h3>🌍 环境控制台(中央控制)</h3>
+        <label><span>🕐 时间</span><output id="timeOut">9:00</output></label>
+        <input type="range" id="timeSl" min="0" max="23" value="9" oninput="envChanged('time')">
+        <label><span>🌡️ 室外温度</span><output id="tempOut">26℃</output></label>
+        <input type="range" id="tempSl" min="-5" max="40" value="26" oninput="envChanged('temp')">
+        <label><span>🔆 室外光线</span><output id="lightOut">80%</output></label>
+        <input type="range" id="lightSl" min="0" max="100" value="80" oninput="envChanged('light')">
+        <label><span>❄️ 空调设定温度</span><output id="acOut">26℃</output></label>
+        <input type="range" id="acSl" min="16" max="30" value="26" oninput="envChanged('ac')">
+        <hr style="border:none; border-top:1px dashed var(--line); margin:12px 0">
+        <h3>🎬 情景演练</h3>
+        <button class="btn small" id="btnAway" onclick="toggleAway()">🚪 模拟主人离家</button>
+        <button class="btn red small" id="btnGas" onclick="gasDrill()">🧪 演练:模拟燃气泄漏</button>
+        <button class="btn gray small" onclick="resetHouse()">🔄 恢复初始状态</button>
+        <div class="why" id="envWhy">💬 点击设备或拖动滑块,这里会解释屋子里发生了什么变化。</div>
+      </div>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+  <div class="card">
+    <h2>📖 什么是智能家居?</h2>
+    <p>智能家居也叫<b>智能住宅</b>,它以家为平台,利用<b>物联网技术、网络通信技术、自动化控制技术</b>等,把家里的<b>安防系统、家电控制系统、照明系统</b>等有机结合起来统筹管理,让生活更<b>舒适、安全、有效</b>。传统家居的开关要人走过去按,智能家居只需轻轻一点,甚至自己"想好了"就自动行动!</p>
+    <p style="margin-top:6px"><span class="pill">智能家居安防系统</span><span class="pill">智能灯光控制系统</span><span class="pill">中央控制系统</span><span class="pill">智能家电</span><span class="pill">网络化</span><span class="pill">无线化</span><span class="pill">智能化</span><span class="pill">嵌入式</span></p>
+  </div>
+</section>
+
+<!-- ================= 模块二:自动化规则工坊 ================= -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>🧩 任务二:搭一套"会自己思考"的家</h2>
+    <div class="task"><b>任务:</b>智能家居最厉害的本领是<b>自动化</b>——不用人动手,自己判断、自己执行。请用"当……就……"积木搭出<b>至少 3 条</b>合理规则(比如:天黑自动开灯、高温自动开空调、燃气泄漏自动关阀报警),再点「⏩ 快进一天」看它们自动工作!搭法:<b>先点一块蓝色"当"积木,再点一块绿色"就"积木</b>,最后点「➕ 添加规则」。</div>
+    <h3>🔵 "当"积木(条件——传感器感知到的情况)</h3>
+    <div class="chips" id="condChips"></div>
+    <h3>🟢 "就"积木(动作——设备自动执行)</h3>
+    <div class="chips" id="actChips"></div>
+    <div class="rulePrev" id="rulePrev">当 〔请选条件〕 就 〔请选动作〕</div>
+    <div>
+      <button class="btn green" onclick="addRule()">➕ 添加规则</button>
+      <button class="btn ghost" onclick="ruleHint()">💡 分层提示</button>
+      <button class="btn small" onclick="loadExampleRules()">📖 装入教材示例规则</button>
+      <button class="btn gray small" onclick="clearRules()">🗑 清空全部规则</button>
+    </div>
+    <div class="feedback" id="fbRule"></div>
+    <h3>📋 我的规则清单</h3>
+    <div id="ruleList"><p style="color:var(--ink-2);font-size:14px">还没有规则。搭一条试试吧!</p></div>
+  </div>
+  <div class="card">
+    <h2>⏩ 让规则跑起来:快进一天</h2>
+    <div class="task"><b>玩法:</b>点「⏩ 快进一天」,时间会从 0 点跑到 24 点,温度和光线自动变化(晚上 20 点还有一次燃气泄漏突发事件!)。看看你的规则会不会在正确的时刻自动出手。也可以回到「① 体验屋」手动拖滑块触发规则。</div>
+    <span class="ffclock" id="ffClock">🕛 0:00</span>
+    <button class="btn purple" id="btnFF" onclick="ffDay()">⏩ 快进一天</button>
+    <div class="fflog" id="ffLog"><div>规则执行记录会显示在这里……</div></div>
+    <div class="feedback" id="fbFF"></div>
+  </div>
+</section>
+
+<!-- ================= 模块三:用户需求匹配 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>👨‍👩‍👧 任务三:当一次智能家居设计顾问</h2>
+    <div class="task"><b>任务:</b>不同的人需求不同,智能家居要<b>对症下药</b>。请为 3 位家庭成员各挑选 <b>3 件</b>最适合的设备(点击设备卡片选中/取消),然后点「✅ 检查匹配」。得 5 分以上算匹配成功,3 位全部成功就通关!</div>
+    <div class="ptabs" id="ptabs"></div>
+    <div id="pbody"></div>
+  </div>
+</section>
+
+<!-- ================= 模块四:四维分析台 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>📊 任务四:给我的智能屋做"体检"</h2>
+    <div class="task"><b>任务:</b>好的智能家居不只是"酷",还要从 4 个维度考量:<b>便利性</b>(省不省心)、<b>能耗</b>(费不费电)、<b>安全</b>(危险能不能防住)、<b>可及性</b>(老人小孩会不会用)。第 1 步:先给自己的智能屋<b>自评打分</b>(拖滑块);第 2 步:点「🖥 系统自动评分」看系统怎么评;第 3 步:点「📈 绘制雷达图」对比两份分数。</div>
+    <div class="grid2">
+      <div class="card ctl" style="margin:0">
+        <h3>✏️ 我的自评(0~10分)</h3>
+        <label><span>🛋️ 便利性</span><output id="sc1Out">5</output></label>
+        <input type="range" id="sc1" min="0" max="10" value="5" oninput="selfScoreChanged()">
+        <label><span>⚡ 能耗(分越高越省电)</span><output id="sc2Out">5</output></label>
+        <input type="range" id="sc2" min="0" max="10" value="5" oninput="selfScoreChanged()">
+        <label><span>🛡️ 安全</span><output id="sc3Out">5</output></label>
+        <input type="range" id="sc3" min="0" max="10" value="5" oninput="selfScoreChanged()">
+        <label><span>👵 可及性</span><output id="sc4Out">5</output></label>
+        <input type="range" id="sc4" min="0" max="10" value="5" oninput="selfScoreChanged()">
+        <div style="margin-top:10px">
+          <button class="btn" onclick="sysScore()">🖥 系统自动评分</button>
+          <button class="btn purple" onclick="drawRadar()">📈 绘制雷达图</button>
+        </div>
+        <div id="sysRows"></div>
+      </div>
+      <div class="card radarWrap" style="margin:0">
+        <h3>🕸️ 四维雷达图(紫色=系统评分,橙色=我的自评)</h3>
+        <canvas id="radarCv" width="480" height="380"></canvas>
+      </div>
+    </div>
+    <div class="why" id="anaWhy">💬 系统评分依据你在「① 体验屋」的设备状态和「② 规则工坊」的规则来计算,先去那两个模块布置好你的家,再来体检哦。</div>
+    <div class="feedback" id="fb4"></div>
+  </div>
+</section>
+
+<!-- ================= 模块五:畅想报告 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>📑 任务五:生成《我的未来之家畅想报告》</h2>
+    <div class="task"><b>任务:</b>下面的数据是体验馆自动统计的。请把 3 个畅想空填完整,点「生成报告预览」,满意后导出保存——这就是你这节课的成果!</div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="sDev">0</b><span>设备操作次数</span></div>
+      <div class="stat"><b id="sRule">0</b><span>自动化规则条数</span></div>
+      <div class="stat"><b id="sFire">0</b><span>规则自动触发次数</span></div>
+      <div class="stat"><b id="sMatch">0/3</b><span>需求匹配成功人数</span></div>
+      <div class="stat"><b id="sScore">—</b><span>四维系统总分</span></div>
+      <div class="stat"><b id="sLog">0</b><span>操作日志条数</span></div>
+    </div>
+    <h3>1️⃣ 我心目中的智能家居:最想要的三个功能和原因</h3>
+    <textarea id="d1" placeholder="例:①天黑自动开灯——放学回家不摸黑;②燃气泄漏自动关阀——保护全家安全;③语音控制——奶奶不用起身就能开电视。"></textarea>
+    <h3>2️⃣ 我的智能屋帮助了谁?解决了什么需求?</h3>
+    <textarea id="d2" placeholder="例:帮助奶奶——语音音箱和跌倒报警手环让她一个人在家也安全;帮助爸爸——出差时用摄像头和APP随时看家。"></textarea>
+    <h3>3️⃣ 大胆畅想:未来的智能家居还能有什么新功能?还能用在哪些地方?</h3>
+    <textarea id="d3" placeholder="例:会做饭的智能厨房、能陪聊天的AI管家;除了家里,还能用在智能酒店(刷脸入住)、养老院(照顾老人)……"></textarea>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genReport()">📄 生成报告预览</button>
+      <button class="btn" onclick="exportReport()">📥 导出报告(HTML文件)</button>
+    </div>
+    <div class="feedback" id="fb5"></div>
+    <div id="reportPreview"></div>
+  </div>
+  <div class="card">
+    <h2>📋 操作日志</h2>
+    <div style="margin-bottom:10px">
+      <button class="btn small" onclick="renderLog()">🔄 刷新</button>
+      <button class="btn green small" onclick="exportCSV()">📥 导出日志(CSV)</button>
+      <button class="btn red small" onclick="clearLog()">🗑 清空日志</button>
+      <span class="pill">共 <b id="logCount">0</b> 条记录</span>
+    </div>
+    <div class="logwrap">
+      <table>
+        <thead><tr><th>#</th><th>模拟时间</th><th>类型</th><th>内容</th><th>环境(温度/光线)</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="5" style="color:#5c6a86">暂无记录,去①号体验屋玩一玩吧!</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出项目(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入项目</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>未来智能家居体验馆 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态与通用工具
+============================================================ */
+const $=id=>document.getElementById(id);
+const progress={b1:false,b2:false,match:0,b4:false,b5:false};
+const env={hour:9,temp:26,light:80};
+const home={
+  liv:{light:false,curtain:true,ac:false,robot:false,speaker:false},
+  bed:{light:false,curtain:true,ac:false},
+  kit:{light:false,curtain:true,valve:true,alarmRing:false},
+  gasLeak:false,away:false,acTemp:26
+};
+const track={devClicks:0,devSet:{},envAdjust:0};
+let logRows=[];        // {time,type,content,env}
+let fireCount=0;       // 规则触发总次数
+let ffDone=false;
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t5'){refreshStats();renderLog();}
+}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function fb(id,cls,html){const e=$(id);e.className='feedback '+cls;e.innerHTML=html;}
+function clockStr(){return env.hour+':00';}
+function addLog(type,content){
+  logRows.push({time:clockStr(),type,content,env:env.temp+'℃ / 光'+env.light+'%'});
+  if(logRows.length>600)logRows.shift();
+}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ============================================================
+   模块一:智能家居体验屋
+============================================================ */
+const ROOMS=['liv','bed','kit'];
+const ROOM_NAME={liv:'客厅',bed:'卧室',kit:'厨房'};
+
+function lightByHour(h){
+  if(h>=8&&h<=16)return 90;
+  if(h===7||h===17)return 60;
+  if(h===6||h===18)return 35;
+  if(h===5||h===19)return 15;
+  return 5;
+}
+function roomBrightness(r){
+  const o=home[r];
+  const fromLamp=o.light?85:0;
+  const fromWindow=o.curtain?Math.round(env.light*0.8):Math.round(env.light*0.08);
+  return Math.min(100,Math.max(fromLamp,fromWindow));
+}
+function roomTemp(r){
+  const o=home[r];
+  if(o.ac)return home.acTemp;
+  return env.temp;
+}
+function comfortText(t){
+  if(t>30)return '🥵 好热';
+  if(t>=18&&t<=28)return '😊 舒适';
+  if(t<10)return '🥶 好冷';
+  return '🙂 还行';
+}
+function skyStyle(){
+  if(env.light<15)return 'linear-gradient(#101a3d,#22306b)';
+  if(env.light<45)return 'linear-gradient(#e8a87c,#7a6ad8)';
+  return 'linear-gradient(#7ec8ff,#e6f7ff)';
+}
+function flashRoom(r){
+  const el=$('room-'+r); if(!el)return;
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'),700);
+}
+function setWhy(t){$('envWhy').innerHTML='💬 '+t;}
+
+function tgl(room,key){
+  const o=home[room];
+  track.devClicks++; track.devSet[room+'.'+key]=true;
+  if(key==='light'){o.light=!o.light;
+    setWhy(o.light?ROOM_NAME[room]+'的智能灯亮了!在智能家居里,你可以在家中任意位置甚至千里之外控制灯光。':'关灯啦,'+ROOM_NAME[room]+'暗了下来。随手关灯还能省电哦。');
+    addLog('设备',ROOM_NAME[room]+'智能灯 '+(o.light?'开':'关'));}
+  else if(key==='curtain'){o.curtain=!o.curtain;
+    setWhy(o.curtain?ROOM_NAME[room]+'的窗帘缓缓拉开,室外光线照了进来——白天用自然光,不开灯也亮堂!':'窗帘拉上了,'+ROOM_NAME[room]+'和室外光线说拜拜。晚上拉窗帘还能保护隐私。');
+    addLog('设备',ROOM_NAME[room]+'窗帘 '+(o.curtain?'拉开':'拉上'));}
+  else if(key==='ac'){o.ac=!o.ac;
+    setWhy(o.ac?ROOM_NAME[room]+'空调启动!室温会调到设定的 '+home.acTemp+'℃(可以用右边滑块改设定温度)。':'空调关闭,'+ROOM_NAME[room]+'的室温会慢慢回到室外温度 '+env.temp+'℃。');
+    addLog('设备',ROOM_NAME[room]+'空调 '+(o.ac?'开,设定'+home.acTemp+'℃':'关'));}
+  else if(key==='robot'){o.robot=!o.robot;
+    setWhy(o.robot?'扫地机器人出动!它是典型的智能家电——内置微处理器和传感器,自己规划路线打扫。':'扫地机器人回充电座休息了。');
+    addLog('设备','扫地机器人 '+(o.robot?'开始打扫':'停止'));}
+  else if(key==='speaker'){o.speaker=!o.speaker;
+    setWhy(o.speaker?'智能音箱开始播放音乐 ♪ 它还能听懂语音指令:"打开客厅灯"——动动嘴就能控制全屋!':'智能音箱安静下来了。');
+    addLog('设备','智能音箱 '+(o.speaker?'播放音乐':'停止'));}
+  else if(key==='valve'){o.valve=!o.valve;
+    if(!o.valve&&home.gasLeak){home.gasLeak=false;o.alarmRing=false;
+      setWhy('你手动关闭了燃气阀,泄漏止住了!✅ 不过想一想:如果家里没人,谁来关阀?这就是自动化规则的价值。');
+      addLog('安全','手动关闭燃气阀,泄漏解除');}
+    else{setWhy(o.valve?'燃气阀打开了,可以做饭啦。记得用完关闭哦。':'燃气阀关闭了,安全!');
+      addLog('设备','燃气阀 '+(o.valve?'打开':'关闭'));}
+  }
+  else if(key==='alarm'){
+    if(home.gasLeak){setWhy('🚨 报警器正在报警:检测到燃气泄漏!快关闭燃气阀(点它),或者去「② 规则工坊」搭一条自动处理规则。');}
+    else{setWhy('报警器自检:"滴——"一切正常。它是嵌入式设备,内置专用芯片,24 小时自动监测,不需要人守着。');
+      addLog('设备','燃气报警器自检正常');}
+  }
+  else if(key==='fridge'){
+    const msgs=['🧊 智能冰箱提醒:牛奶还剩 1 盒,要不要加入购物清单?','🧊 智能冰箱:今天推荐菜谱——西红柿炒鸡蛋,食材都齐!','🧊 智能冰箱:冷藏室温度 4℃,运行正常。'];
+    setWhy(msgs[track.devClicks%3]+' (智能家电能联网共享信息,这是虚构的示例数据)');
+    addLog('设备','查看智能冰箱信息');
+  }
+  render(); evalRules('设备操作'); checkB1();
+}
+function envChanged(kind){
+  track.envAdjust++;
+  if(kind==='time'){
+    env.hour=+$('timeSl').value;
+    const nl=lightByHour(env.hour);
+    env.light=nl; $('lightSl').value=nl;
+    setWhy('时间调到 '+env.hour+':00,室外光线自动变成 '+nl+'%。'+(nl<30?'天黑了——如果你搭了"天黑就开灯"的规则,灯会自己亮起来!':'天亮着,自然光透过拉开的窗帘就能照亮房间。'));
+    addLog('环境','时间调整为 '+env.hour+':00');
+  }else if(kind==='temp'){
+    env.temp=+$('tempSl').value;
+    setWhy('室外温度变为 '+env.temp+'℃。'+(env.temp>30?'好热!没开空调的房间会跟着变热——试试"温度高于30℃就开空调"的自动规则。':(env.temp<10?'好冷!空调设定 '+home.acTemp+'℃ 可以制热保暖。':'温度宜人,不开空调最省电。')));
+    addLog('环境','室外温度调整为 '+env.temp+'℃');
+  }else if(kind==='light'){
+    env.light=+$('lightSl').value;
+    setWhy('室外光线变为 '+env.light+'%。'+(env.light<30?'光线很暗(阴天或夜晚),光照传感器会把"天黑了"这个信息告诉控制系统。':'光线充足,拉开窗帘就能省下开灯的电。'));
+    addLog('环境','室外光线调整为 '+env.light+'%');
+  }else if(kind==='ac'){
+    home.acTemp=+$('acSl').value;
+    setWhy('空调设定温度改为 '+home.acTemp+'℃。'+(home.acTemp<22?'设得很低会更费电哦,夏天推荐 26℃ 左右,舒适又节能。':'26℃ 左右是舒适又节能的好选择。'));
+    addLog('环境','空调设定温度改为 '+home.acTemp+'℃');
+  }
+  render(); evalRules('环境变化'); checkB1();
+}
+function toggleAway(){
+  home.away=!home.away;
+  $('btnAway').textContent=home.away?'🏠 模拟主人回家':'🚪 模拟主人离家';
+  if(home.away){setWhy('主人出门了!教材说:离家时不必要的设备应自动断电、关闭,安防设备启动。试试搭"当主人离开家→关闭所有灯"的规则。');}
+  else{setWhy('主人回家啦,欢迎回来!');}
+  addLog('情景',home.away?'主人离家':'主人回家');
+  render(); evalRules('情景'); checkB1();
+}
+function gasDrill(){
+  if(home.gasLeak){ // 再点一次=结束演练
+    home.gasLeak=false; home.kit.alarmRing=false;
+    $('btnGas').textContent='🧪 演练:模拟燃气泄漏';
+    setWhy('演练结束,厨房恢复正常。');
+    addLog('安全','燃气泄漏演练结束'); render(); return;
+  }
+  home.gasLeak=true; home.kit.alarmRing=true; home.kit.valve=true;
+  $('btnGas').textContent='✅ 结束演练';
+  addLog('安全','⚠️ 演练:厨房检测到燃气泄漏!');
+  render();
+  const handled=evalRules('燃气演练');
+  if(!handled){
+    setWhy('🚨 燃气报警器响了!现在没有自动规则来处理,只能手动点「智能燃气阀」关闭。想让家自己处理危险?去「② 规则工坊」搭"当检测到燃气泄漏→关闭燃气阀并报警"!');
+  }
+  checkB1();
+}
+function resetHouse(){
+  Object.assign(home.liv,{light:false,curtain:true,ac:false,robot:false,speaker:false});
+  Object.assign(home.bed,{light:false,curtain:true,ac:false});
+  Object.assign(home.kit,{light:false,curtain:true,valve:true,alarmRing:false});
+  home.gasLeak=false; home.away=false; home.acTemp=26;
+  env.hour=9; env.temp=26; env.light=80;
+  $('timeSl').value=9; $('tempSl').value=26; $('lightSl').value=80; $('acSl').value=26;
+  $('btnAway').textContent='🚪 模拟主人离家';
+  $('btnGas').textContent='🧪 演练:模拟燃气泄漏';
+  setWhy('体验屋已恢复初始状态(上午 9 点,26℃,晴)。');
+  addLog('系统','体验屋恢复初始状态');
+  initPrevCond(); render();
+}
+function checkB1(){
+  if(progress.b1)return;
+  if(Object.keys(track.devSet).length>=5&&track.envAdjust>=2){
+    progress.b1=true; setBadge(1);
+    fb('fb1','ok','🎉 太棒了!你已经体验了 5 种以上智能设备,还调节了环境。发现了吗?<b>点一下就能控制</b>是智能家居的第一步,更酷的是让家<b>自动行动</b>——去「② 自动化规则工坊」试试!');
+  }
+}
+function render(){
+  // 天空、星星、太阳
+  const sky=skyStyle();
+  ROOMS.forEach(r=>{
+    $('sky-'+r).style.background=sky;
+    const night=env.light<15, day=env.light>=45;
+    $('starA-'+r).style.opacity=night?1:0;
+    $('starB-'+r).style.opacity=night?1:0;
+    $('sun-'+r).style.opacity=day?1:0;
+    // 窗帘
+    $('win-'+r).classList.toggle('open',!!home[r].curtain);
+    // 亮度遮罩与灯光光晕
+    const b=roomBrightness(r);
+    $('shade-'+r).style.opacity=((100-b)/100*0.72).toFixed(2);
+    $('glow-'+r).style.opacity=home[r].light?1:0;
+    // 房间状态卡
+    const t=roomTemp(r);
+    const devsOn=[];
+    if(home[r].light)devsOn.push('灯');
+    if(home[r].ac)devsOn.push('空调');
+    if(r==='liv'&&home.liv.robot)devsOn.push('扫地机');
+    if(r==='liv'&&home.liv.speaker)devsOn.push('音箱');
+    $('rs-'+r).innerHTML='<b>'+ROOM_NAME[r]+'</b> · 室温 <b>'+t+'℃</b> '+comfortText(t)+'<br>亮度 <b>'+b+'%</b> '+(b<25?'🌑 很暗':(b<60?'🌗 一般':'🌕 明亮'))+'<br>开着的设备:'+(devsOn.length?devsOn.join('、'):'无');
+    $('tag-'+r).textContent=t+'℃ / 亮度'+b+'%';
+  });
+  // 设备按钮状态
+  $('dvLivLight').classList.toggle('on',home.liv.light); $('stLivLight').textContent=home.liv.light?'亮着':'关';
+  $('dvLivCurt').classList.toggle('on',home.liv.curtain); $('stLivCurt').textContent=home.liv.curtain?'已拉开':'已拉上';
+  $('dvLivAc').classList.toggle('on',home.liv.ac); $('stLivAc').textContent=home.liv.ac?home.acTemp+'℃':'关';
+  $('dvLivRobot').classList.toggle('on',home.liv.robot); $('dvLivRobot').classList.toggle('work',home.liv.robot);
+  $('stLivRobot').textContent=home.liv.robot?'打扫中':'待机';
+  $('dvLivSpk').classList.toggle('on',home.liv.speaker); $('dvLivSpk').classList.toggle('play',home.liv.speaker);
+  $('stLivSpk').textContent=home.liv.speaker?'♪ 播放中':'安静';
+  $('dvBedLight').classList.toggle('on',home.bed.light); $('stBedLight').textContent=home.bed.light?'亮着':'关';
+  $('dvBedCurt').classList.toggle('on',home.bed.curtain); $('stBedCurt').textContent=home.bed.curtain?'已拉开':'已拉上';
+  $('dvBedAc').classList.toggle('on',home.bed.ac); $('stBedAc').textContent=home.bed.ac?home.acTemp+'℃':'关';
+  $('dvKitLight').classList.toggle('on',home.kit.light); $('stKitLight').textContent=home.kit.light?'亮着':'关';
+  $('dvKitValve').classList.toggle('on',home.kit.valve); $('stKitValve').textContent=home.kit.valve?'打开':'已关闭';
+  $('dvKitValve').querySelector('.di').textContent=home.kit.valve?'🔥':'⛔';
+  $('dvKitAlarm').classList.toggle('alert',home.gasLeak);
+  $('stKitAlarm').textContent=home.gasLeak?'⚠️ 报警中!':'正常';
+  $('wind-liv').classList.toggle('on',home.liv.ac);
+  $('wind-bed').classList.toggle('on',home.bed.ac);
+  // 输出值
+  $('timeOut').textContent=env.hour+':00';
+  $('tempOut').textContent=env.temp+'℃';
+  $('lightOut').textContent=env.light+'%';
+  $('acOut').textContent=home.acTemp+'℃';
+}
+
+/* ============================================================
+   模块二:自动化规则工坊
+============================================================ */
+const CONDS=[
+  {k:'dark',name:'天黑了(光线<30%)',test:()=>env.light<30},
+  {k:'hot',name:'室外温度高于30℃',test:()=>env.temp>30},
+  {k:'cold',name:'室外温度低于10℃',test:()=>env.temp<10},
+  {k:'night10',name:'到了晚上10点',test:()=>env.hour>=22},
+  {k:'gas',name:'检测到燃气泄漏',test:()=>home.gasLeak},
+  {k:'leave',name:'主人离开家',test:()=>home.away},
+];
+const ACTS=[
+  {k:'livLightOn',name:'打开客厅灯'},
+  {k:'allLightOff',name:'关闭所有灯'},
+  {k:'acOn',name:'打开空调(自动调到26℃)'},
+  {k:'curtainClose',name:'拉上所有窗帘'},
+  {k:'curtainOpen',name:'拉开所有窗帘'},
+  {k:'gasOff',name:'关闭燃气阀并报警'},
+  {k:'musicOn',name:'播放舒缓音乐'},
+];
+const CONFLICT_PAIRS=[['curtainOpen','curtainClose'],['livLightOn','allLightOff']];
+let rules=[];          // {cond,act,count}
+let selCond=null, selAct=null, ruleHintLv=0;
+let prevCond={};
+
+function condName(k){const c=CONDS.find(x=>x.k===k);return c?c.name:k;}
+function actName(k){const a=ACTS.find(x=>x.k===k);return a?a.name:k;}
+function renderChips(){
+  $('condChips').innerHTML=CONDS.map(c=>'<button class="chip'+(selCond===c.k?' sel':'')+'" onclick="pickCond(\''+c.k+'\')">当 '+c.name+'</button>').join('');
+  $('actChips').innerHTML=ACTS.map(a=>'<button class="chip'+(selAct===a.k?' sel':'')+'" onclick="pickAct(\''+a.k+'\')">就 '+a.name+'</button>').join('');
+  $('rulePrev').textContent='当 〔'+(selCond?condName(selCond):'请选条件')+'〕 就 〔'+(selAct?actName(selAct):'请选动作')+'〕';
+}
+function pickCond(k){selCond=(selCond===k?null:k);renderChips();}
+function pickAct(k){selAct=(selAct===k?null:k);renderChips();}
+function ruleProblem(c,a){
+  if(c==='gas'&&a!=='gasOff')return '⚠️ 燃气泄漏是<b>紧急危险</b>!"'+actName(a)+'"帮不上忙,正确做法是<b>先切断气源</b>——选"关闭燃气阀并报警"。';
+  if(c==='dark'&&a==='allLightOff')return '🤔 天黑了还把灯全关掉,家里就黑漆漆啦,这条规则会帮倒忙。想想天黑时人们需要什么?';
+  if(c==='hot'&&a==='curtainOpen')return '🤔 室外30多℃时把窗帘全拉开,烈日晒进来屋里会更热。反过来"拉上窗帘"倒是能隔热哦。';
+  if(c==='leave'&&a==='livLightOn')return '🤔 主人都出门了还开着灯,白白浪费电。教材说:离家时<b>不必要的设备应自动关闭</b>。';
+  return null;
+}
+function addRule(){
+  if(!selCond||!selAct){fb('fbRule','info','💡 先点一块蓝色"当"积木,再点一块绿色"就"积木,让预览框里两个空都填上,再点添加。');return;}
+  if(rules.some(r=>r.cond===selCond&&r.act===selAct)){fb('fbRule','info','这条规则已经在清单里啦,试试搭一条新的。');return;}
+  const conflict=rules.find(r=>r.cond===selCond&&CONFLICT_PAIRS.some(p=>p.includes(r.act)&&p.includes(selAct)&&r.act!==selAct));
+  if(conflict){fb('fbRule','bad','⚡ <b>规则冲突!</b>同一个条件「'+condName(selCond)+'」下,已经有一条"'+actName(conflict.act)+'",再加"'+actName(selAct)+'"就自相矛盾了——设备会不知道听谁的。先删掉旧规则,或换一个条件。');return;}
+  const prob=ruleProblem(selCond,selAct);
+  if(prob){fb('fbRule','bad',prob+' (没扣分,修改后再试!)');return;}
+  rules.push({cond:selCond,act:selAct,count:0});
+  addLog('规则','添加规则:当'+condName(selCond)+' → '+actName(selAct));
+  fb('fbRule','ok','✅ 规则添加成功!现在共有 <b>'+rules.length+'</b> 条。'+(rules.length<3?'再搭 '+(3-rules.length)+' 条就够一套啦。':'去点「⏩ 快进一天」,或回「① 体验屋」拖滑块,看规则自动执行!'));
+  // 条件当前已满足则立即生效一次
+  const c=CONDS.find(x=>x.k===selCond);
+  if(c&&c.test()){
+    const r=rules[rules.length-1];
+    fireRule(r,'添加时条件已满足,立即执行');
+    render();
+  }
+  selCond=null; selAct=null; renderChips(); renderRules(); checkB2();
+}
+function delRule(i){
+  const r=rules[i]; if(!r)return;
+  addLog('规则','删除规则:当'+condName(r.cond)+' → '+actName(r.act));
+  rules.splice(i,1); renderRules();
+  fb('fbRule','info','已删除该规则。');
+}
+function clearRules(){rules=[];renderRules();fb('fbRule','info','规则已全部清空,重新设计你的自动化方案吧。');}
+function loadExampleRules(){
+  rules=[{cond:'dark',act:'livLightOn',count:0},{cond:'hot',act:'acOn',count:0},{cond:'gas',act:'gasOff',count:0}];
+  initPrevCond(); renderRules();
+  addLog('规则','装入教材示例规则(3条)');
+  fb('fbRule','ok','📖 已装入 3 条经典规则:天黑开灯、高温开空调、燃气泄漏关阀报警。点「⏩ 快进一天」看效果,也可以继续添加你自己的规则!');
+  checkB2();
+}
+function renderRules(){
+  if(!rules.length){$('ruleList').innerHTML='<p style="color:var(--ink-2);font-size:14px">还没有规则。搭一条试试吧!</p>';return;}
+  $('ruleList').innerHTML=rules.map((r,i)=>
+    '<div class="ruleItem'+(r.count>0?' fired':'')+'"><span>🧩</span><span class="rtxt"><b>当</b> '+condName(r.cond)+' <b>就</b> '+actName(r.act)+'</span><span class="cnt">已触发 '+r.count+' 次</span><button class="btn red small" onclick="delRule('+i+')">🗑 删除</button></div>').join('');
+}
+function ruleHint(){
+  ruleHintLv=Math.min(ruleHintLv+1,3);
+  const hs=[
+    '提示①:想想生活场景——什么时候你希望灯自己亮?什么天气你最想让空调自己开?哪种情况最危险、必须马上自动处理?',
+    '提示②:推荐三条经典规则的"当"分别是:<b>天黑了</b>、<b>室外温度高于30℃</b>、<b>检测到燃气泄漏</b>。给它们各配一个最合适的动作。',
+    '提示③:照着搭:①当天黑了→打开客厅灯;②当室外温度高于30℃→打开空调;③当检测到燃气泄漏→关闭燃气阀并报警。搭完点「⏩ 快进一天」!'
+  ];
+  fb('fbRule','info','💡 '+hs[ruleHintLv-1]);
+}
+function initPrevCond(){CONDS.forEach(c=>{prevCond[c.k]=c.test();});}
+function applyAction(a){
+  if(a==='livLightOn'){home.liv.light=true;flashRoom('liv');return '客厅灯自动亮起 💡';}
+  if(a==='allLightOff'){home.liv.light=false;home.bed.light=false;home.kit.light=false;ROOMS.forEach(flashRoom);return '所有灯自动关闭 🌑';}
+  if(a==='acOn'){home.acTemp=26;$('acSl').value=26;home.liv.ac=true;home.bed.ac=true;flashRoom('liv');flashRoom('bed');return '空调自动开启,调到 26℃ ❄️';}
+  if(a==='curtainClose'){home.liv.curtain=false;home.bed.curtain=false;home.kit.curtain=false;ROOMS.forEach(flashRoom);return '所有窗帘自动拉上 🪟';}
+  if(a==='curtainOpen'){home.liv.curtain=true;home.bed.curtain=true;home.kit.curtain=true;ROOMS.forEach(flashRoom);return '所有窗帘自动拉开 🪟';}
+  if(a==='gasOff'){home.kit.valve=false;home.gasLeak=false;home.kit.alarmRing=false;flashRoom('kit');return '燃气阀自动关闭,同时向家人手机报警 🚨✅';}
+  if(a==='musicOn'){home.liv.speaker=true;flashRoom('liv');return '智能音箱自动播放舒缓音乐 ♪';}
+  return a;
+}
+function fireRule(r,why){
+  const desc=applyAction(r.act);
+  r.count++; fireCount++;
+  addLog('自动化','规则触发:当'+condName(r.cond)+' → '+desc+(why?'('+why+')':''));
+  return desc;
+}
+// 返回本轮是否有规则触发;边沿触发:条件从"不满足"变"满足"才执行
+function evalRules(source){
+  let fired=false, msgs=[];
+  CONDS.forEach(c=>{
+    const cur=c.test();
+    if(cur&&!prevCond[c.k]){
+      rules.filter(r=>r.cond===c.k).forEach(r=>{
+        const desc=fireRule(r,source);
+        msgs.push('「'+c.name+'」→ '+desc);
+        fired=true;
+      });
+    }
+    prevCond[c.k]=cur;
+  });
+  if(fired){
+    render(); renderRules();
+    setWhy('🤖 <b>自动化规则出手了!</b>'+msgs.join(';')+' ——不用人动手,这就是智能家居的"自动控制"。');
+  }
+  return fired;
+}
+/* ---- 快进一天 ---- */
+let ffTimer=null;
+function dayTemp(h){return Math.round(26-8*Math.cos((h-14)/24*2*Math.PI));}
+function ffAppend(t){const el=document.createElement('div');el.innerHTML=t;$('ffLog').prepend(el);}
+function ffDay(){
+  if(ffTimer){fb('fbFF','info','正在快进中,请等这一天跑完~');return;}
+  if(!rules.length){fb('fbFF','info','💡 还没有任何规则哦!先在上面搭至少 1 条规则(或点「📖 装入教材示例规则」),再快进才有戏看。');return;}
+  $('ffLog').innerHTML=''; ffAppend('—— ⏩ 新的一天开始了 ——');
+  home.away=false; home.gasLeak=false; home.kit.alarmRing=false; home.kit.valve=true;
+  $('btnGas').textContent='🧪 演练:模拟燃气泄漏';
+  let h=0; const startFire=fireCount;
+  const firedNames=new Set();
+  $('btnFF').disabled=true;
+  ffTimer=setInterval(()=>{
+    env.hour=h; env.temp=dayTemp(h); env.light=lightByHour(h);
+    $('timeSl').value=h; $('tempSl').value=env.temp; $('lightSl').value=env.light;
+    $('ffClock').textContent='🕐 '+h+':00 · '+env.temp+'℃ · 光'+env.light+'%';
+    if(h===20&&!home.gasLeak){ // 突发事件
+      home.gasLeak=true; home.kit.alarmRing=true;
+      ffAppend('20:00 ⚠️ <b>突发!晚饭后燃气灶忘关,检测到燃气泄漏!</b>');
+      addLog('安全','快进演练:20:00 检测到燃气泄漏');
+    }
+    const before=fireCount;
+    render();
+    evalRules('快进一天');
+    if(fireCount>before){
+      logRows.slice(-(fireCount-before)).forEach(row=>{if(row.type==='自动化')ffAppend(h+':00 ✅ '+row.content.replace('规则触发:',''));});
+      rules.forEach(r=>{if(r.count>0)firedNames.add(r.cond+'→'+r.act);});
+    }
+    if(h===21&&home.gasLeak){ // 无规则处理,家人救场
+      home.gasLeak=false; home.kit.alarmRing=false; home.kit.valve=false;
+      ffAppend('21:00 😰 没有自动规则处理泄漏,幸好家人及时发现,手动关了燃气阀。好险!');
+      addLog('安全','快进演练:泄漏靠人工处理(无自动规则)');
+      render();
+    }
+    h++;
+    if(h>23){
+      clearInterval(ffTimer); ffTimer=null; $('btnFF').disabled=false;
+      ffDone=true;
+      const firedN=fireCount-startFire;
+      const neverFired=rules.filter(r=>r.count===0);
+      let msg='🌙 这一天结束了!你的规则共自动执行了 <b>'+firedN+'</b> 次。';
+      if(neverFired.length){msg+='<br>🤔 有 '+neverFired.length+' 条规则一次也没触发:'+neverFired.map(r=>'「当'+condName(r.cond)+'」').join('、')+'。想想它的条件今天出现过吗?(比如"主人离开家"要先在①体验屋点「🚪 模拟主人离家」)';}
+      const hasGasRule=rules.some(r=>r.cond==='gas'&&r.act==='gasOff');
+      msg+=hasGasRule?'<br>🛡️ 晚上 8 点的燃气泄漏被你的安全规则自动化解,全家安然无恙!':'<br>⚠️ 晚上 8 点的燃气泄漏没有自动规则处理,靠人工才化解。建议添加:当检测到燃气泄漏→关闭燃气阀并报警。';
+      fb('fbFF',firedN>0?'ok':'info',msg);
+      ffAppend('—— 🌙 一天结束 ——');
+      addLog('自动化','快进一天完成,规则共触发 '+firedN+' 次');
+      renderRules(); checkB2();
+    }
+  },230);
+}
+function checkB2(){
+  if(progress.b2)return;
+  if(rules.length>=3&&ffDone&&fireCount>0){
+    progress.b2=true; setBadge(2);
+    fb('fbFF','ok','🏆 恭喜!你搭好了 3 条以上规则,还完整跑了一天,亲眼看到家"自己思考、自己行动"。这就是<b>自动化控制技术</b>!去「③ 需求匹配任务」帮家人挑设备吧。');
+  }
+}
+
+/* ============================================================
+   模块三:用户需求匹配任务
+============================================================ */
+const DEVPOOL=[
+  {k:'voice',ico:'🔊',name:'语音智能音箱'},
+  {k:'fall',ico:'⌚',name:'跌倒报警手环'},
+  {k:'lock',ico:'🔐',name:'智能门锁'},
+  {k:'cam',ico:'📷',name:'智能摄像头'},
+  {k:'app',ico:'📱',name:'远程控制APP'},
+  {k:'autolight',ico:'💡',name:'自动感应灯'},
+  {k:'gasal',ico:'🚨',name:'燃气报警器'},
+  {k:'curt',ico:'🪟',name:'电动窗帘'},
+  {k:'robot',ico:'🤖',name:'扫地机器人'},
+];
+const PERSONAS=[
+  {k:'granny',ico:'👵',name:'奶奶',
+   desc:'腿脚不太方便,记性也不太好,白天常常一个人在家做饭、看电视。',
+   best:{voice:'不用起身走到开关旁,动动嘴就能开灯、开电视,腿脚不便也不怕',
+         fall:'万一在家摔倒,手环立刻通知家人,第一时间来帮忙',
+         gasal:'做饭忘了关火也会自动报警,记性不好也安全'},
+   ok:{autolight:'起夜时灯自动亮,不用摸黑找开关',
+       robot:'不用弯腰扫地,减轻家务负担',
+       curt:'不用走到窗边,窗帘自动开合'},
+   no:{app:'奶奶不太会用手机APP,复杂的操作反而成了新负担',
+       cam:'摄像头主要方便家人远程查看,对奶奶自己的日常帮助不大',
+       lock:'奶奶大部分时间在家,门锁不是她最迫切的需求'},
+   hint3:'语音智能音箱、跌倒报警手环、燃气报警器'},
+  {k:'dad',ico:'👨‍💼',name:'上班族爸爸',
+   desc:'经常出差,最担心家里的安全,想随时随地看看家里的情况、控制家里的电器。',
+   best:{cam:'出差时打开手机就能看到家里的实时画面,离家千里也安心',
+         lock:'门被打开会推送提醒,还能远程给家人开门,安全又方便',
+         app:'人在外地也能控制家里的一切,真正"把家装进口袋"'},
+   ok:{gasal:'燃气泄漏第一时间推送到手机,及时处理',
+       curt:'出差时定时开合窗帘,让家看起来一直有人在'},
+   no:{voice:'人经常不在家,语音音箱大部分时间派不上用场',
+       fall:'爸爸年轻力壮,跌倒报警不是他的主要需求',
+       autolight:'有一点帮助,但解决不了他最担心的安全问题',
+       robot:'扫地机器人打扫很棒,但和"安全、远程"的需求关系不大'},
+   hint3:'智能摄像头、智能门锁、远程控制APP'},
+  {k:'kid',ico:'🧒',name:'小学生小清',
+   desc:'放学后独自在家写作业,有点怕黑;爸妈上班,想知道他有没有安全到家。',
+   best:{autolight:'天一黑灯就自动亮,再也不怕黑了',
+         lock:'指纹一按就开门,不怕弄丢钥匙,爸妈手机还会收到"孩子到家"提醒',
+         voice:'不会读的字问问音箱,还能提醒他每 30 分钟休息一下眼睛'},
+   ok:{cam:'爸妈能看到小清安全到家、认真写作业',
+       gasal:'独自在家时多一重安全保障'},
+   no:{fall:'小清蹦蹦跳跳很灵活,跌倒报警更适合老人',
+       robot:'扫地机器人和小清的需求关系不大',
+       curt:'电动窗帘方便,但不是小清最需要的',
+       app:'小清自己还没有手机,远程APP是给大人用的'},
+   hint3:'自动感应灯、智能门锁、语音智能音箱'},
+];
+let curP=0;
+const personaSel={granny:[],dad:[],kid:[]};
+const personaPassed={granny:false,dad:false,kid:false};
+const personaHintLv={granny:0,dad:0,kid:0};
+
+function renderPTabs(){
+  $('ptabs').innerHTML=PERSONAS.map((p,i)=>
+    '<button id="pt'+i+'" class="'+(i===curP?'on':'')+' '+(personaPassed[p.k]?'passed':'')+'" onclick="openPersona('+i+')">'+p.ico+' '+p.name+'</button>').join('');
+}
+function openPersona(i){
+  curP=i; renderPTabs();
+  const p=PERSONAS[i];
+  $('pbody').innerHTML=
+    '<div class="pdesc"><b>'+p.ico+' '+p.name+'的情况:</b>'+p.desc+'<br><b>👉 想一想:</b>'+p.name+'最需要解决的是什么问题?</div>'+
+    '<div class="pool" id="ppool"></div>'+
+    '<div style="margin-top:10px"><span class="pill">已选 <b id="pselCount">0</b>/3 件</span> '+
+    '<button class="btn green" onclick="checkMatch()">✅ 检查匹配</button>'+
+    '<button class="btn ghost" onclick="personaHint()">💡 分层提示</button>'+
+    '<button class="btn gray small" onclick="clearPersona()">🔄 重选</button></div>'+
+    '<div class="feedback" id="fbMatch"></div>';
+  renderPool();
+}
+function renderPool(){
+  const p=PERSONAS[curP], sel=personaSel[p.k];
+  $('ppool').innerHTML=DEVPOOL.map(d=>
+    '<button class="pdev'+(sel.includes(d.k)?' sel':'')+'" onclick="pickDev(\''+d.k+'\')"><span class="pi">'+d.ico+'</span><span>'+d.name+'</span></button>').join('');
+  const c=$('pselCount'); if(c)c.textContent=sel.length;
+}
+function pickDev(k){
+  const p=PERSONAS[curP], sel=personaSel[p.k];
+  const idx=sel.indexOf(k);
+  if(idx>=0){sel.splice(idx,1);}
+  else{
+    if(sel.length>=3){fb('fbMatch','info','💡 最多选 3 件哦。先点击取消一件,再选新的。');renderPool();return;}
+    sel.push(k);
+  }
+  renderPool();
+}
+function clearPersona(){
+  const p=PERSONAS[curP]; personaSel[p.k]=[];
+  renderPool(); fb('fbMatch','info','已清空,为 '+p.name+' 重新挑选吧。');
+}
+function rateDev(p,k){
+  if(p.best&&p.best[k])return {mark:'✅ 非常对症',pts:2,why:p.best[k]};
+  if(p.ok&&p.ok[k])return {mark:'🟡 有点帮助',pts:1,why:p.ok[k]};
+  const why=(p.no&&p.no[k])||'这件设备和'+p.name+'的主要需求关系不大';
+  return {mark:'⚪ 不太对症',pts:0,why};
+}
+function checkMatch(){
+  const p=PERSONAS[curP], sel=personaSel[p.k];
+  if(sel.length<3){fb('fbMatch','bad','还差 '+(3-sel.length)+' 件没选。想想 '+p.name+' 的情况:'+p.desc);return;}
+  let score=0, lines=[];
+  sel.forEach(k=>{
+    const d=DEVPOOL.find(x=>x.k===k), r=rateDev(p,k);
+    score+=r.pts;
+    lines.push('<div class="matchline">'+d.ico+' <b>'+d.name+'</b> '+r.mark+'(+'+r.pts+'分)——'+r.why+'</div>');
+  });
+  addLog('匹配','为'+p.name+'推荐:'+sel.map(k=>DEVPOOL.find(x=>x.k===k).name).join('、')+',得分 '+score+'/6');
+  if(score>=5){
+    if(!personaPassed[p.k]){
+      personaPassed[p.k]=true; progress.match++;
+      $('bgMatch').textContent=progress.match;
+      if(progress.match>=3)setBadge(3);
+    }
+    renderPTabs();
+    fb('fbMatch','ok','🎉 匹配成功!得分 <b>'+score+'/6</b>。'+lines.join('')+(progress.match>=3?'<b>三位家人全部匹配成功,你是合格的智能家居设计顾问!</b>教材说得对:智能家居要按需求"量身定制"。':'继续为下一位家人设计吧!'));
+  }else{
+    fb('fbMatch','bad','得分 <b>'+score+'/6</b>,还不够对症(需要 5 分以上)。'+lines.join('')+'💪 根据上面的分析换掉不对症的设备,再试一次!也可以点「💡 分层提示」。');
+  }
+}
+function personaHint(){
+  const p=PERSONAS[curP];
+  personaHintLv[p.k]=Math.min(personaHintLv[p.k]+1,3);
+  const lv=personaHintLv[p.k];
+  const hs=[
+    '提示①:再读一遍'+p.name+'的情况,圈出关键词——'+p.desc,
+    '提示②:'+(p.k==='granny'?'奶奶的三大难题是:走动不便(谁替她跑腿?)、可能摔倒(谁来报警?)、忘关火(谁来监测?)。':(p.k==='dad'?'爸爸人在外地,他需要:一双"眼睛"看家、一扇"聪明的门"、一个"口袋里的遥控器"。':'小清需要:天黑有灯、进门不愁钥匙、写作业有帮手。')),
+    '提示③:最佳组合是:'+p.hint3+'。想一想每一件分别解决了'+p.name+'的哪个难题?'
+  ];
+  fb('fbMatch','info','💡 '+hs[lv-1]);
+}
+
+/* ============================================================
+   模块四:四维分析台
+============================================================ */
+let lastSys=null;
+function selfScoreChanged(){
+  ['sc1','sc2','sc3','sc4'].forEach(id=>{$(id+'Out').textContent=$(id).value;});
+  $('anaWhy').innerHTML='💬 自评分数改好了,点「📈 绘制雷达图」看看你的判断和系统评分差多少。分数低的维度就是要改进的方向!';
+}
+function calcSys(){
+  const reasons=[], tips=[];
+  // 便利性
+  const conv=Math.min(10,3+2*rules.length);
+  reasons.push('🛋️ 便利性 <b>'+conv+'</b> 分:你搭建了 '+rules.length+' 条自动化规则'+(rules.length?',家越来越"省心"':'——还没有规则,全靠手动操作,快去②规则工坊'));
+  // 能耗
+  let e=10; const eNotes=[];
+  const lightsOn=(home.liv.light?1:0)+(home.bed.light?1:0)+(home.kit.light?1:0);
+  if(env.light>=50&&lightsOn>0){e-=2*lightsOn;eNotes.push('白天开着 '+lightsOn+' 盏灯(自然光其实够用,-'+2*lightsOn+')');}
+  const acN=(home.liv.ac?1:0)+(home.bed.ac?1:0);
+  if(acN>0){e-=1.5*acN;eNotes.push(acN+' 台空调运行中(-'+1.5*acN+')');}
+  if(acN>0&&home.acTemp<22){e-=2;eNotes.push('空调设定 '+home.acTemp+'℃ 太低,更费电(-2)');}
+  if(rules.some(r=>r.act==='allLightOff')){e+=1;eNotes.push('有"自动关灯"规则(+1)');}
+  const energy=Math.max(0,Math.min(10,Math.round(e)));
+  reasons.push('⚡ 能耗 <b>'+energy+'</b> 分:'+(eNotes.length?eNotes.join(';'):'当前没有浪费电的地方,很棒'));
+  if(energy<7)tips.push('💡 <b>节能小账本:</b>3 盏 10 瓦的灯全天 24 小时开着,一天约耗电 0.72 度;改用"天黑才开灯"规则,每天只亮约 6 小时,只需 0.18 度,省下 75%!空调调到 26℃ 也比 20℃ 省电得多。');
+  // 安全
+  let s=3; const sNotes=['厨房装有燃气报警器(+3 基础分)'];
+  const hasGasRule=rules.some(r=>r.cond==='gas'&&r.act==='gasOff');
+  if(hasGasRule){s+=4;sNotes.push('有"燃气泄漏自动关阀报警"规则(+4)');}
+  if(rules.some(r=>r.cond==='leave')){s+=2;sNotes.push('有"主人离家"自动规则,离家更放心(+2)');}
+  if(home.gasLeak){s-=3;sNotes.push('⚠️ 当前正在燃气泄漏,还没处理(-3)');}
+  const safe=Math.max(0,Math.min(10,s));
+  reasons.push('🛡️ 安全 <b>'+safe+'</b> 分:'+sNotes.join(';'));
+  if(safe<7)tips.push('💡 <b>安全建议:</b>危险不会等人!去②规则工坊添加"当检测到燃气泄漏→关闭燃气阀并报警",让家 24 小时自动守护。');
+  // 可及性
+  let a=3; const aNotes=['基础分 3 分'];
+  if(rules.some(r=>r.cond==='dark'&&r.act==='livLightOn')){a+=3;aNotes.push('天黑自动开灯,老人小孩不用摸黑找开关(+3)');}
+  if(hasGasRule){a+=2;aNotes.push('危险自动处理,不依赖老人的记性和反应(+2)');}
+  if(rules.length>=3){a+=2;aNotes.push('自动化程度高,不会用手机的家人也能享受(+2)');}
+  const access=Math.max(0,Math.min(10,a));
+  reasons.push('👵 可及性 <b>'+access+'</b> 分:'+aNotes.join(';'));
+  if(access<7)tips.push('💡 <b>可及性建议:</b>好的智能家居老人小孩也要会用——多一些"自动"规则、语音控制,少一些复杂的APP操作。');
+  return {conv,energy,safe,access,reasons,tips};
+}
+function sysScore(){
+  lastSys=calcSys();
+  $('sysRows').innerHTML='<h3 style="margin-top:12px">🖥 系统评分依据</h3>'+lastSys.reasons.map(r=>'<div class="scoreRow"><span>'+r+'</span></div>').join('');
+  $('anaWhy').innerHTML='💬 '+(lastSys.tips.length?lastSys.tips.join('<br>'):'👏 四个维度都很棒!你的智能屋既省心、省电,又安全、人人会用。');
+  addLog('分析','系统四维评分:便利'+lastSys.conv+' / 能耗'+lastSys.energy+' / 安全'+lastSys.safe+' / 可及'+lastSys.access);
+  fb('fb4','info','评分完成!系统是根据你①体验屋的设备状态和②工坊的规则算出来的——回去改进后再评一次,分数会变哦。现在点「📈 绘制雷达图」。');
+}
+function drawRadar(){
+  if(!lastSys)lastSys=calcSys();
+  const cv=$('radarCv'); if(!cv||!cv.getContext)return;
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2+8,R=Math.min(W,H)/2-56;
+  ctx.clearRect(0,0,W,H);
+  const axes=['🛋️ 便利性','⚡ 能耗','🛡️ 安全','👵 可及性'];
+  const sys=[lastSys.conv,lastSys.energy,lastSys.safe,lastSys.access];
+  const self=[+$('sc1').value,+$('sc2').value,+$('sc3').value,+$('sc4').value];
+  const ang=i=>-Math.PI/2+i*Math.PI/2;
+  // 网格
+  ctx.strokeStyle='#d8dcf0'; ctx.fillStyle='#8a93b5'; ctx.font='12px sans-serif';
+  for(let ring=1;ring<=5;ring++){
+    ctx.beginPath();
+    for(let i=0;i<=4;i++){const a=ang(i%4),r=R*ring/5;
+      const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+    ctx.stroke();
+  }
+  ctx.textAlign='center';
+  for(let i=0;i<4;i++){
+    const a=ang(i);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a)); ctx.stroke();
+    ctx.fillStyle='#26304b'; ctx.font='bold 14px sans-serif';
+    ctx.fillText(axes[i],cx+(R+30)*Math.cos(a),cy+(R+26)*Math.sin(a)+5);
+  }
+  ctx.fillStyle='#8a93b5'; ctx.font='11px sans-serif';
+  ctx.fillText('10',cx+8,cy-R-2); ctx.fillText('5',cx+8,cy-R/2);
+  // 多边形
+  function poly(vals,stroke,fill){
+    ctx.beginPath();
+    for(let i=0;i<=4;i++){const a=ang(i%4),r=R*vals[i%4]/10;
+      const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+    ctx.closePath();
+    ctx.fillStyle=fill; ctx.fill();
+    ctx.strokeStyle=stroke; ctx.lineWidth=2.5; ctx.stroke();
+    for(let i=0;i<4;i++){const a=ang(i),r=R*vals[i]/10;
+      ctx.beginPath(); ctx.arc(cx+r*Math.cos(a),cy+r*Math.sin(a),4,0,Math.PI*2);
+      ctx.fillStyle=stroke; ctx.fill();}
+  }
+  poly(sys,'#8b5cf6','rgba(139,92,246,.20)');
+  poly(self,'#f59e0b','rgba(245,158,11,.14)');
+  // 图例
+  ctx.textAlign='left'; ctx.font='bold 13px sans-serif';
+  ctx.fillStyle='#8b5cf6'; ctx.fillRect(14,14,14,14);
+  ctx.fillStyle='#26304b'; ctx.fillText('系统评分 '+sys.join('/'),34,26);
+  ctx.fillStyle='#f59e0b'; ctx.fillRect(14,36,14,14);
+  ctx.fillStyle='#26304b'; ctx.fillText('我的自评 '+self.join('/'),34,48);
+  if(!progress.b4){progress.b4=true;setBadge(4);}
+  const diffs=axes.map((n,i)=>Math.abs(sys[i]-self[i]));
+  const maxDiff=Math.max.apply(null,diffs);
+  const di=diffs.indexOf(maxDiff);
+  fb('fb4','ok','📈 雷达图画好了!'+(maxDiff>=3?'你的自评和系统评分在「'+axes[di]+'」上差了 '+maxDiff+' 分——去看看系统的评分依据,想想谁更有道理?':'你的自评和系统评分很接近,说明你对自己的设计心里有数,厉害!')+' 记得:能耗和安全分低的话,按建议改进后<b>重新评分</b>,亲眼看到雷达图变大!');
+  addLog('分析','绘制四维雷达图');
+}
+
+/* ============================================================
+   模块五:报告 / 日志 / 本机数据
+============================================================ */
+function refreshStats(){
+  $('sDev').textContent=track.devClicks;
+  $('sRule').textContent=rules.length;
+  $('sFire').textContent=fireCount;
+  $('sMatch').textContent=progress.match+'/3';
+  const sc=lastSys?(lastSys.conv+lastSys.energy+lastSys.safe+lastSys.access)+'/40':'—';
+  $('sScore').textContent=sc;
+  $('sLog').textContent=logRows.length;
+}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function reportHTML(){
+  const f=id=>esc($(id).value.trim()||'(还没有填写)');
+  const sys=lastSys||calcSys();
+  const devRows=[
+    ['客厅','智能灯('+(home.liv.light?'开':'关')+')、电动窗帘、智能空调、扫地机器人、智能音箱'],
+    ['卧室','智能灯、电动窗帘、智能空调'],
+    ['厨房','智能灯、智能燃气阀、燃气报警器、智能冰箱'],
+  ].map(r=>'<tr><td>'+r[0]+'</td><td style="text-align:left">'+r[1]+'</td></tr>').join('');
+  const ruleRows=rules.length?rules.map(r=>'<tr><td>当'+condName(r.cond)+'</td><td>'+actName(r.act)+'</td><td>'+r.count+' 次</td></tr>').join(''):'<tr><td colspan="3">(还没有搭建规则)</td></tr>';
+  const matchRows=PERSONAS.map(p=>{
+    const sel=personaSel[p.k];
+    return '<tr><td>'+p.ico+' '+p.name+'</td><td style="text-align:left">'+(sel.length?sel.map(k=>DEVPOOL.find(x=>x.k===k).name).join('、'):'(未选择)')+'</td><td>'+(personaPassed[p.k]?'✅ 匹配成功':'未完成')+'</td></tr>';}).join('');
+  return '<div style="font-family:sans-serif;max-width:760px;margin:auto">'+
+  '<h1 style="color:#6d34e8">🏠 我的未来之家畅想报告</h1>'+
+  '<p>课程:清华版《信息科技》五年级下册 第3单元第1课《走进智能家居——畅想未来生活》 | 生成时间:'+new Date().toLocaleString()+'</p>'+
+  '<h2>一、我的智能屋设备清单</h2>'+
+  '<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;width:100%"><tr><th>房间</th><th>智能设备</th></tr>'+devRows+'</table>'+
+  '<h2>二、我的自动化规则(当……就……)</h2>'+
+  '<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;width:100%"><tr><th>条件</th><th>动作</th><th>已触发</th></tr>'+ruleRows+'</table>'+
+  '<h2>三、为家人推荐的设备</h2>'+
+  '<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;width:100%"><tr><th>家人</th><th>推荐设备</th><th>结果</th></tr>'+matchRows+'</table>'+
+  '<h2>四、四维分析</h2>'+
+  '<ul><li>🛋️ 便利性:'+sys.conv+'/10</li><li>⚡ 能耗:'+sys.energy+'/10</li><li>🛡️ 安全:'+sys.safe+'/10</li><li>👵 可及性:'+sys.access+'/10</li>'+
+  '<li>我的自评:便利'+$('sc1').value+' / 能耗'+$('sc2').value+' / 安全'+$('sc3').value+' / 可及'+$('sc4').value+'</li></ul>'+
+  '<h2>五、我最想要的三个功能和原因</h2><p>'+f('d1')+'</p>'+
+  '<h2>六、我的智能屋帮助了谁</h2><p>'+f('d2')+'</p>'+
+  '<h2>七、我的畅想:未来的智能家居</h2><p>'+f('d3')+'</p>'+
+  '<p style="color:#888">统计:设备操作 '+track.devClicks+' 次 · 规则触发 '+fireCount+' 次 · 需求匹配 '+progress.match+'/3 · 本报告由离线体验馆生成,示例数据均为虚构</p></div>';
+}
+function genReport(){
+  const empty=['d1','d2','d3'].filter(id=>!$(id).value.trim());
+  if(empty.length){fb('fb5','bad','还有 '+empty.length+' 个畅想空没填呢!把你这节课的发现和奇思妙想写进去,报告才是独一无二的。');}
+  else{fb('fb5','ok','✅ 报告已生成!检查一下预览,满意就点「导出报告」保存到电脑,还可以打印出来贴在教室里。');
+    if(!progress.b5){progress.b5=true;setBadge(5);}}
+  $('reportPreview').innerHTML='<div class="card" style="margin-top:12px">'+reportHTML()+'</div>';
+  refreshStats();
+  addLog('报告','生成畅想报告预览');
+}
+function exportReport(){
+  downloadFile('我的未来之家畅想报告.html','<!DOCTYPE html><html><head><meta charset="utf-8"><title>我的未来之家畅想报告</title></head><body>'+reportHTML()+'</body></html>','text/html');
+}
+function renderLog(){
+  $('logCount').textContent=logRows.length;
+  $('logBody').innerHTML=logRows.length?logRows.slice().reverse().map((r,i)=>
+    '<tr><td>'+(logRows.length-i)+'</td><td>'+r.time+'</td><td>'+r.type+'</td><td style="text-align:left">'+r.content+'</td><td>'+r.env+'</td></tr>').join('')
+    :'<tr><td colspan="5" style="color:#5c6a86">暂无记录</td></tr>';
+}
+function exportCSV(){
+  const head='序号,模拟时间,类型,内容,环境\n';
+  const body=logRows.map((r,i)=>[i+1,r.time,r.type,r.content,r.env].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  downloadFile('智能家居体验馆操作日志.csv','\ufeff'+head+body,'text/csv');
+}
+function clearLog(){logRows=[];renderLog();refreshStats();}
+
+const LS_KEY='u3l1_home_lab';
+function projectData(){
+  return {ver:1,
+    dreams:{d1:$('d1').value,d2:$('d2').value,d3:$('d3').value},
+    selfScores:{sc1:$('sc1').value,sc2:$('sc2').value,sc3:$('sc3').value,sc4:$('sc4').value},
+    rules:rules.map(r=>({cond:r.cond,act:r.act,count:r.count})),
+    personaSel,personaPassed,progress,track:{devClicks:track.devClicks,devSet:track.devSet,envAdjust:track.envAdjust},
+    fireCount,ffDone,log:logRows.slice(-120)};
+}
+function applyProject(d){
+  try{
+    if(d.dreams)['d1','d2','d3'].forEach(k=>{$(k).value=d.dreams[k]||'';});
+    if(d.selfScores){['sc1','sc2','sc3','sc4'].forEach(k=>{$(k).value=d.selfScores[k]||5;$(k+'Out').textContent=$(k).value;});}
+    if(Array.isArray(d.rules)){
+      rules=d.rules.filter(r=>CONDS.some(c=>c.k===r.cond)&&ACTS.some(a=>a.k===r.act))
+        .map(r=>({cond:r.cond,act:r.act,count:r.count||0}));
+      renderRules();
+    }
+    if(d.personaSel)PERSONAS.forEach(p=>{if(Array.isArray(d.personaSel[p.k]))personaSel[p.k]=d.personaSel[p.k].filter(k=>DEVPOOL.some(x=>x.k===k)).slice(0,3);});
+    if(d.personaPassed)PERSONAS.forEach(p=>{personaPassed[p.k]=!!d.personaPassed[p.k];});
+    if(d.progress)Object.assign(progress,d.progress);
+    if(d.track){track.devClicks=d.track.devClicks||0;track.devSet=d.track.devSet||{};track.envAdjust=d.track.envAdjust||0;}
+    if(typeof d.fireCount==='number')fireCount=d.fireCount;
+    ffDone=!!d.ffDone;
+    if(Array.isArray(d.log))logRows=d.log;
+    progress.match=PERSONAS.filter(p=>personaPassed[p.k]).length;
+    $('bgMatch').textContent=progress.match;
+    if(progress.b1)setBadge(1); if(progress.b2)setBadge(2);
+    if(progress.match>=3)setBadge(3); if(progress.b4)setBadge(4); if(progress.b5)setBadge(5);
+    renderPTabs(); openPersona(curP); refreshStats(); renderLog();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('智能家居体验馆项目进度.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 项目导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的项目文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'), raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderChips(); renderRules(); renderPTabs(); openPersona(0);
+  initPrevCond();
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  render(); refreshStats();
+  addLog('系统','体验馆启动,欢迎来到未来之家!');
+})();
+</script>
+</body>
+</html>
