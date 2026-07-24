@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物联网连接与消息流模拟器 · 单元1第2课 智能穿戴设备与物联网——物物相联的实现过程</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6; --teal:#0e9f9f;
+    --bg:#eef4fb; --card:#ffffff; --ink:#20344b; --ink-2:#5b7186;
+    --line:#d9e4f0; --soft:#f2f7fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#1a5cb8,#8b5cf6); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(20,60,120,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--green-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--blue);}
+  nav button.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(30,60,110,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--blue); border:2px solid var(--blue);}
+  .btn.gray{background:#8aa0b5;}
+  .btn:disabled{background:#c4d2df; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#e8f1fd; border:1px solid var(--blue); color:var(--blue-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+  /* ---------- 模块一:链路拼装 ---------- */
+  .pool{display:flex; flex-wrap:wrap; gap:10px; padding:12px; background:var(--soft); border-radius:12px; min-height:74px;}
+  .comp{border:2px solid var(--line); background:#fff; border-radius:12px; padding:10px 14px; font-size:15px; font-weight:700; cursor:pointer; user-select:none; transition:.15s; text-align:center;}
+  .comp .ico{font-size:26px; display:block;}
+  .comp:hover{border-color:var(--blue); transform:translateY(-2px);}
+  .comp.sel{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 3px #fde9c2;}
+  .topo{display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin:14px 0; justify-content:center;}
+  .slot{width:150px; min-height:92px; border:2.5px dashed #9db8d4; border-radius:12px; background:var(--soft); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; padding:6px; text-align:center; transition:.15s;}
+  .slot .hint{color:var(--ink-2); font-size:13px;}
+  .slot.filled{border-style:solid; border-color:var(--blue); background:#fff;}
+  .slot.right{border-color:var(--green); background:#e7f9ef;}
+  .slot.wrong{border-color:var(--red); background:#fdeaea; animation:shake .3s;}
+  @keyframes shake{25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+  .arrow{font-size:22px; color:var(--blue); font-weight:900;}
+  .layers{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .layer{flex:1; min-width:180px; border-radius:12px; padding:10px 12px; font-size:14px; color:#fff;}
+  .layer b{display:block; font-size:15px;}
+  /* ---------- 模块二:数据包旅行 ---------- */
+  .lab{display:grid; grid-template-columns:270px 1fr 290px; gap:14px;}
+  @media(max-width:1100px){.lab{grid-template-columns:1fr;}}
+  .watchface{width:150px; height:170px; margin:6px auto; background:#20344b; border-radius:30px; border:6px solid #47617e; color:#9fe3bd; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;}
+  .watchface .hr{font-size:34px; font-weight:900; color:#ffd166;}
+  .watchface .beat{font-size:24px; animation:beat 1s infinite;}
+  @keyframes beat{0%,100%{transform:scale(1);}25%{transform:scale(1.25);}}
+  .statebox{background:var(--soft); border-radius:10px; padding:8px 12px; margin-top:8px; font-size:14px; text-align:left;}
+  .statebox b{color:var(--blue-d);}
+  .pipe-wrap{position:relative; padding:6px 0 2px;}
+  .pipe{display:flex; justify-content:space-between; position:relative; margin:10px 6px 2px;}
+  .pipe::before{content:""; position:absolute; top:34px; left:38px; right:38px; height:6px; background:repeating-linear-gradient(90deg,#bcd4ee 0 14px,#e3eefb 14px 24px); border-radius:3px;}
+  .node{width:82px; text-align:center; position:relative; z-index:2;}
+  .node .nico{width:62px; height:62px; margin:0 auto; background:#fff; border:3px solid var(--line); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:30px; transition:.2s;}
+  .node.active .nico{border-color:var(--green); box-shadow:0 0 0 4px #d8f5e5;}
+  .node.err .nico{border-color:var(--red); background:#fdeaea;}
+  .node small{display:block; font-size:12.5px; font-weight:700; margin-top:4px;}
+  .node .st{font-size:11.5px; color:var(--ink-2); display:block;}
+  .ltag{display:inline-block; font-size:10.5px; color:#fff; border-radius:8px; padding:1px 6px; margin-top:2px;}
+  .msg-dot{position:absolute; top:20px; z-index:3; font-size:13px; font-weight:700; background:var(--orange); color:#fff; border-radius:14px; padding:3px 9px; transition:left .5s linear; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .msg-dot.lost{background:var(--red); text-decoration:line-through; opacity:.6;}
+  .msg-dot.done{background:var(--green);}
+  .msglist{max-height:150px; overflow:auto; font-size:13.5px; background:var(--soft); border-radius:10px; padding:8px 10px; margin-top:10px;}
+  .msglist div{padding:2px 0; border-bottom:1px dashed var(--line);}
+  .msglist .s-ok{color:var(--green-d);} .msglist .s-bad{color:var(--red);} .msglist .s-wait{color:#b45309;}
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--blue-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--blue); height:26px;}
+  .runbar{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;}
+  .clock{font-size:15px; background:#20344b; color:#9fe3bd; font-weight:700; border-radius:10px; padding:6px 12px; display:inline-block; margin-bottom:6px; font-family:monospace;}
+  .why{background:#eef7ff; border-left:4px solid var(--blue); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  /* ---------- 模块三:在线/离线对比 ---------- */
+  .switch{display:flex; align-items:center; gap:10px; margin-top:10px; font-weight:700; font-size:15px;}
+  .switch input{width:44px; height:24px; accent-color:var(--green); cursor:pointer;}
+  .cmpflow{display:flex; align-items:stretch; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:12px;}
+  .devbox{flex:1; min-width:220px; border:2px solid var(--line); border-radius:14px; padding:12px; text-align:center; background:#fff; transition:.2s;}
+  .devbox h4{font-size:15.5px; margin-bottom:6px;}
+  .devbox .big{font-size:38px;}
+  .devbox.flash{border-color:var(--green); box-shadow:0 0 0 4px #d8f5e5;}
+  .devbox.warn{border-color:var(--orange); background:#fff8e7;}
+  .flowarrow{display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:24px; font-weight:900; color:var(--green); min-width:56px;}
+  .flowarrow small{font-size:11px; font-weight:700;}
+  .flowarrow.cut{color:var(--red);}
+  .reclist{max-height:110px; overflow:auto; font-size:13px; background:var(--soft); border-radius:8px; padding:6px 8px; margin-top:6px; text-align:left;}
+  .reclist div{border-bottom:1px dashed var(--line); padding:1px 0;}
+  .cmptable{width:100%; border-collapse:collapse; font-size:14px; margin-top:10px;}
+  .cmptable th,.cmptable td{border:1px solid var(--line); padding:7px 8px; text-align:center;}
+  .cmptable th{background:var(--soft);}
+  .tick-ok{color:var(--green-d); font-weight:700;}
+  .tick-no{color:var(--red); font-weight:700;}
+  /* ---------- 模块四:排查诊所 ---------- */
+  .case-tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+  .case-tabs button{border:2px solid var(--line); background:#fff; border-radius:10px; padding:8px 14px; font-size:14.5px; font-weight:700; cursor:pointer;}
+  .case-tabs button.on{background:var(--purple); border-color:var(--purple); color:#fff;}
+  .case-tabs button.solved::after{content:" ✅";}
+  .checkline{display:flex; align-items:center; gap:8px; background:var(--soft); border-radius:10px; padding:8px 12px; margin:6px 0; font-size:14.5px; flex-wrap:wrap;}
+  .checkline .res{margin-left:auto; font-weight:700;}
+  .opt{display:block; width:100%; text-align:left; border:2px solid var(--line); background:#fff; border-radius:10px; padding:10px 14px; margin:6px 0; font-size:15px; cursor:pointer; transition:.15s;}
+  .opt:hover{border-color:var(--purple);}
+  .opt.right{border-color:var(--green); background:#e7f9ef;}
+  .opt.wrong{border-color:var(--red); background:#fdeaea;}
+  /* ---------- 日志/报告 ---------- */
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{border:1px solid var(--line); padding:6px 8px; text-align:center;}
+  th{background:var(--soft);}
+  .logwrap{max-height:320px; overflow:auto; border-radius:10px; border:1px solid var(--line);}
+  textarea{width:100%; min-height:74px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  textarea:focus{outline:none; border-color:var(--blue);}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:24px; color:var(--blue-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  pre.saved{background:#20344b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>⌚ 物联网连接与消息流模拟器</h1>
+  <p>清华版《信息科技》五年级下册 · 第1单元 第2课 智能穿戴设备与物联网——物物相联的实现过程(教材 P12—20)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 链路拼装</span>
+    <span class="badge" id="bg2">② 数据包送达</span>
+    <span class="badge" id="bg3">③ 在线离线对比</span>
+    <span class="badge" id="bg4">④ 连接排查 <span id="bgFix">0</span>/4</span>
+    <span class="badge" id="bg5">⑤ 成果报告</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">🧩 ① 链路拼装</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">📦 ② 数据包旅行</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">🔀 ③ 在线离线对比</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">🔧 ④ 连接排查诊所</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">📋 ⑤ 实验日志</button>
+  <button data-tab="t6" onclick="showTab('t6',this)">📑 ⑥ 成果报告</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:物物相联链路拼装 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>🧩 任务一:拼出"物物相联"的完整链路</h2>
+    <div class="task"><b>任务:</b>智能手表测出的心率,是怎样一步步跑到爸爸妈妈的手机上的?请<b>先点击下方零件卡片选中它</b>,再<b>点击上方对应的空位</b>放进去,拼出完整链路。放错了?再点一下空位就能取回来。</div>
+    <div class="topo">
+      <div class="slot" data-slot="body" onclick="slotClick(this)"><span class="hint">数据的源头<br>(心跳、脚步、体温…)</span></div>
+      <span class="arrow">→</span>
+      <div class="slot" data-slot="sensor" onclick="slotClick(this)"><span class="hint">感知信息的<br>"感觉器官"</span></div>
+      <span class="arrow">→</span>
+      <div class="slot" data-slot="watch" onclick="slotClick(this)"><span class="hint">戴在手腕上的<br>智能终端</span></div>
+      <span class="arrow">→</span>
+      <div class="slot" data-slot="net" onclick="slotClick(this)"><span class="hint">信息的无线<br>"高速公路"</span></div>
+      <span class="arrow">→</span>
+      <div class="slot" data-slot="platform" onclick="slotClick(this)"><span class="hint">存储、分析数据的<br>"云端大脑"</span></div>
+      <span class="arrow">→</span>
+      <div class="slot" data-slot="phone" onclick="slotClick(this)"><span class="hint">查看结果的<br>用户端</span></div>
+    </div>
+    <h3>零件仓库(有 2 个零件是多余的干扰项哦!)</h3>
+    <div class="pool" id="pool"></div>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="checkChain()">✅ 检查链路</button>
+      <button class="btn ghost" onclick="chainHint()">💡 看提示</button>
+      <button class="btn gray" onclick="resetChain()">🔄 重新拼装</button>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+  <div class="card">
+    <h2>📖 物联网的四层"积木"</h2>
+    <p>物联网就是把不同的物体通过网络连起来,让物与物能互相"沟通"。按照数据的<b>采集 → 传输 → 处理 → 应用</b>流程,物联网可以分成四层。拼对链路后,看看每个环节属于哪一层:</p>
+    <div class="layers">
+      <div class="layer" style="background:#2eb872"><b>感知控制层</b>传感器像"感觉器官",获取心率、运动、温度等信息</div>
+      <div class="layer" style="background:#2b7de9"><b>数据传输层</b>无线网络把感知到的数据传到互联网上</div>
+      <div class="layer" style="background:#8b5cf6"><b>数据处理层</b>物联网平台存储、查询、分析海量数据</div>
+      <div class="layer" style="background:#f59e0b"><b>应用决策层</b>把分析结果变成对人有用的服务,显示在用户端</div>
+    </div>
+    <p style="margin-top:8px"><span class="pill">感知</span><span class="pill">联网</span><span class="pill">发送</span><span class="pill">接收</span><span class="pill">处理</span><span class="pill">应用</span></p>
+  </div>
+</section>
+
+<!-- ================= 模块二:数据包旅行动画 ================= -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>📦 任务二:护送心率数据包去旅行</h2>
+    <div class="task"><b>任务A:</b>点「📤 发送一次心率数据」,再用「⏭ 单步」一步步护送数据包,观察它经过的每一站。<br><b>任务B:</b>点「▶ 运行」打开自动采样,试着把<b>信号强度调低</b>、把<b>采样频率调快</b>,比较数据包的速度和"存活率"有什么变化。</div>
+    <div class="lab">
+      <!-- 左:虚拟手表 -->
+      <div class="card" style="margin:0; text-align:center">
+        <h3>虚拟智能手表(示例数据)</h3>
+        <div class="watchface">
+          <span class="beat">💓</span>
+          <span class="hr" id="hrNow">78</span>
+          <span style="font-size:13px">次/分</span>
+        </div>
+        <div class="statebox">佩戴者(虚构):小图同学<br>状态:<b id="actState">安静休息</b></div>
+        <div class="statebox">已发送:<b id="sentN">0</b> 个数据包<br>成功送达:<b id="dlvN">0</b> 个 | 丢失:<b id="lostN">0</b> 个</div>
+      </div>
+      <!-- 中:消息管道 -->
+      <div class="card" style="margin:0">
+        <h3>数据包旅行路线(看得见的物物相联)</h3>
+        <div class="clock" id="clock">第 1 天 08:00</div>
+        <div class="pipe-wrap">
+          <div class="pipe" id="pipe">
+            <div class="node" id="n0"><div class="nico">🏃</div><small>人体</small><span class="st" id="st0">心跳中</span><span class="ltag" style="background:#8aa0b5">数据来源</span></div>
+            <div class="node" id="n1"><div class="nico">🩺</div><small>心率传感器</small><span class="st" id="st1">正常</span><span class="ltag" style="background:#2eb872">感知控制层</span></div>
+            <div class="node" id="n2"><div class="nico">⌚</div><small>智能手表</small><span class="st" id="st2">待命</span><span class="ltag" style="background:#2eb872">感知控制层</span></div>
+            <div class="node" id="n3"><div class="nico">📶</div><small>无线网络</small><span class="st" id="st3">信号满格</span><span class="ltag" style="background:#2b7de9">数据传输层</span></div>
+            <div class="node" id="n4"><div class="nico">☁️</div><small>物联网平台</small><span class="st" id="st4">已存 0 条</span><span class="ltag" style="background:#8b5cf6">数据处理层</span></div>
+            <div class="node" id="n5"><div class="nico">📱</div><small>手机应用</small><span class="st" id="st5">已收 0 条</span><span class="ltag" style="background:#f59e0b">应用决策层</span></div>
+          </div>
+        </div>
+        <div class="why" id="why">💬 点「📤 发送一次心率数据」,看橙色数据包沿线路逐站前进:采集 → 打包 → 无线发送 → 平台存储 → 推送到手机。</div>
+        <h3 style="margin-top:10px">数据包状态表</h3>
+        <div class="msglist" id="msglist"><div style="color:#5b7186">暂无数据包</div></div>
+      </div>
+      <!-- 右:控制面板 -->
+      <div class="card ctl" style="margin:0">
+        <h3>🎮 控制面板</h3>
+        <div class="runbar">
+          <button class="btn green small" id="btnRun" onclick="toggleRun()">▶ 运行</button>
+          <button class="btn orange small" onclick="stepOnce()">⏭ 单步</button>
+          <button class="btn gray small" onclick="resetSim()">🔄 重置</button>
+          <button class="btn ghost small" onclick="loadExample()">📖 恢复教材示例</button>
+        </div>
+        <button class="btn" style="width:100%; margin-top:10px" onclick="sendOnce()">📤 发送一次心率数据</button>
+        <label><span>模拟速度</span><output id="spdOut">中</output></label>
+        <input type="range" id="spd" min="1" max="3" value="2" oninput="setSpeed()">
+        <hr style="border:none; border-top:1px dashed var(--line); margin:12px 0">
+        <label><span>采样频率(自动测量间隔)</span><output id="freqOut">每5分钟一次</output></label>
+        <input type="range" id="freq" min="1" max="10" value="5" oninput="paramChanged('采样频率','freq')">
+        <label><span>网络信号强度</span><output id="sigOut">5格</output></label>
+        <input type="range" id="sig" min="1" max="5" value="5" oninput="paramChanged('信号强度','sig')">
+        <label><span>运动强度(虚构示例)</span><output id="actOut">安静休息</output></label>
+        <input type="range" id="act" min="1" max="3" value="1" oninput="paramChanged('运动强度','act')">
+        <div class="why" id="paramWhy" style="min-height:34px">💬 试着修改参数,这里会解释它带来的变化。</div>
+      </div>
+    </div>
+    <div class="feedback" id="fb2"></div>
+  </div>
+</section>
+
+<!-- ================= 模块三:在线/离线对比实验 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>🔀 任务三:联网和不联网,差别有多大?</h2>
+    <div class="task"><b>任务:</b>按 3 步做实验——① 联网状态下点几次「测量心率」,看数据怎样同步到云端和家人手机;② 关掉「联网开关」再测几次,看数据被"困"在哪里;③ 重新打开联网,观察囤积的数据<b>补传</b>到云端。三步都完成就能点亮徽章!</div>
+    <div class="switch"><input type="checkbox" id="onlineSw" checked onchange="toggleOnline()"><span>📡 联网开关(现在:<b id="onlineTxt">在线</b>)</span></div>
+    <div style="margin-top:8px">
+      <button class="btn green" onclick="measureOnce()">🩺 测量一次心率</button>
+    </div>
+    <div class="cmpflow">
+      <div class="devbox" id="boxWatch">
+        <h4>⌚ 智能手表(本机)</h4>
+        <div class="big">⌚</div>
+        <div>本机存储:<b id="localN">0</b> 条</div>
+        <div>待同步:<b id="pendN">0</b> 条</div>
+        <div class="reclist" id="localList"><div style="color:#5b7186">还没有测量记录</div></div>
+      </div>
+      <div class="flowarrow" id="arrow1"><span id="arrow1Ico">⇒</span><small id="arrow1Txt">同步中</small></div>
+      <div class="devbox" id="boxCloud">
+        <h4>☁️ 物联网平台(云端)</h4>
+        <div class="big">☁️</div>
+        <div>云端已存:<b id="cloudN">0</b> 条</div>
+        <div>状态:<b id="cloudSt">等待数据</b></div>
+      </div>
+      <div class="flowarrow" id="arrow2"><span id="arrow2Ico">⇒</span><small id="arrow2Txt">推送中</small></div>
+      <div class="devbox" id="boxFam">
+        <h4>📱 家人的手机</h4>
+        <div class="big">📱</div>
+        <div>看到的心率:<b id="famHr">——</b></div>
+        <div>状态:<b id="famSt">等待数据</b></div>
+      </div>
+    </div>
+    <div class="why" id="why3">💬 现在是<b>在线</b>模式:每测一次,数据都会立刻同步到云端,家人马上能看到。</div>
+    <h3>对比小结(做过的实验会自动打勾)</h3>
+    <table class="cmptable">
+      <thead><tr><th>观察项</th><th>在线模式 <span id="expOn">(未体验)</span></th><th>离线模式 <span id="expOff">(未体验)</span></th></tr></thead>
+      <tbody>
+        <tr><td>数据存到本机</td><td class="tick-ok">✔ 会</td><td class="tick-ok">✔ 会</td></tr>
+        <tr><td>数据同步到云端</td><td class="tick-ok">✔ 立刻同步</td><td class="tick-no">✘ 只能排队等待</td></tr>
+        <tr><td>家人手机能看到</td><td class="tick-ok">✔ 马上可见</td><td class="tick-no">✘ 看不到新数据</td></tr>
+        <tr><td>恢复联网后</td><td>—</td><td class="tick-ok">✔ 待同步数据会补传</td></tr>
+      </tbody>
+    </table>
+    <div class="feedback" id="fb3"></div>
+  </div>
+</section>
+
+<!-- ================= 模块四:连接排查诊所 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>🔧 任务四:手表连不上了,当一次连接小医生!</h2>
+    <div class="task"><b>任务:</b>4 块智能手表遇到了不同的连接故障。请按 3 步排查:① 读症状 → ② 点击检查项收集线索 → ③ 判断故障原因并选修复方法。修好一块点亮一颗 ✅!</div>
+    <div class="case-tabs" id="caseTabs"></div>
+    <div id="caseBody"></div>
+  </div>
+</section>
+
+<!-- ================= 模块五:实验日志 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>📋 实验数据日志</h2>
+    <div class="task"><b>说明:</b>模拟器会自动记录每个数据包、每次测量和每个排查动作。这些记录只保存在你自己的电脑里,可以随时导出或清空。</div>
+    <div style="margin-bottom:10px">
+      <button class="btn small" onclick="renderLog()">🔄 刷新</button>
+      <button class="btn green small" onclick="exportCSV()">📥 导出日志(CSV)</button>
+      <button class="btn red small" onclick="clearLog()">🗑 清空日志</button>
+      <span class="pill">共 <b id="logCount">0</b> 条记录</span>
+    </div>
+    <div class="logwrap">
+      <table>
+        <thead><tr><th>模拟时间</th><th>类型</th><th>内容</th><th>心率</th><th>结果</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="5" style="color:#5b7186">暂无记录,去②号实验室发数据包吧!</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 模块六:成果报告 ================= -->
+<section class="tab" id="t6">
+  <div class="card">
+    <h2>📑 任务五:生成我的实验报告</h2>
+    <div class="task"><b>任务:</b>下面的数据是模拟器自动统计的,请把 3 个空填完整,然后点「生成报告」,这就是你这节课的学习成果!</div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="sSent">0</b><span>发送数据包总数</span></div>
+      <div class="stat"><b id="sDlv">0</b><span>成功送达数</span></div>
+      <div class="stat"><b id="sLost">0</b><span>丢失数据包数</span></div>
+      <div class="stat"><b id="sAvg">—</b><span>平均心率(示例)</span></div>
+      <div class="stat"><b id="sSync">0</b><span>离线补传条数</span></div>
+      <div class="stat"><b id="sFix">0/4</b><span>修好的连接故障</span></div>
+    </div>
+    <h3>1️⃣ 物物相联过程我来说(数据从身体到手机经过了哪几站?各属于哪一层?)</h3>
+    <textarea id="r1" placeholder="例:心率传感器感知心跳(感知控制层),智能手表把数据打包,通过无线网络发送(数据传输层),物联网平台存储分析(数据处理层),最后推送到手机应用显示(应用决策层)。"></textarea>
+    <h3>2️⃣ 我发现的连接问题与解决办法</h3>
+    <textarea id="r2" placeholder="例:信号强度只有1格时,数据包经常半路丢失;靠近路由器或换更强的网络就好了。蓝牙没开时手表和手机根本连不上,打开蓝牙重新配对就修好了。"></textarea>
+    <h3>3️⃣ 调整参数的发现(采样频率、信号强度改变后有什么不同?)</h3>
+    <textarea id="r3" placeholder="例:把采样频率调成每1分钟一次,数据更及时,但数据包一下子多了很多;信号调到满格后,数据包又快又稳,一个也没丢。"></textarea>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genReport()">📄 生成报告预览</button>
+      <button class="btn" onclick="exportReport()">📥 导出报告(HTML文件)</button>
+    </div>
+    <div class="feedback" id="fb6"></div>
+    <div id="reportPreview"></div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出项目(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入项目</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>物联网连接与消息流模拟器 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态
+============================================================ */
+const $=id=>document.getElementById(id);
+const progress={chain:false,packet:false,compare:false,fix:0,report:false};
+let logRows=[];   // {time,type,content,hr,result}
+let stats={sent:0,dlv:0,lost:0,hrSum:0,hrN:0,synced:0};
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t5')renderLog();
+  if(id==='t6')refreshStats();
+}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function fb(id,cls,html){const e=$(id);e.className='feedback '+cls;e.innerHTML=html;}
+
+/* ============================================================
+   模块一:物物相联链路拼装(点击选择→点击放置)
+============================================================ */
+const COMPS=[
+  {k:'body',ico:'🏃',name:'人体与环境'},
+  {k:'sensor',ico:'🩺',name:'心率传感器'},
+  {k:'watch',ico:'⌚',name:'智能手表'},
+  {k:'net',ico:'📶',name:'无线网络'},
+  {k:'platform',ico:'☁️',name:'物联网平台'},
+  {k:'phone',ico:'📱',name:'手机应用(用户端)'},
+  {k:'printer',ico:'🖨️',name:'打印机'},
+  {k:'game',ico:'🎮',name:'游戏机'},
+];
+let selComp=null, chainHintLv=0;
+function renderPool(){
+  const pool=$('pool'); pool.innerHTML='';
+  const placed=[...document.querySelectorAll('.slot')].map(s=>s.dataset.has).filter(Boolean);
+  COMPS.filter(c=>!placed.includes(c.k)).sort(()=>Math.random()-.5).forEach(c=>{
+    const d=document.createElement('div'); d.className='comp'; d.dataset.k=c.k;
+    d.innerHTML=`<span class="ico">${c.ico}</span>${c.name}`;
+    d.onclick=()=>{document.querySelectorAll('.comp').forEach(x=>x.classList.remove('sel'));
+      if(selComp===c.k){selComp=null;}else{selComp=c.k;d.classList.add('sel');}};
+    pool.appendChild(d);
+  });
+}
+function slotClick(slot){
+  if(slot.dataset.has){ // 取回
+    slot.dataset.has=''; slot.className='slot';
+    slot.innerHTML=`<span class="hint">${slot.dataset.hint}</span>`;
+    renderPool(); return;
+  }
+  if(!selComp){fb('fb1','info','💡 先在下方"零件仓库"里点击选中一个零件,再点击空位放入。');return;}
+  const c=COMPS.find(x=>x.k===selComp);
+  if(!slot.dataset.hint)slot.dataset.hint=slot.querySelector('.hint').innerHTML;
+  slot.dataset.has=c.k; slot.classList.add('filled');
+  slot.innerHTML=`<span style="font-size:26px">${c.ico}</span><b style="font-size:13.5px">${c.name}</b>`;
+  selComp=null; renderPool();
+}
+function checkChain(){
+  let allFilled=true, allRight=true, wrongNames=[];
+  document.querySelectorAll('.slot').forEach(s=>{
+    s.classList.remove('right','wrong');
+    if(!s.dataset.has){allFilled=false;return;}
+    if(s.dataset.has===s.dataset.slot){s.classList.add('right');}
+    else{s.classList.add('wrong');allRight=false;wrongNames.push(COMPS.find(c=>c.k===s.dataset.has).name);}
+  });
+  if(!allFilled){fb('fb1','bad','🌱 还有空位没放零件呢!提示:打印机和游戏机是干扰项,不属于这条链路。');return;}
+  if(allRight){
+    fb('fb1','ok','🎉 太棒了!物物相联的链路是:<b>人体与环境 → 心率传感器 → 智能手表 → 无线网络 → 物联网平台 → 手机应用</b>。对照下面的"四层积木"卡片记一记,再去「② 数据包旅行」亲眼看数据跑一趟吧!');
+    progress.chain=true; setBadge(1);
+    addLog('系统','完成物物相联链路拼装','—','拼装正确');
+  }else{
+    fb('fb1','bad',`🤔 有 ${wrongNames.length} 个零件放错位置了(红色框):${wrongNames.join('、')}。想想每个位置的提示语,或点「💡 看提示」。`);
+  }
+}
+function chainHint(){
+  chainHintLv=Math.min(chainHintLv+1,3);
+  const hints=[
+    '提示①:数据的旅行从"源头"开始——第一个位置放产生心跳、动作这些信息的"东西"。',
+    '提示②:传感器紧挨着人体,像"感觉器官"一样感知心跳;数据要先到智能手表打包,才能通过无线网络出发;"云端大脑"负责存储分析。',
+    '提示③:完整顺序是:🏃人体与环境 → 🩺心率传感器 → ⌚智能手表 → 📶无线网络 → ☁️物联网平台 → 📱手机应用。打印机、游戏机不需要!'
+  ];
+  fb('fb1','info','💡 '+hints[chainHintLv-1]);
+}
+function resetChain(){
+  document.querySelectorAll('.slot').forEach(s=>{
+    if(s.dataset.hint){s.innerHTML=`<span class="hint">${s.dataset.hint}</span>`;}
+    s.dataset.has=''; s.className='slot';
+  });
+  selComp=null; chainHintLv=0; renderPool(); fb('fb1','info','已重置,重新开始拼装吧!');
+}
+
+/* ============================================================
+   模块二:数据包旅行模拟引擎
+   1 tick = 模拟 1 分钟
+============================================================ */
+const sim={
+  running:false,tick:0,timer:null,speedMs:700,
+  msgs:[],msgId:0,lastSample:0,hrNow:78,
+  cloudN:0,phoneN:0,
+};
+const HOPS=6;
+const HOP_ST=['🏃 心跳中','🩺 传感器采集到心跳','⌚ 手表打包数据','📶 正在无线发送','☁️ 平台存储并分析','📱 已推送到手机 ✅'];
+function speedName(v){return{1:'慢',2:'中',3:'快'}[v];}
+function setSpeed(){
+  const v=+$('spd').value; $('spdOut').textContent=speedName(v);
+  sim.speedMs={1:1200,2:700,3:350}[v];
+  if(sim.running){clearInterval(sim.timer);sim.timer=setInterval(simStep,sim.speedMs);}
+}
+function toggleRun(){
+  sim.running=!sim.running;
+  $('btnRun').textContent=sim.running?'⏸ 暂停':'▶ 运行';
+  $('btnRun').className='btn small '+(sim.running?'orange':'green');
+  if(sim.running){sim.timer=setInterval(simStep,sim.speedMs);}
+  else clearInterval(sim.timer);
+}
+function stepOnce(){if(sim.running)toggleRun();simStep();}
+function resetSim(){
+  if(sim.running)toggleRun();
+  Object.assign(sim,{tick:0,msgs:[],lastSample:0,hrNow:genHR(),cloudN:0,phoneN:0});
+  document.querySelectorAll('#pipe .msg-dot').forEach(d=>d.remove());
+  $('msglist').innerHTML='<div style="color:#5b7186">暂无数据包</div>';
+  setWhy('已重置。点「📤 发送一次心率数据」再用「⏭ 单步」慢慢看,或点「▶ 运行」自动采样。');
+  render2();
+}
+function loadExample(){
+  resetSim();
+  $('freq').value=5;$('sig').value=5;$('act').value=1;$('spd').value=2;
+  syncOuts();
+  setWhy('📖 已恢复教材示例:每5分钟自动测一次心率,信号满格,安静休息状态。点「▶ 运行」观察!');
+  addLog('系统','恢复教材示例参数',sim.hrNow,'—');
+}
+function actName(){return{1:'安静休息',2:'快步走',3:'跑步'}[+$('act').value];}
+function genHR(){
+  const base={1:76,2:98,3:132}[+$('act').value]||76;
+  const jit={1:5,2:8,3:12}[+$('act').value]||5;
+  return base+Math.round((Math.random()*2-1)*jit);
+}
+function syncOuts(){
+  $('freqOut').textContent='每'+$('freq').value+'分钟一次';
+  $('sigOut').textContent=$('sig').value+'格';
+  $('actOut').textContent=actName();
+  $('spdOut').textContent=speedName(+$('spd').value);
+}
+function paramChanged(name,id){
+  syncOuts();
+  const v=$(id).value;
+  const why={
+    '采样频率':`现在每 ${v} 分钟自动测一次心率。间隔越短数据越及时,但数据包更多、更耗电;间隔太长,家人看到的可能是"过时"的心率。`,
+    '信号强度':`信号 ${v} 格。${+v>=4?'信号很好,数据包又快又稳,几乎不会丢。':(+v>=3?'信号一般,数据包在网络里会慢一点。':'信号很弱!数据包走得慢,还很容易半路丢失——就像在隧道里打电话。')}`,
+    '运动强度':`现在模拟「${actName()}」。运动越剧烈,示例心率越高——传感器感知到的就是这种变化,这正是感知控制层的工作!`,
+  }[name];
+  $('paramWhy').innerHTML='💬 '+why;
+  addLog('调参',`${name} 调整为 ${name==='运动强度'?actName():(name==='采样频率'?'每'+v+'分钟一次':v+'格')}`,sim.hrNow,'—');
+  render2();
+}
+function setWhy(t){$('why').innerHTML='💬 '+t;}
+function clockStr(){
+  const total=8*60+sim.tick;
+  const day=Math.floor(total/1440)+1, h=Math.floor(total/60)%24, m=total%60;
+  return `第 ${day} 天 ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+/* ---- 数据包 ---- */
+function sendHR(source){
+  sim.hrNow=genHR();
+  stats.sent++;
+  const m={id:++sim.msgId,hr:sim.hrNow,hop:0,status:'准备出发',done:false,wait:0};
+  const el=document.createElement('div');
+  el.className='msg-dot'; el.textContent='💓'+m.hr;
+  $('pipe').appendChild(el); m.el=el;
+  positionMsg(m); sim.msgs.push(m); renderMsgs();
+  addLog(source,'发送心率数据包 #'+m.id,m.hr,'出发');
+  render2();
+  return m;
+}
+function sendOnce(){
+  const m=sendHR('手动发送');
+  setWhy(`📤 手表准备把心率 ${m.hr} 次/分 发出去。${sim.running?'看它逐站前进!':'现在是暂停状态,点「⏭ 单步」护送它一站一站前进,或点「▶ 运行」。'}`);
+  if(!sim.running)fb('fb2','info','💡 提示:点「⏭ 单步」可以一步一步看数据包走过每一站,每一站的名字会显示在数据包状态表里。');
+}
+function positionMsg(m){
+  const pct=m.hop/(HOPS-1)*100;
+  m.el.style.left=`calc(${pct}% - 10px)`;
+}
+function finishMsg(m,status,cls){
+  m.status=status; m.done=true;
+  if(cls)m.el.classList.add(cls);
+  setTimeout(()=>{m.el.remove();},1600);
+}
+function advanceMsgs(){
+  const sig=+$('sig').value;
+  for(const m of sim.msgs){
+    if(m.done)continue;
+    if(m.wait>0){m.wait--;m.status='📶 信号弱,传输变慢…';continue;}
+    m.hop++;
+    // 进入无线网络段:可能丢包
+    if(m.hop===3&&Math.random()<(5-sig)*0.1){
+      stats.lost++; finishMsg(m,'半路丢失 ❌','lost');
+      addLog('网络','数据包 #'+m.id+' 在无线传输中丢失',m.hr,'丢失');
+      setWhy('❌ 一个数据包在无线网络里<b>丢失</b>了!信号越弱越容易丢。手机上永远收不到这条心率——所以真实的物联网还需要"确认+重发"机制。');
+      renderMsgs(); render2(); continue;
+    }
+    if(m.hop===3)m.wait=sig>=5?0:(sig>=3?1:2);
+    positionMsg(m); flashNode(m.hop);
+    m.status=HOP_ST[m.hop]||'传输中';
+    if(m.hop===4){sim.cloudN++;}
+    if(m.hop>=5){
+      sim.phoneN++; stats.dlv++; stats.hrSum+=m.hr; stats.hrN++;
+      finishMsg(m,'已送达手机 ✅','done');
+      addLog('送达','数据包 #'+m.id+' 已显示在手机应用上',m.hr,'成功');
+      setWhy(`✅ 心率 ${m.hr} 次/分 成功送达手机!它走完了 <b>感知 → 打包 → 无线发送 → 平台存储 → 推送显示</b> 的全过程,这就是物物相联!`);
+      if(!progress.packet){progress.packet=true;setBadge(2);
+        fb('fb2','ok','🎉 你护送的第一个心率数据包成功抵达手机!接下来试试把「信号强度」调低,再发几个包,看看会发生什么。');}
+    }
+  }
+  renderMsgs();
+}
+function flashNode(i){
+  const n=$('n'+Math.max(0,Math.min(5,i))); if(!n)return;
+  n.classList.add('active'); setTimeout(()=>n.classList.remove('active'),450);
+}
+function renderMsgs(){
+  const live=sim.msgs.slice(-8).reverse();
+  $('msglist').innerHTML=live.length?live.map(m=>{
+    const cls=/✅/.test(m.status)?'s-ok':(/丢失/.test(m.status)?'s-bad':'s-wait');
+    return `<div>#${m.id} 💓心率${m.hr} — <b class="${cls}">${m.status}</b></div>`;
+  }).join(''):'<div style="color:#5b7186">暂无数据包</div>';
+}
+function simStep(){
+  sim.tick++;
+  if(sim.running&&sim.tick-sim.lastSample>=+$('freq').value){
+    sim.lastSample=sim.tick;
+    sendHR('自动采样');
+    setWhy(`🤖 到时间啦!按「每 ${$('freq').value} 分钟一次」的采样频率,传感器自动测了一次心率并发出数据包。`);
+  }
+  advanceMsgs(); render2();
+}
+function render2(){
+  $('clock').textContent=clockStr();
+  $('hrNow').textContent=sim.hrNow;
+  $('actState').textContent=actName();
+  $('sentN').textContent=stats.sent;
+  $('dlvN').textContent=stats.dlv;
+  $('lostN').textContent=stats.lost;
+  const sig=+$('sig').value;
+  $('st0').textContent='心跳中';
+  $('st1').textContent='正常';
+  $('st2').textContent=sim.msgs.some(m=>!m.done&&m.hop<3)?'发送中':'待命';
+  $('st3').textContent=sig>=5?'信号满格':(sig>=3?'信号 '+sig+' 格':'⚠️ 信号弱 '+sig+' 格');
+  $('st4').textContent='已存 '+sim.cloudN+' 条';
+  $('st5').textContent='已收 '+sim.phoneN+' 条';
+  $('n3').classList.toggle('err',sig<=2);
+}
+
+/* ============================================================
+   模块三:在线/离线对比实验
+============================================================ */
+const cmp={online:true,local:[],pending:0,cloud:0,famHr:null,didOnline:false,didOffline:false,didSync:false};
+function toggleOnline(){
+  cmp.online=$('onlineSw').checked;
+  $('onlineTxt').textContent=cmp.online?'在线':'离线';
+  if(cmp.online){
+    if(cmp.pending>0){
+      const n=cmp.pending;
+      cmp.cloud+=n; stats.synced+=n; cmp.pending=0; cmp.didSync=true;
+      cmp.famHr=cmp.local.length?cmp.local[cmp.local.length-1].hr:cmp.famHr;
+      flashBox('boxCloud'); flashBox('boxFam');
+      $('why3').innerHTML=`💬 🔗 联网恢复!手表把囤积的 <b>${n} 条</b>待同步数据<b>一口气补传</b>到了云端,家人手机也更新了。这就是"先存本机、联网补传"的好办法。`;
+      addLog('对比实验','联网恢复,补传 '+n+' 条数据','—','补传成功');
+    }else{
+      $('why3').innerHTML='💬 🔗 已切换为<b>在线</b>模式:每测一次,数据立刻同步到云端,家人马上能看到。';
+      addLog('对比实验','切换为在线模式','—','—');
+    }
+  }else{
+    $('why3').innerHTML='💬 📵 已切换为<b>离线</b>模式:手表测的数据只能存在<b>本机</b>,云端和家人手机都收不到新数据。试着测几次,再重新联网看看!';
+    addLog('对比实验','切换为离线模式','—','—');
+  }
+  renderCmp(); checkCmpDone();
+}
+function measureOnce(){
+  const hr=70+Math.round(Math.random()*40);
+  cmp.local.push({hr,time:new Date().toLocaleTimeString(),synced:cmp.online});
+  if(cmp.local.length>30)cmp.local.shift();
+  flashBox('boxWatch');
+  if(cmp.online){
+    cmp.cloud++; cmp.famHr=hr; cmp.didOnline=true;
+    flashBox('boxCloud'); flashBox('boxFam');
+    $('why3').innerHTML=`💬 ✅ 在线模式:心率 <b>${hr}</b> 次/分 已存本机,并<b>立刻同步</b>到云端、推送到家人手机。`;
+    addLog('对比实验','在线测量心率并同步',hr,'家人可见');
+  }else{
+    cmp.pending++; cmp.didOffline=true;
+    $('why3').innerHTML=`💬 ⚠️ 离线模式:心率 <b>${hr}</b> 次/分 只存进了<b>本机存储</b>,进入"待同步"队列。云端和家人手机都还不知道!`;
+    addLog('对比实验','离线测量心率(仅本机)',hr,'待同步');
+  }
+  renderCmp(); checkCmpDone();
+}
+function flashBox(id){
+  const b=$(id); b.classList.add('flash');
+  setTimeout(()=>b.classList.remove('flash'),600);
+}
+function renderCmp(){
+  $('localN').textContent=cmp.local.length;
+  $('pendN').textContent=cmp.pending;
+  $('cloudN').textContent=cmp.cloud;
+  $('cloudSt').textContent=cmp.online?(cmp.cloud?'接收正常':'等待数据'):'📵 收不到新数据';
+  $('famHr').textContent=cmp.famHr===null?'——':cmp.famHr+' 次/分';
+  $('famSt').textContent=cmp.online?(cmp.famHr===null?'等待数据':'✅ 数据是最新的'):(cmp.pending>0?'⚠️ 数据未更新':'📵 离线中');
+  $('boxCloud').classList.toggle('warn',!cmp.online);
+  $('boxFam').classList.toggle('warn',!cmp.online&&cmp.pending>0);
+  const a1=$('arrow1'),a2=$('arrow2');
+  a1.classList.toggle('cut',!cmp.online); a2.classList.toggle('cut',!cmp.online);
+  $('arrow1Ico').textContent=cmp.online?'⇒':'✕';
+  $('arrow2Ico').textContent=cmp.online?'⇒':'✕';
+  $('arrow1Txt').textContent=cmp.online?'同步中':'已断开';
+  $('arrow2Txt').textContent=cmp.online?'推送中':'已断开';
+  const list=$('localList');
+  list.innerHTML=cmp.local.length?cmp.local.slice(-5).reverse().map(r=>
+    `<div>💓 ${r.hr} 次/分 <span style="color:${r.synced?'#1e8f56':'#b45309'}">${r.synced?'已同步':'待同步'}</span></div>`).join('')
+    :'<div style="color:#5b7186">还没有测量记录</div>';
+  $('expOn').textContent=cmp.didOnline?'(✔ 已体验)':'(未体验)';
+  $('expOff').textContent=cmp.didOffline?'(✔ 已体验)':'(未体验)';
+}
+function checkCmpDone(){
+  if(cmp.didOnline&&cmp.didOffline&&cmp.didSync&&!progress.compare){
+    progress.compare=true; setBadge(3);
+    fb('fb3','ok','🏆 对比实验全部完成!你发现了吗:<b>联网</b>是物物相联的生命线——在线时数据全家共享,离线时数据只能"闷"在手表里,重新联网后还能补传。把发现写进「⑥ 成果报告」吧!');
+  }
+}
+
+/* ============================================================
+   模块四:连接排查诊所
+============================================================ */
+const CASES=[
+  {name:'病号1:蓝牙没打开',symptom:'小图的手表想把数据传到旁边的手机上,可手机应用一直显示"未连接手表"。手表本身电量充足、显示正常。',
+   checks:[
+     {t:'查看手表电量',r:'✅ 电量 85%,很充足'},
+     {t:'查看手机蓝牙开关',r:'❗ 蓝牙是关着的!手表靠蓝牙和手机配对'},
+     {t:'检查手机应用是否登录',r:'✅ 已正常登录'},
+     {t:'检查家里 Wi-Fi',r:'✅ Wi-Fi 正常,其他设备能上网'}],
+   causes:['手表没电了','手机蓝牙没打开,手表无法和手机配对连接','手机应用版本太老'],a:1,
+   fixes:['给手表充一晚上电','打开手机蓝牙,重新配对手表','把手机重启十次'],fa:1,
+   lesson:'手表和手机之间常用蓝牙这种近距离无线连接。连接的"开关"没打开,再好的设备也传不了数据!'},
+  {name:'病号2:Wi-Fi密码错了',symptom:'爷爷的手表换了新家以后,一直连不上家里的无线网络,数据没法上传到云端。手机、平板都能正常上网。',
+   checks:[
+     {t:'查看路由器指示灯',r:'✅ 指示灯正常闪烁'},
+     {t:'用平板测试上网',r:'✅ 平板上网正常,说明网络本身没问题'},
+     {t:'查看手表的联网提示',r:'❗ 手表提示"密码错误,无法加入网络"'},
+     {t:'检查物联网平台服务',r:'✅ 平台服务运行正常'}],
+   causes:['路由器坏了','手表里保存的 Wi-Fi 密码输错了','云端平台停止服务了'],a:1,
+   fixes:['在手表上重新输入正确的 Wi-Fi 密码','把路由器扔掉换新的','给手表贴一张信号增强贴'],fa:0,
+   lesson:'设备联网就像进门要对暗号,密码错一个字符都进不去。排查时先确认网络本身好不好,再检查设备自己的设置。'},
+  {name:'病号3:平台服务没启动',symptom:'手表显示"已联网",信号满格,可手机应用里一直看不到新数据。手表的发送记录写着"已发送,未收到确认"。',
+   checks:[
+     {t:'查看手表联网状态',r:'✅ 已联网,信号满格'},
+     {t:'查看手表发送记录',r:'❗ 数据发出去了,但一直没收到平台的确认回执'},
+     {t:'检查物联网平台服务状态',r:'❗ 平台服务没有启动,数据没人接收和存储!'},
+     {t:'检查手机应用版本',r:'✅ 已是最新版本'}],
+   causes:['手表信号太弱','物联网平台服务没启动,数据发出去没人接收','手机内存满了'],a:1,
+   fixes:['启动物联网平台服务,再让手表重发数据','把手表恢复出厂设置','关掉手机应用不管它'],fa:0,
+   lesson:'物物相联是一整条链路:就算手表和网络都正常,"云端大脑"没开工,数据照样到不了终点。排查要沿着链路一站一站找断点!'},
+  {name:'病号4:离得太远信号弱',symptom:'小图在院子最角落跳绳时,手表的运动数据时有时无,经常丢失;回到客厅就一切正常。',
+   checks:[
+     {t:'在院子角落看信号格数',r:'❗ 信号只剩 1 格,非常微弱'},
+     {t:'走近路由器再测一次',r:'❗ 信号恢复满格,数据立刻正常了'},
+     {t:'查看手表电量',r:'✅ 电量充足'},
+     {t:'检查 Wi-Fi 密码',r:'✅ 密码正确,能连上网络'}],
+   causes:['手表进水了','离路由器太远,无线信号太弱,数据包容易丢失','云端平台存储满了'],a:1,
+   fixes:['在离路由器近的地方活动,或加装信号放大器','把采样频率调到最快','把手表调成飞行模式'],fa:0,
+   lesson:'无线信号会随着距离和障碍物变弱,信号弱时数据包又慢又容易丢——这和你在②号实验室把信号强度调低时看到的现象一模一样!'},
+];
+let caseIdx=0; const caseSolved=[false,false,false,false]; let caseHintLv=[0,0,0,0];
+let causeOk=[false,false,false,false];
+function renderCaseTabs(){
+  $('caseTabs').innerHTML=CASES.map((c,i)=>
+    `<button id="ct${i}" class="${i===caseIdx?'on':''} ${caseSolved[i]?'solved':''}" onclick="openCase(${i})">${c.name}</button>`).join('');
+}
+function openCase(i){
+  caseIdx=i; renderCaseTabs();
+  const c=CASES[i];
+  $('caseBody').innerHTML=`
+    <div class="task"><b>🩺 症状:</b>${c.symptom}</div>
+    <h3>第1步:点击检查项,收集线索</h3>
+    ${c.checks.map((ch,j)=>`<div class="checkline"><button class="btn small ghost" onclick="doCheck(${i},${j})">🔍 ${ch.t}</button><span class="res" id="chk${i}_${j}"></span></div>`).join('')}
+    <h3>第2步:判断出故障原因</h3>
+    ${c.causes.map((o,j)=>`<button class="opt" id="cs${i}o${j}" onclick="pickCause(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')}
+    <h3>第3步:选择修复方法</h3>
+    ${c.fixes.map((o,j)=>`<button class="opt" id="fx${i}o${j}" onclick="pickFix(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')}
+    <div style="margin-top:8px"><button class="btn ghost small" onclick="caseHint(${i})">💡 分层提示</button></div>
+    <div class="feedback" id="fbCase"></div>`;
+}
+function doCheck(i,j){
+  const el=$('chk'+i+'_'+j); if(!el)return;
+  el.textContent=CASES[i].checks[j].r;
+  addLog('排查',CASES[i].name+':'+CASES[i].checks[j].t,'—',CASES[i].checks[j].r.slice(0,20));
+}
+function pickCause(i,j){
+  const c=CASES[i];
+  if(!$('cs'+i+'o'+j))return;
+  c.causes.forEach((_,k)=>{const b=$('cs'+i+'o'+k);if(b)b.classList.remove('right','wrong');});
+  if(j===c.a){$('cs'+i+'o'+j).classList.add('right');causeOk[i]=true;
+    fb('fbCase','ok','✅ 判断正确!现在选一个修复方法。');}
+  else{$('cs'+i+'o'+j).classList.add('wrong');causeOk[i]=false;
+    fb('fbCase','bad','🤔 不太对。先把上面的检查项都点一遍,带❗的线索最关键!');}
+}
+function pickFix(i,j){
+  const c=CASES[i];
+  if(!$('fx'+i+'o'+j))return;
+  c.fixes.forEach((_,k)=>{const b=$('fx'+i+'o'+k);if(b)b.classList.remove('right','wrong');});
+  if(!causeOk[i]){fb('fbCase','bad','先在第2步判断出正确的故障原因哦。');return;}
+  if(j===c.fa){$('fx'+i+'o'+j).classList.add('right');
+    if(!caseSolved[i]){caseSolved[i]=true;progress.fix++;$('bgFix').textContent=progress.fix;
+      if(progress.fix>=4)setBadge(4);
+      addLog('排查',c.name+' 修复成功','—','✅ 已修复');}
+    renderCaseTabs();
+    fb('fbCase','ok','🎉 修复成功!<b>本课收获:</b>'+c.lesson+(progress.fix<4?' 继续修下一块手表吧!':' 四块手表全修好,你是合格的物联网连接小医生!'));}
+  else{$('fx'+i+'o'+j).classList.add('wrong');
+    fb('fbCase','bad','这个方法治不了这个病~再看看❗线索指向哪里。');}
+}
+function caseHint(i){
+  caseHintLv[i]=Math.min(caseHintLv[i]+1,3);
+  const lv=caseHintLv[i], c=CASES[i];
+  const hs=[
+    '提示①:把第1步的 4 个检查都点开,注意带 ❗ 的结果。',
+    '提示②:沿着物物相联的链路找断点:人体→传感器→手表→网络→平台→手机应用,故障出在哪一站?',
+    '提示③:正确原因是 '+'ABC'[c.a]+',对应的修复方法是 '+'ABC'[c.fa]+'。想一想为什么!'
+  ];
+  fb('fbCase','info','💡 '+hs[lv-1]);
+}
+
+/* ============================================================
+   模块五:实验日志
+============================================================ */
+function addLog(type,content,hr,result){
+  logRows.push({time:clockStr(),type,content,hr:String(hr),result});
+  if(logRows.length>500)logRows.shift();
+}
+function renderLog(){
+  $('logCount').textContent=logRows.length;
+  $('logBody').innerHTML=logRows.length?logRows.slice().reverse().map(r=>
+    `<tr><td>${r.time}</td><td>${r.type}</td><td style="text-align:left">${r.content}</td><td>${r.hr}</td><td>${r.result}</td></tr>`).join('')
+    :'<tr><td colspan="5" style="color:#5b7186">暂无记录</td></tr>';
+}
+function exportCSV(){
+  const head='模拟时间,类型,内容,心率,结果\n';
+  const body=logRows.map(r=>[r.time,r.type,r.content,r.hr,r.result].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  downloadFile('智能手表物联网实验日志.csv','\ufeff'+head+body,'text/csv');
+}
+function clearLog(){logRows=[];renderLog();}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ============================================================
+   模块六:成果报告与本机数据
+============================================================ */
+function refreshStats(){
+  $('sSent').textContent=stats.sent;
+  $('sDlv').textContent=stats.dlv;
+  $('sLost').textContent=stats.lost;
+  $('sAvg').textContent=stats.hrN?Math.round(stats.hrSum/stats.hrN)+' 次/分':'—';
+  $('sSync').textContent=stats.synced;
+  $('sFix').textContent=progress.fix+'/4';
+}
+function reportHTML(){
+  const f=id=>{const v=$(id).value.trim();return v?v.replace(/</g,'&lt;'):'(还没有填写)';};
+  return `<div style="font-family:sans-serif;max-width:720px;margin:auto">
+  <h1 style="color:#1a5cb8">⌚ 智能穿戴设备与物联网实验报告</h1>
+  <p>课程:清华版《信息科技》五年级下册 第1单元第2课 | 生成时间:${new Date().toLocaleString()}</p>
+  <h2>一、实验数据统计</h2>
+  <ul><li>发送数据包总数:${stats.sent}</li><li>成功送达:${stats.dlv}</li>
+  <li>丢失数据包:${stats.lost}</li><li>平均心率(虚构示例):${stats.hrN?Math.round(stats.hrSum/stats.hrN)+' 次/分':'—'}</li>
+  <li>离线补传条数:${stats.synced}</li><li>修好的连接故障:${progress.fix}/4</li>
+  <li>当前参数:采样频率 每${$('freq').value}分钟一次 / 信号强度 ${$('sig').value}格 / 运动强度 ${actName()}</li></ul>
+  <h2>二、物物相联过程我来说</h2><p>${f('r1')}</p>
+  <h2>三、我发现的连接问题与解决办法</h2><p>${f('r2')}</p>
+  <h2>四、调整参数的发现</h2><p>${f('r3')}</p></div>`;
+}
+function genReport(){
+  const empty=['r1','r2','r3'].filter(id=>!$(id).value.trim());
+  if(empty.length){fb('fb6','bad',`还有 ${empty.length} 个空没填完呢!把你实验中的发现写进去,报告才有价值。`);}
+  else{fb('fb6','ok','✅ 报告已生成!检查一下预览,满意就点「导出报告」保存到电脑。');
+    if(!progress.report){progress.report=true;setBadge(5);}}
+  $('reportPreview').innerHTML='<div class="card" style="margin-top:12px">'+reportHTML()+'</div>';
+  refreshStats();
+}
+function exportReport(){
+  downloadFile('智能穿戴物联网实验报告.html','<!DOCTYPE html><html><head><meta charset="utf-8"><title>实验报告</title></head><body>'+reportHTML()+'</body></html>','text/html');
+}
+const LS_KEY='u1l2_iot_lab';
+function projectData(){
+  return {ver:1,report:{r1:$('r1').value,r2:$('r2').value,r3:$('r3').value},
+    params:{freq:$('freq').value,sig:$('sig').value,act:$('act').value},
+    stats,progress,
+    cmp:{cloud:cmp.cloud,didOnline:cmp.didOnline,didOffline:cmp.didOffline,didSync:cmp.didSync},
+    log:logRows.slice(-100)};
+}
+function applyProject(d){
+  try{
+    if(d.report)['r1','r2','r3'].forEach(k=>$(k).value=d.report[k]||'');
+    if(d.params){$('freq').value=d.params.freq;$('sig').value=d.params.sig;$('act').value=d.params.act;syncOuts();}
+    if(d.stats)stats=Object.assign(stats,d.stats);
+    if(d.cmp){cmp.cloud=d.cmp.cloud||0;cmp.didOnline=!!d.cmp.didOnline;cmp.didOffline=!!d.cmp.didOffline;cmp.didSync=!!d.cmp.didSync;}
+    if(d.progress){Object.assign(progress,d.progress);
+      if(progress.chain)setBadge(1);if(progress.packet)setBadge(2);if(progress.compare)setBadge(3);
+      if(progress.fix>=4)setBadge(4);if(progress.report)setBadge(5);
+      $('bgFix').textContent=progress.fix;}
+    if(Array.isArray(d.log))logRows=d.log;
+    refreshStats();renderLog();renderCmp();render2();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('智能穿戴物联网项目进度.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 项目导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的项目文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'), raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderPool(); renderCaseTabs(); openCase(0);
+  syncOuts(); renderCmp();
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  render2(); refreshStats();
+})();
+</script>
+</body>
+</html>

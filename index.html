@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物联网、远程控制与智能家居创新实验室 · 清华版《信息科技》五年级下册</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --purple:#8b5cf6; --bg:#eef4fb; --card:#fff;
+    --ink:#20344b; --ink-2:#5b7186; --line:#d9e4f0; --soft:#f2f7fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); line-height:1.6;}
+  header{background:linear-gradient(120deg,#1a5cb8 0%,#2eb872 60%,#8b5cf6 100%); color:#fff; padding:40px 24px 34px; text-align:center;}
+  header h1{font-size:34px; letter-spacing:2px;}
+  header .sub{margin-top:8px; font-size:16px; opacity:.94;}
+  header .flow{margin-top:16px; display:flex; justify-content:center; flex-wrap:wrap; gap:6px; font-size:14px;}
+  header .flow span{background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.4); border-radius:16px; padding:4px 12px;}
+  main{max-width:1180px; margin:0 auto; padding:26px 18px 10px;}
+  .unit{margin-bottom:30px;}
+  .unit-head{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .unit-head .num{width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; color:#fff; font-weight:900; flex-shrink:0;}
+  .u1 .num{background:var(--blue);} .u2 .num{background:var(--green);} .u3 .num{background:var(--purple);}
+  .unit-head h2{font-size:22px;}
+  .unit-head p{font-size:14px; color:var(--ink-2);}
+  .lessons{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px;}
+  a.lesson{display:block; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; text-decoration:none; color:var(--ink); transition:.18s; position:relative; box-shadow:0 1px 4px rgba(30,60,110,.06);}
+  a.lesson:hover{transform:translateY(-4px); box-shadow:0 8px 18px rgba(30,60,110,.15); border-color:var(--blue);}
+  .lesson .no{font-size:13px; font-weight:700; color:var(--ink-2);}
+  .lesson h3{font-size:17px; margin:4px 0 2px;}
+  .lesson .name{font-size:14.5px; color:var(--blue-d); font-weight:700;}
+  .lesson .desc{font-size:13px; color:var(--ink-2); margin-top:8px;}
+  .lesson .tags{margin-top:10px; display:flex; flex-wrap:wrap; gap:4px;}
+  .lesson .tag{font-size:12px; background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:1px 8px; color:var(--ink-2);}
+  .lesson .tag.py{background:#fff4dd; border-color:#f0c36d; color:#b45309; font-weight:700;}
+  .lesson .tag.star{background:#e7f9ef; border-color:#8fd9b2; color:var(--green-d); font-weight:700;}
+  .info{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin-bottom:26px;}
+  .info h2{font-size:19px; margin-bottom:8px;}
+  .info li{margin-left:22px; font-size:14.5px; margin-top:4px;}
+  .info code{background:var(--soft); border-radius:6px; padding:1px 6px; font-size:13px;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:22px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛰 物联网、远程控制与智能家居创新实验室</h1>
+  <p class="sub">清华大学出版社《信息科技》五年级下册 · 12 课时强交互网页工具 · 完全离线运行</p>
+  <div class="flow">
+    <span>发现需求</span><span>选择设备</span><span>搭建网络</span><span>发送信息</span>
+    <span>远程控制</span><span>采集数据</span><span>优化系统</span><span>检查隐私安全</span>
+  </div>
+</header>
+<main>
+  <!-- 第1单元 -->
+  <section class="unit u1">
+    <div class="unit-head">
+      <div class="num">1</div>
+      <div><h2>第1单元 · 自制智能手表——智能穿戴设备</h2>
+      <p>单元项目:设计一块属于自己的智能手表(目标用户 · 功能定位 · 传感器 · 联网流程 · 隐私清单)</p></div>
+    </div>
+    <div class="lessons">
+      <a class="lesson" href="单元1_第1课_智能穿戴新纪元——常见穿戴设备.html">
+        <span class="no">第1课 · 教材P4—11</span>
+        <h3>⌚ 智能穿戴新纪元</h3>
+        <div class="name">智能穿戴设备探索馆</div>
+        <div class="desc">探索手表、手环、眼镜与智能服饰;佩戴位置配对;传感器—数据—功能三连;隐私小法庭。</div>
+        <div class="tags"><span class="tag">原理模拟</span><span class="tag">配对任务</span><span class="tag">隐私判断</span></div>
+      </a>
+      <a class="lesson" href="单元1_第2课_智能穿戴设备与物联网——物物相联的实现过程.html">
+        <span class="no">第2课 · 教材P12—20</span>
+        <h3>📡 智能穿戴设备与物联网</h3>
+        <div class="name">物联网连接与消息流模拟器</div>
+        <div class="desc">拼装物物相联链路;数据包旅行动画;在线/离线对比;连接失败排查诊所。</div>
+        <div class="tags"><span class="tag star">重点课</span><span class="tag py">🐍 含Python工具</span><span class="tag">数据流动画</span></div>
+      </a>
+      <a class="lesson" href="单元1_第3课_智能穿戴设备项目设计——功能定位与程序设计.html">
+        <span class="no">第3课 · 教材P21—27</span>
+        <h3>🛠 智能穿戴设备项目设计</h3>
+        <div class="name">智能手表设计工作台</div>
+        <div class="desc">用户需求分析;手表外观与硬件配置;程序状态机模拟;测试用例挑战;生成项目方案书。</div>
+        <div class="tags"><span class="tag">状态机</span><span class="tag">创作任务</span><span class="tag">测试用例</span></div>
+      </a>
+      <a class="lesson" href="单元1_第4课_智能穿戴安全策略——物联网隐私与安全.html">
+        <span class="no">第4课 · 教材P28—38</span>
+        <h3>🔐 智能穿戴安全策略</h3>
+        <div class="name">智能设备隐私安全检查器</div>
+        <div class="desc">数据分类整理;强密码实验室;权限管理;风险矩阵;生成我的安全协议。</div>
+        <div class="tags"><span class="tag">安全教育</span><span class="tag">风险矩阵</span><span class="tag">协议生成</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 第2单元 -->
+  <section class="unit u2">
+    <div class="unit-head">
+      <div class="num">2</div>
+      <div><h2>第2单元 · 物联网浇花器——基于网络的远程控制系统</h2>
+      <p>单元项目:实现远程自动浇花(控制流程 · 消息格式 · 传感数据 · 自动规则 · 断网策略 · 实验日志)</p></div>
+    </div>
+    <div class="lessons">
+      <a class="lesson" href="单元2_第1课_认识智能种植——都市耕种新梦想.html">
+        <span class="no">第1课 · 教材P42—48</span>
+        <h3>🌻 认识智能种植</h3>
+        <div class="name">智能农场观察站</div>
+        <div class="desc">虚拟植物养成;光照/水分/温度对照实验;智能大棚结构拼装;需求配传感器。</div>
+        <div class="tags"><span class="tag">生长模拟</span><span class="tag">对照实验</span><span class="tag">结构认知</span></div>
+      </a>
+      <a class="lesson" href="单元2_第2课_物联网浇花器的实现——远程控制系统.html">
+        <span class="no">第2课 · 教材P49—61</span>
+        <h3>💧 物联网浇花器的实现</h3>
+        <div class="name">智能浇花器数字孪生实验室</div>
+        <div class="desc">系统拓扑拼装;消息传输动画;数字孪生花盆;手动/自动控制;网络实验;故障排查诊所。</div>
+        <div class="tags"><span class="tag star">样板课·重点推荐</span><span class="tag py">🐍 含Python工具</span><span class="tag">数字孪生</span></div>
+      </a>
+      <a class="lesson" href="单元2_第3课_智能种植项目设计——信息的发送与接收.html">
+        <span class="no">第3课 · 教材P62—70</span>
+        <h3>✉️ 智能种植项目设计</h3>
+        <div class="name">本地消息发送接收模拟器</div>
+        <div class="desc">发布/订阅搭建;消息格式实验;两种通信模式对比;ACK确认与重发;故障诊断。</div>
+        <div class="tags"><span class="tag star">重点课</span><span class="tag py">🐍 含Python工具</span><span class="tag">发布订阅</span></div>
+      </a>
+      <a class="lesson" href="单元2_第4课_植物生长日志——数据采集.html">
+        <span class="no">第4课 · 教材P71—78</span>
+        <h3>📈 植物生长日志</h3>
+        <div class="name">植物生长数据采集与分析工具</div>
+        <div class="desc">自动采集模拟;折线图工作台;数据侦探找缺失与异常;趋势与关联分析;实验日志。</div>
+        <div class="tags"><span class="tag star">重点课</span><span class="tag py">🐍 含Python工具</span><span class="tag">数据分析</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 第3单元 -->
+  <section class="unit u3">
+    <div class="unit-head">
+      <div class="num">3</div>
+      <div><h2>第3单元 · 智能家居——小程序实现智能控制</h2>
+      <p>单元项目:设计智能家居方案(房间设计 · 设备清单 · 控制规则 · 小程序交互 · 安全权限 · 项目报告)</p></div>
+    </div>
+    <div class="lessons">
+      <a class="lesson" href="单元3_第1课_走进智能家居——畅想未来生活.html">
+        <span class="no">第1课 · 教材P82—90</span>
+        <h3>🏠 走进智能家居</h3>
+        <div class="name">未来智能家居体验馆</div>
+        <div class="desc">三居室体验屋点击控制;自动化规则工坊;家庭成员需求匹配;便利/能耗/安全/可及性四维分析。</div>
+        <div class="tags"><span class="tag">场景体验</span><span class="tag">规则搭建</span><span class="tag">雷达图</span></div>
+      </a>
+      <a class="lesson" href="单元3_第2课_智能家居背后的技术原理——小程序控制开关灯.html">
+        <span class="no">第2课 · 教材P91—101</span>
+        <h3>💡 智能家居背后的技术原理</h3>
+        <div class="name">小程序远程控制系统模拟器</div>
+        <div class="desc">虚构小程序控灯;指令与状态回传观察;延迟/断网/权限/防抖实验;故障排查诊所。</div>
+        <div class="tags"><span class="tag star">重点推荐</span><span class="tag py">🐍 含Python工具</span><span class="tag">状态回传</span></div>
+      </a>
+      <a class="lesson" href="单元3_第3课_智能家居项目设计——小小家居设计师.html">
+        <span class="no">第3课 · 教材P102—108</span>
+        <h3>📐 智能家居项目设计</h3>
+        <div class="name">智能家居设计沙盘</div>
+        <div class="desc">平面图设备布置(含隐私合理性检查);自动化规则;一天场景模拟;能耗与安全评分。</div>
+        <div class="tags"><span class="tag">设计沙盘</span><span class="tag">场景模拟</span><span class="tag">评分优化</span></div>
+      </a>
+      <a class="lesson" href="单元3_第4课_智能家居项目报告书——智能家居的安全与隐私.html">
+        <span class="no">第4课 · 教材P109—115</span>
+        <h3>📑 智能家居项目报告书</h3>
+        <div class="name">智能家居项目评估与报告工具</div>
+        <div class="desc">七维项目评价雷达图;安全与隐私体检;权限分配演练;项目管理三要素;报告书向导。</div>
+        <div class="tags"><span class="tag">项目评价</span><span class="tag">安全体检</span><span class="tag">报告生成</span></div>
+      </a>
+    </div>
+  </section>
+
+  <section class="info">
+    <h2>🐍 Python 配套工具(重点课时,Tkinter 图形界面,Windows 离线运行)</h2>
+    <ul>
+      <li><code>Python配套工具/单元1_第2课_物联网连接与消息流模拟器/</code> —— 智能手表数据流六节点动画、在线离线补传实验</li>
+      <li><code>Python配套工具/单元2_第2课_智能浇花器数字孪生平台/</code> —— 与网页版逻辑一致的浇花器数字孪生(延迟/丢包/断网/防重复)</li>
+      <li><code>Python配套工具/单元2_第3课_本地消息发送接收模拟器/</code> —— 发布订阅路由、主题排错、ACK 超时重发实验</li>
+      <li><code>Python配套工具/单元2_第4课_植物生长数据分析工具/</code> —— 数据采集模拟、Canvas 折线图、缺失异常清洗(附示例CSV)</li>
+      <li><code>Python配套工具/单元3_第2课_智能家居控制与规则模拟器/</code> —— 虚构小程序控灯、权限、防抖、天黑自动开灯规则</li>
+    </ul>
+    <p style="margin-top:8px; font-size:14px; color:var(--ink-2)">每个工具文件夹内含 <b>.py 源码 + 使用说明.txt + 示例数据</b>,仅需安装 Python(自带 Tkinter)即可双击运行,无需联网、无第三方依赖。</p>
+  </section>
+
+  <section class="info">
+    <h2>📖 使用说明</h2>
+    <ul>
+      <li>每课一个独立网页,双击即可在浏览器中打开,<b>完全离线运行</b>,不依赖任何网络资源。</li>
+      <li>每课包含 4 个以上互动模块:原理动态模拟、操作/创作任务、即时反馈与故障排查、实验记录与成果导出。</li>
+      <li>学习进度自动保存在<b>本机浏览器</b>中,并提供导出/导入/查看/清除功能;所有数据不上传网络。</li>
+      <li>所有设备、账号与数据均为<b>虚拟示例</b>,不采集任何真实儿童健康、位置或身份信息。</li>
+      <li>建议使用电脑或平板横屏,配合教室大屏演示效果更佳。</li>
+    </ul>
+  </section>
+</main>
+<footer>清华版《信息科技》五年级下册 · 物联网、远程控制与智能家居创新实验室 · 完全离线 · 保护隐私 · 虚拟设备与本地示例数据</footer>
+</body>
+</html>

@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>本地消息发送接收模拟器 · 单元2第3课 智能种植项目设计——信息的发送与接收</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6;
+    --bg:#eef4fb; --card:#ffffff; --ink:#20344b; --ink-2:#5b7186;
+    --line:#d9e4f0; --soft:#f2f7fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#1a5cb8,#8b5cf6); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(20,60,120,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--green-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--blue);}
+  nav button.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(30,60,110,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--blue); border:2px solid var(--blue);}
+  .btn.gray{background:#8aa0b5;}
+  .btn:disabled{background:#c4d2df; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#e8f1fd; border:1px solid var(--blue); color:var(--blue-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .why{background:#eef7ff; border-left:4px solid var(--blue); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+  /* ---------- 模块一:发布订阅搭建 ---------- */
+  .topicpool{display:flex; flex-wrap:wrap; gap:8px; padding:10px; background:var(--soft); border-radius:12px; margin:8px 0;}
+  .tchip{border:2px solid var(--line); background:#fff; border-radius:20px; padding:7px 16px; font-size:15px; font-weight:700; cursor:pointer; transition:.15s; font-family:monospace,"Microsoft YaHei";}
+  .tchip:hover{border-color:var(--blue); transform:translateY(-2px);}
+  .tchip.sel{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 3px #fde9c2;}
+  .pscols{display:grid; grid-template-columns:1fr 1.1fr 1fr; gap:14px; position:relative; margin-top:10px;}
+  @media(max-width:900px){.pscols{grid-template-columns:1fr;}}
+  .colhead{text-align:center; font-weight:700; font-size:15px; color:var(--blue-d); margin-bottom:6px;}
+  .devbox{border:2px solid var(--line); background:#fff; border-radius:14px; padding:10px 12px; margin-bottom:10px; transition:.2s;}
+  .devbox.server{background:#f4f0ff; border-color:#c9b8f5; min-height:220px;}
+  .devbox.hot{border-color:var(--orange); box-shadow:0 0 0 3px #ffe3b3;}
+  .devhead{font-weight:700; font-size:16px;}
+  .devdata{font-size:13.5px; color:var(--ink-2); margin:2px 0 6px;}
+  .tslot{border:2px dashed #9db8d4; border-radius:10px; background:var(--soft); padding:6px 10px; font-size:14px; cursor:pointer; transition:.15s;}
+  .tslot:hover{border-color:var(--blue);}
+  .tslot.filled{border-style:solid; border-color:var(--green); background:#e7f9ef;}
+  .tslot b{font-family:monospace,"Microsoft YaHei";}
+  .recvshow{margin-top:6px; background:#20344b; color:#9fe3bd; border-radius:8px; padding:5px 10px; font-size:13.5px; min-height:30px;}
+  .topiclist .trow{background:#fff; border:1px solid var(--line); border-radius:10px; padding:6px 10px; margin:6px 0; font-size:13px;}
+  .topiclist .trow b{font-family:monospace,"Microsoft YaHei"; color:var(--purple);}
+  .fly{position:absolute; z-index:8; transform:translate(-50%,-50%); background:var(--orange); color:#fff; border-radius:14px; padding:3px 10px; font-size:12.5px; font-weight:700; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:all .65s linear; pointer-events:none;}
+  .fly.up{background:var(--green);}
+  .fly.lostmark{background:var(--red);}
+  .fly.dead{opacity:0; transform:translate(-50%,-50%) scale(.5); background:var(--red);}
+  /* ---------- 模块二:消息格式 ---------- */
+  .fchip{border:2px solid var(--line); background:#fff; border-radius:12px; padding:10px 14px; font-size:15px; font-weight:700; cursor:pointer; margin:4px; transition:.15s;}
+  .fchip:hover{border-color:var(--blue);}
+  .fchip.selon{background:var(--blue); border-color:var(--blue); color:#fff;}
+  .msgprev{background:#20344b; color:#ffd77a; font-family:monospace,"Microsoft YaHei"; border-radius:10px; padding:12px; font-size:16px; margin:8px 0; min-height:46px;}
+  .recvpanel{background:var(--soft); border:2px solid var(--line); border-radius:12px; padding:12px; font-size:14.5px; min-height:120px;}
+  .recvpanel li{margin:4px 0 4px 18px;}
+  .okscreen{background:#20344b; color:#7ef0b0; border-radius:12px; padding:14px; font-size:22px; font-weight:700; text-align:center; margin-top:8px;}
+  .cmpmini{border:2px solid var(--line); border-radius:12px; padding:10px; font-size:13.5px;}
+  .cmpmini h4{font-size:14px; margin-bottom:4px;}
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--blue-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--blue); height:26px;}
+  .switch{display:flex; align-items:center; gap:10px; margin-top:10px; font-weight:700; font-size:15px;}
+  .switch input{width:44px; height:24px; accent-color:var(--green); cursor:pointer;}
+  .runbar{display:flex; flex-wrap:wrap; gap:4px; margin:8px 0; align-items:center;}
+  .clock{font-size:15px; background:#20344b; color:#9fe3bd; font-weight:700; border-radius:10px; padding:6px 12px; display:inline-block; font-family:monospace;}
+  /* ---------- 模块三:模式对比 ---------- */
+  .panelbox{border:2px solid var(--line); border-radius:14px; padding:12px; background:#fff;}
+  .panelbox h3{margin-top:0;}
+  .flowline{display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:14px; font-weight:700; margin-bottom:8px;}
+  .nodechip{background:var(--soft); border:2px solid var(--line); border-radius:10px; padding:5px 10px; transition:.2s;}
+  .nodechip.hot{border-color:var(--orange); background:#fff4dd;}
+  .urow{background:var(--soft); border:1.5px solid var(--line); border-radius:10px; padding:6px 10px; margin:5px 0; font-size:14px; transition:.2s;}
+  .urow.hot{border-color:var(--green); background:#e7f9ef;}
+  .urow .ago{color:var(--ink-2); font-size:12.5px;}
+  .pstat{margin-top:8px; font-size:14px;}
+  .pstat b{color:var(--blue-d); font-size:18px;}
+  .minilog{background:#20344b; color:#c9e6ff; border-radius:8px; padding:6px 10px; font-size:12.5px; margin-top:8px; min-height:30px;}
+  /* ---------- 模块四:ACK ---------- */
+  .lane{position:relative; display:flex; justify-content:space-between; align-items:center; min-height:130px; background:var(--soft); border-radius:14px; padding:14px 18px; margin-top:8px;}
+  .lanebox{width:110px; text-align:center; background:#fff; border:3px solid var(--line); border-radius:14px; padding:10px 6px; font-size:14px; font-weight:700; transition:.2s; z-index:2;}
+  .lanebox .big{font-size:30px; display:block;}
+  .lanebox.hot{border-color:var(--green); box-shadow:0 0 0 4px #d8f5e5;}
+  .lane::before{content:""; position:absolute; left:130px; right:130px; top:50%; height:6px; background:repeating-linear-gradient(90deg,#bcd4ee 0 14px,#e3eefb 14px 24px); border-radius:3px;}
+  .statrow{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .stat{background:var(--soft); border-radius:12px; padding:10px 12px; text-align:center; flex:1; min-width:100px;}
+  .stat b{font-size:22px; color:var(--blue-d); display:block;}
+  .stat span{font-size:12.5px; color:var(--ink-2);}
+  .msglist{max-height:180px; overflow:auto; font-size:13.5px; background:var(--soft); border-radius:10px; padding:8px 10px; margin-top:8px;}
+  .msglist div{padding:2px 0; border-bottom:1px dashed var(--line);}
+  /* ---------- 模块五:故障诊断 ---------- */
+  .case-tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+  .case-tabs button{border:2px solid var(--line); background:#fff; border-radius:10px; padding:8px 14px; font-size:14.5px; font-weight:700; cursor:pointer;}
+  .case-tabs button.on{background:var(--purple); border-color:var(--purple); color:#fff;}
+  .case-tabs button.solved::after{content:" ✅";}
+  .checkline{display:flex; align-items:center; gap:8px; background:var(--soft); border-radius:10px; padding:8px 12px; margin:6px 0; font-size:14.5px; flex-wrap:wrap;}
+  .checkline .res{margin-left:auto; font-weight:700;}
+  .opt{display:block; width:100%; text-align:left; border:2px solid var(--line); background:#fff; border-radius:10px; padding:10px 14px; margin:6px 0; font-size:15px; cursor:pointer; transition:.15s;}
+  .opt:hover{border-color:var(--purple);}
+  .opt.right{border-color:var(--green); background:#e7f9ef;}
+  .opt.wrong{border-color:var(--red); background:#fdeaea;}
+  /* ---------- 模块六:方案与日志 ---------- */
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{border:1px solid var(--line); padding:6px 8px; text-align:center;}
+  th{background:var(--soft);}
+  .logwrap{max-height:300px; overflow:auto; border-radius:10px; border:1px solid var(--line);}
+  textarea{width:100%; min-height:64px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  textarea:focus{outline:none; border-color:var(--blue);}
+  .radioline{display:flex; gap:16px; flex-wrap:wrap; font-size:15px; margin:6px 0;}
+  .radioline label{display:flex; align-items:center; gap:6px; cursor:pointer;}
+  .radioline input{width:20px; height:20px; accent-color:var(--blue);}
+  pre.saved{background:#20344b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>📨 本地消息发送接收模拟器</h1>
+  <p>清华版《信息科技》五年级下册 · 第2单元 第3课 智能种植项目设计——信息的发送与接收(教材 P62—70)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 系统搭建</span>
+    <span class="badge" id="bg2">② 消息格式</span>
+    <span class="badge" id="bg3">③ 模式对比</span>
+    <span class="badge" id="bg4">④ 确认机制</span>
+    <span class="badge" id="bg5">⑤ 故障诊断 <span id="bgFix">0</span>/4</span>
+    <span class="badge" id="bg6">⑥ 消息方案</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">🔌 ① 发布/订阅搭建</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">✉️ ② 消息格式实验</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">⚖️ ③ 两种模式对比</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">📮 ④ 接收确认实验</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">🔧 ⑤ 故障诊断室</button>
+  <button data-tab="t6" onclick="showTab('t6',this)">📑 ⑥ 我的消息方案</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:发布/订阅系统搭建 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>🔌 任务一:给智能种植系统"接上消息线路"</h2>
+    <div class="task"><b>任务:</b>上节课我们远程控制了浇花器,这节课要为自己的智能种植项目设计<b>信息怎么发、怎么收</b>。请<b>先点击下方"主题标签"选中一个主题</b>,再<b>点击设备卡片上的空位</b>放上去:给每个发送端设置<b>发布主题</b>、每个接收端设置<b>订阅主题</b>。全部配好后,点「📨 发送测试消息」,看看消息能不能顺利送到!(点已放好的主题可以取下来重放)</div>
+    <h3>🏷️ 主题标签(可以重复使用,其中有 2 个是干扰项)</h3>
+    <div class="topicpool" id="topicPool"></div>
+    <div class="pscols" id="psArea">
+      <div>
+        <div class="colhead">📤 发送端(发布者)</div>
+        <div class="devbox" id="dev_s0">
+          <div class="devhead">🌡️ 温度传感器</div>
+          <div class="devdata">采集到:温度 26℃</div>
+          <div class="tslot" id="slot_s0" onclick="psSlotClick('s0')">📌 发布主题:<b>(未设置)</b></div>
+        </div>
+        <div class="devbox" id="dev_s1">
+          <div class="devhead">💧 土壤湿度传感器</div>
+          <div class="devdata">采集到:湿度 48%</div>
+          <div class="tslot" id="slot_s1" onclick="psSlotClick('s1')">📌 发布主题:<b>(未设置)</b></div>
+        </div>
+        <div class="devbox" id="dev_s2">
+          <div class="devhead">☀️ 光照传感器</div>
+          <div class="devdata">采集到:光照 较弱</div>
+          <div class="tslot" id="slot_s2" onclick="psSlotClick('s2')">📌 发布主题:<b>(未设置)</b></div>
+        </div>
+      </div>
+      <div>
+        <div class="colhead">☁️ 消息服务器(中转站)</div>
+        <div class="devbox server" id="psServerBox">
+          <div class="devhead">☁️ 消息服务器</div>
+          <div class="devdata">主题列表(谁发布、谁订阅,一目了然):</div>
+          <div class="topiclist" id="psTopicList">(还没有主题,先给设备放上主题标签吧)</div>
+        </div>
+      </div>
+      <div>
+        <div class="colhead">📥 接收端(订阅者)</div>
+        <div class="devbox" id="dev_r0">
+          <div class="devhead">📺 显示屏</div>
+          <div class="devdata">想要:温度数据</div>
+          <div class="tslot" id="slot_r0" onclick="psSlotClick('r0')">🔔 订阅主题:<b>(未设置)</b></div>
+          <div class="recvshow" id="show_r0">📭 还没有收到消息</div>
+        </div>
+        <div class="devbox" id="dev_r1">
+          <div class="devhead">🚿 水泵</div>
+          <div class="devdata">想要:土壤湿度数据</div>
+          <div class="tslot" id="slot_r1" onclick="psSlotClick('r1')">🔔 订阅主题:<b>(未设置)</b></div>
+          <div class="recvshow" id="show_r1">📭 还没有收到消息</div>
+        </div>
+        <div class="devbox" id="dev_r2">
+          <div class="devhead">💡 补光灯</div>
+          <div class="devdata">想要:光照数据</div>
+          <div class="tslot" id="slot_r2" onclick="psSlotClick('r2')">🔔 订阅主题:<b>(未设置)</b></div>
+          <div class="recvshow" id="show_r2">📭 还没有收到消息</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="psSend()">📨 发送测试消息</button>
+      <button class="btn ghost" onclick="psHint()">💡 分层提示</button>
+      <button class="btn gray" onclick="psReset()">🔄 重新配置</button>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+  <div class="card">
+    <h2>📖 发布/订阅是什么?</h2>
+    <p>就像<b>班级广播站</b>:广播站(☁️ 消息服务器)有很多<b>栏目</b>(主题 Topic);投稿的同学(📤 发送端)把稿件投到某个栏目,叫<b>发布</b>;想听哪个栏目就登记哪个栏目(📥 接收端),叫<b>订阅</b>。广播站只把稿件播给<b>登记了这个栏目</b>的同学。教材里的浇花器就是这样:设备接收到"打开水泵"消息时开始浇水——前提是它订阅对了主题!</p>
+    <p style="margin-top:6px"><span class="pill">发送端=发布者</span><span class="pill">主题 Topic=栏目名</span><span class="pill">消息服务器=中转站</span><span class="pill">接收端=订阅者</span></p>
+  </div>
+</section>
+
+<!-- ================= 模块二:消息格式实验 ================= -->
+<section class="tab" id="t2">
+  <div class="grid2">
+    <div class="card" style="margin-bottom:0">
+      <h2>🧱 任务二:拼装一条"人人能懂"的消息</h2>
+      <div class="task"><b>任务:</b>点击下面 4 块"消息积木",把它们装进消息里(再点一下可以取出)。先试试<b>只装"数值"</b>发一次,再把 4 块都装上发一次,对比接收端(显示屏)的反应有什么不同!</div>
+      <div>
+        <button class="fchip" id="fc_topic" onclick="fmtToggle('topic',this)">📌 主题 farm/temp</button>
+        <button class="fchip" id="fc_val" onclick="fmtToggle('val',this)">🔢 数值 <span id="fcValLb">26</span></button>
+        <button class="fchip" id="fc_unit" onclick="fmtToggle('unit',this)">📏 单位 ℃</button>
+        <button class="fchip" id="fc_time" onclick="fmtToggle('time',this)">🕙 时间 10:00</button>
+      </div>
+      <div class="ctl">
+        <label><span>数值调节(模拟温度变化)</span><output id="fmtValOut">26</output></label>
+        <input type="range" id="fmtVal" min="0" max="40" value="26" oninput="fmtValChanged()">
+      </div>
+      <h3>当前消息预览</h3>
+      <div class="msgprev" id="fmtPrev">(空消息)</div>
+      <div>
+        <button class="btn green" onclick="fmtSend()">📨 发送这条消息</button>
+        <button class="btn purple" onclick="fmtCompare()">⚡ 一键对比:只发数值 vs 完整消息</button>
+        <button class="btn gray small" onclick="fmtReset()">🔄 清空重选</button>
+      </div>
+      <div class="why" id="fmtWhy">💬 消息就像一封信:主题是收件地址,数值是正文,单位和时间是让人看得懂的说明。少了哪一块,接收端就会犯迷糊。</div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <h2>📺 接收端(显示屏)的理解</h2>
+      <div class="recvpanel" id="fmtRecv">📭 还没有收到消息。拼好消息后点「📨 发送这条消息」。</div>
+      <div class="feedback" id="fb2m"></div>
+      <div id="fmtCmp"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 模块三:发布订阅 vs 请求响应 ================= -->
+<section class="tab" id="t3">
+  <div class="card ctl">
+    <h2>⚖️ 任务三:同一件事,两种"聊天方式"</h2>
+    <div class="task"><b>任务:</b>农场里有 1 个温度传感器,还有几个想知道温度的"用户设备"。左边用<b>发布/订阅</b>(传感器主动推送给所有订阅者),右边用<b>请求/响应</b>(用户每次开口问,服务器才回答一次)。点「▶ 运行」跑满 <b>30 分钟</b>,比一比:哪边用的<b>消息条数</b>少?哪边的数据更<b>新鲜</b>?再调整下面 3 个参数,看结论会不会变!</div>
+    <div class="runbar">
+      <button class="btn green small" id="cmpRunBtn" onclick="cmpToggle()">▶ 运行</button>
+      <button class="btn orange small" onclick="cmpStepBtn()">⏭ 单步(+1分钟)</button>
+      <button class="btn gray small" onclick="cmpReset()">🔄 重置</button>
+      <span class="clock" id="cmpClock">第 0 分钟</span>
+    </div>
+    <div class="grid3">
+      <div>
+        <label><span>用户设备数量</span><output id="subNOut">3 个</output></label>
+        <input type="range" id="subN" min="1" max="5" value="3" oninput="cmpParamChanged('subN')">
+      </div>
+      <div>
+        <label><span>传感器发布间隔</span><output id="pubFreqOut">每 2 分钟</output></label>
+        <input type="range" id="pubFreq" min="1" max="6" value="2" oninput="cmpParamChanged('pubFreq')">
+      </div>
+      <div>
+        <label><span>用户询问间隔</span><output id="reqGapOut">每 5 分钟</output></label>
+        <input type="range" id="reqGap" min="2" max="10" value="5" oninput="cmpParamChanged('reqGap')">
+      </div>
+    </div>
+    <div class="why" id="cmpWhy">💬 调整参数后,两边的计数会清零重新比,这样比赛才公平。</div>
+    <div class="grid2" style="margin-top:12px">
+      <div class="panelbox">
+        <h3>📢 发布/订阅模式</h3>
+        <div class="flowline"><span class="nodechip" id="pubSensor">🌡️ 传感器</span>➡<span class="nodechip" id="pubSrv">☁️ 服务器</span>➡ 同时推送给所有订阅者</div>
+        <div id="pubUsers"></div>
+        <div class="pstat">消息条数:<b id="pubMsgs">0</b> · 大家的数据平均是 <b id="pubFresh">—</b> 前的</div>
+        <div class="minilog" id="pubLast">还没开始</div>
+      </div>
+      <div class="panelbox">
+        <h3>🙋 请求/响应模式</h3>
+        <div class="flowline"><span class="nodechip" id="reqSrv">☁️ 服务器</span>⬅➡ 用户开口问一次,才答一次(一来一回 2 条)</div>
+        <div id="reqUsers"></div>
+        <div class="pstat">消息条数:<b id="reqMsgs">0</b> · 大家的数据平均是 <b id="reqFresh">—</b> 前的</div>
+        <div class="minilog" id="reqLast">还没开始</div>
+      </div>
+    </div>
+    <div id="cmpConcl"></div>
+    <div class="feedback" id="fb3"></div>
+  </div>
+  <div class="card">
+    <h2>📖 什么时候用哪种模式?</h2>
+    <p>💬 <b>发布/订阅</b>:传感器数据要让<b>很多设备随时保持最新</b>(比如温度一变,显示屏、记录本、报警器同时知道),一次发布、人人更新,又快又省。<b>请求/响应</b>:只是<b>偶尔查一次</b>(比如你想起来问一句"今天浇水了吗?"),想问才问,简单直接。我们的智能种植项目里,两种方式常常搭配使用!</p>
+  </div>
+</section>
+
+<!-- ================= 模块四:接收确认(ACK)实验 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>📮 任务四:消息半路丢了,发送方怎么知道?</h2>
+    <div class="task"><b>任务:</b>网络有时会把消息弄丢。请分两步实验:<b>第1步</b>把丢包率调到 30%、<b>关闭</b>确认机制,连发 5 条,看看发送方是不是"傻傻不知道"丢了几条;<b>第2步</b><b>打开</b>「接收确认(ACK)」再连发 5 条,观察超时重发怎么把丢掉的消息补回来!</div>
+    <div class="grid2">
+      <div class="ctl">
+        <div class="switch"><input type="checkbox" id="ackOn" onchange="ackModeChanged()"><span>📬 接收确认(ACK)机制</span></div>
+        <label><span>丢包率(消息半路丢失的概率)</span><output id="ackLossOut">30%</output></label>
+        <input type="range" id="ackLoss" min="0" max="80" step="10" value="30" oninput="ackLossChanged()">
+        <label><span>超时重发时间(等多久没确认就重发)</span><output id="ackToOut">2.0 秒</output></label>
+        <input type="range" id="ackTo" min="1" max="4" step="0.5" value="2" oninput="ackToChanged()">
+        <div class="runbar">
+          <button class="btn green" onclick="ackBatch(1)">📨 发送 1 条</button>
+          <button class="btn" onclick="ackBatch(5)">📨📨 连发 5 条</button>
+          <button class="btn gray small" onclick="ackReset()">🧹 清零重来</button>
+        </div>
+        <div class="why" id="ackWhy">💬 橙色小球=数据消息,绿色小球=确认回执(ACK)。丢包率越高,小球越容易半路"阵亡"。</div>
+      </div>
+      <div>
+        <div class="lane" id="ackLane">
+          <div class="lanebox" id="ackS"><span class="big">🌱</span>发送方<br><small>传感器节点</small></div>
+          <div class="lanebox" id="ackR"><span class="big">☁️</span>接收方<br><small>消息服务器</small></div>
+        </div>
+        <div class="statrow">
+          <div class="stat"><b id="akSent">0</b><span>发送次数(含重发)</span></div>
+          <div class="stat"><b id="akGot">0</b><span>接收方实际收到</span></div>
+          <div class="stat"><b id="akConf">0</b><span>发送方以为送达</span></div>
+          <div class="stat"><b id="akRe">0</b><span>超时重发次数</span></div>
+        </div>
+      </div>
+    </div>
+    <h3>📜 实验记录</h3>
+    <div class="msglist" id="ackLog"><div style="color:#5b7186">暂无记录</div></div>
+    <div class="feedback" id="fb4"></div>
+  </div>
+</section>
+
+<!-- ================= 模块五:故障诊断室 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>🔧 任务五:消息系统坏了,当一次小小诊断师!</h2>
+    <div class="task"><b>任务:</b>4 套智能种植消息系统出了不同的毛病。请按 3 步排查:①读症状 → ②点击检查项收集线索 → ③判断故障原因并选修复方法。修好一套点亮一颗 ✅!卡住了就点「💡 分层提示」。</div>
+    <div class="case-tabs" id="caseTabs"></div>
+    <div id="caseBody"></div>
+  </div>
+</section>
+
+<!-- ================= 模块六:我的消息方案 ================= -->
+<section class="tab" id="t6">
+  <div class="card">
+    <h2>📑 任务六:生成"我的智能种植消息方案"</h2>
+    <div class="task"><b>任务:</b>教材说"凡事预则立"——项目计划书里要写清楚信息怎么发、怎么收。下面的主题表和消息格式来自你在任务一、任务二里的配置,再选好确认机制、填上 3 段文字,点「生成方案预览」,就是你的项目方案啦!</div>
+    <div class="statrow">
+      <div class="stat"><b id="sRoute">0</b><span>路由测试次数</span></div>
+      <div class="stat"><b id="sMsg">0</b><span>发送消息总数</span></div>
+      <div class="stat"><b id="sLost">0</b><span>丢失/无人接收</span></div>
+      <div class="stat"><b id="sRe">0</b><span>超时重发次数</span></div>
+      <div class="stat"><b id="sFix">0/4</b><span>修好的故障</span></div>
+      <div class="stat"><b id="sCmp">0</b><span>对比实验消息数</span></div>
+    </div>
+    <h3>1️⃣ 我的主题方案表(来自任务一)
+      <button class="btn ghost small" onclick="planUseDefault()">🪄 一键填入推荐方案</button></h3>
+    <div id="planTopics"></div>
+    <h3>2️⃣ 我的消息格式(来自任务二)</h3>
+    <div id="planFmt"></div>
+    <h3>3️⃣ 确认机制选择</h3>
+    <div class="radioline">
+      <label><input type="radio" name="ackChoice" value="on" checked>开启接收确认(重要消息一条都不能丢)</label>
+      <label><input type="radio" name="ackChoice" value="off">不开启(省消息,偶尔丢一条没关系)</label>
+    </div>
+    <textarea id="p3" placeholder="我的理由,例:浇水指令很重要,丢了植物会干死,所以开启确认;丢了就超时重发。"></textarea>
+    <h3>4️⃣ 项目名称与背景(参考教材"项目概述")</h3>
+    <textarea id="p1" placeholder="例:阳台迷你温室。暑假全家旅游,家里的多肉没人照顾,我想让传感器把温度、湿度发给手机,还能远程开水泵和补光灯。"></textarea>
+    <h3>5️⃣ 我的收获与反思(参考教材"总结与反思")</h3>
+    <textarea id="p2" placeholder="例:我发现主题拼错一个字母消息就没人收;消息要按约定格式写,接收端才看得懂;重要消息要开确认机制。"></textarea>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genPlan()">📄 生成方案预览</button>
+      <button class="btn" onclick="exportPlan()">📥 导出方案(HTML文件)</button>
+    </div>
+    <div class="feedback" id="fb6"></div>
+    <div id="planPreview"></div>
+  </div>
+  <div class="card">
+    <h2>📋 实验日志</h2>
+    <div class="task"><b>说明:</b>模拟器自动记录你的每一次配置、发送、实验和排查。这些记录只保存在你自己的电脑里。</div>
+    <div style="margin-bottom:10px">
+      <button class="btn small" onclick="renderLog()">🔄 刷新</button>
+      <button class="btn green small" onclick="exportCSV()">📥 导出日志(CSV)</button>
+      <button class="btn red small" onclick="clearLog()">🗑 清空日志</button>
+      <span class="pill">共 <b id="logCount">0</b> 条记录</span>
+    </div>
+    <div class="logwrap">
+      <table>
+        <thead><tr><th>时间</th><th>模块</th><th>事件</th><th>结果</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="4" style="color:#5b7186">暂无记录,去做实验吧!</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出项目(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入项目</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>本地消息发送接收模拟器 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态与小助手
+============================================================ */
+const $=id=>document.getElementById(id);
+const progress={ps:false,fmt:false,cmp:false,ack:false,fix:0,plan:false};
+let logRows=[];   // {time,mod,content,result}
+const stats={route:0,msg:0,lost:0,fmtOk:0,cmpMsgs:0};
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t6'){renderPlanTables(); refreshStats(); renderLog();}
+}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function fb(id,cls,html){const e=$(id);e.className='feedback '+cls;e.innerHTML=html;}
+function flashEl(el){if(!el)return;el.classList.add('hot');setTimeout(()=>el.classList.remove('hot'),380);}
+function nowStr(){return new Date().toLocaleTimeString('zh-CN',{hour12:false});}
+function addLog(mod,content,result){
+  logRows.push({time:nowStr(),mod,content,result:result||'—'});
+  if(logRows.length>500)logRows.shift();
+}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+/* 飞行小球:在 area 里从 fromEl 飞到 toEl(frac<1 表示半路丢失) */
+function flyDot(area,fromEl,toEl,label,cls,frac,dur){
+  frac=frac===undefined?1:frac; dur=dur||650;
+  return new Promise(res=>{
+    if(!area||!fromEl||!toEl){res();return;}
+    const ar=area.getBoundingClientRect(),fr=fromEl.getBoundingClientRect(),tr=toEl.getBoundingClientRect();
+    const x0=fr.left-ar.left+fr.width/2, y0=fr.top-ar.top+fr.height/2;
+    const x1=x0+(tr.left-ar.left+tr.width/2-x0)*frac, y1=y0+(tr.top-ar.top+tr.height/2-y0)*frac;
+    const d=document.createElement('div');
+    d.className='fly'+(cls?' '+cls:''); d.textContent=label;
+    d.style.left=x0+'px'; d.style.top=y0+'px'; d.style.transitionDuration=dur+'ms';
+    area.appendChild(d);
+    requestAnimationFrame(()=>{requestAnimationFrame(()=>{d.style.left=x1+'px'; d.style.top=y1+'px';});});
+    setTimeout(()=>{
+      if(frac<1){d.classList.add('dead'); setTimeout(()=>d.remove(),650);}
+      else d.remove();
+      res();
+    },dur+60);
+  });
+}
+/* 在某个元素上方打一个短暂的标记 */
+function markAt(area,el,label){
+  if(!area||!el)return;
+  const ar=area.getBoundingClientRect(),r=el.getBoundingClientRect();
+  const d=document.createElement('div'); d.className='fly lostmark'; d.textContent=label;
+  d.style.left=(r.left-ar.left+r.width/2)+'px'; d.style.top=(r.top-ar.top+r.height/2-34)+'px';
+  area.appendChild(d);
+  setTimeout(()=>{d.classList.add('dead');setTimeout(()=>d.remove(),650);},1400);
+}
+
+/* ============================================================
+   模块一:发布/订阅系统搭建(点击选择 → 点击放置)
+============================================================ */
+const PS_SENDERS=[
+  {id:'s0',ico:'🌡️',name:'温度传感器',data:'温度 26℃',need:'temp'},
+  {id:'s1',ico:'💧',name:'土壤湿度传感器',data:'湿度 48%',need:'soil'},
+  {id:'s2',ico:'☀️',name:'光照传感器',data:'光照 较弱',need:'light'},
+];
+const PS_RECVS=[
+  {id:'r0',ico:'📺',name:'显示屏',want:'temp',wantName:'温度数据'},
+  {id:'r1',ico:'🚿',name:'水泵',want:'soil',wantName:'土壤湿度数据'},
+  {id:'r2',ico:'💡',name:'补光灯',want:'light',wantName:'光照数据'},
+];
+const PS_TOPICS=['farm/temp','farm/soil','farm/light','farm/door','home/music'];
+const RECOMMEND={s0:'farm/temp',s1:'farm/soil',s2:'farm/light',r0:'farm/temp',r1:'farm/soil',r2:'farm/light'};
+const psPub={s0:null,s1:null,s2:null};
+const psSub={r0:null,r1:null,r2:null};
+const psShow={r0:null,r1:null,r2:null};
+let psSelTopic=null, psHintLv=0, psBusy=false;
+
+function renderTopicPool(){
+  $('topicPool').innerHTML='';
+  PS_TOPICS.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='tchip'+(psSelTopic===t?' sel':''); b.textContent='🏷️ '+t;
+    b.onclick=()=>{psSelTopic=(psSelTopic===t?null:t);renderTopicPool();};
+    $('topicPool').appendChild(b);
+  });
+}
+function psSlotClick(id){
+  const isPub=id[0]==='s';
+  const store=isPub?psPub:psSub;
+  if(psSelTopic){
+    store[id]=psSelTopic;
+    const t=psSelTopic; psSelTopic=null;
+    renderTopicPool(); renderPS();
+    addLog('搭建',(isPub?'发布':'订阅')+'主题设置:'+id+' → '+t);
+    fb('fb1','info','✅ 已把主题「'+t+'」设为'+(isPub?'发布主题':'订阅主题')+'。全部配好后点「📨 发送测试消息」!');
+  }else if(store[id]){
+    const t=store[id]; store[id]=null; renderPS();
+    fb('fb1','info','已取下主题「'+t+'」,可以重新放一个。');
+  }else{
+    fb('fb1','info','💡 先在上方"主题标签"里点选一个主题(会变橙色),再点这个空位放上去。');
+  }
+}
+function renderPS(){
+  PS_SENDERS.forEach(s=>{
+    const sl=$('slot_'+s.id);
+    sl.classList.toggle('filled',!!psPub[s.id]);
+    sl.innerHTML='📌 发布主题:<b>'+(psPub[s.id]||'(未设置)')+'</b>';
+  });
+  PS_RECVS.forEach(r=>{
+    const sl=$('slot_'+r.id);
+    sl.classList.toggle('filled',!!psSub[r.id]);
+    sl.innerHTML='🔔 订阅主题:<b>'+(psSub[r.id]||'(未设置)')+'</b>';
+    $('show_'+r.id).textContent=psShow[r.id]?('📥 收到:'+psShow[r.id]):'📭 还没有收到消息';
+  });
+  const topics=[...new Set([...Object.values(psPub),...Object.values(psSub)].filter(Boolean))];
+  $('psTopicList').innerHTML=topics.length?topics.map(t=>{
+    const pubs=PS_SENDERS.filter(s=>psPub[s.id]===t).map(s=>s.ico+s.name).join('、')||'⚠️ 没人发布';
+    const subs=PS_RECVS.filter(r=>psSub[r.id]===t).map(r=>r.ico+r.name).join('、')||'⚠️ 没人订阅';
+    return '<div class="trow"><b>'+t+'</b><br>发布:'+pubs+'<br>订阅:'+subs+'</div>';
+  }).join(''):'(还没有主题,先给设备放上主题标签吧)';
+}
+async function psSend(){
+  if(psBusy){fb('fb1','info','⏳ 消息还在路上,等它们飞完再发。');return;}
+  const configured=PS_SENDERS.filter(s=>psPub[s.id]);
+  if(!configured.length){fb('fb1','info','💡 还没有给任何发送端设置发布主题呢。先点击主题标签,再点传感器卡片上的"发布主题"空位。');return;}
+  psBusy=true; stats.route++;
+  const area=$('psArea'), server=$('psServerBox');
+  const results=[];
+  for(const s of PS_SENDERS){
+    const topic=psPub[s.id];
+    if(!topic){results.push('⚪ '+s.ico+s.name+':没设发布主题,消息发不出去。');continue;}
+    stats.msg++;
+    await flyDot(area,$('dev_'+s.id),server,topic+' | '+s.data,'');
+    flashEl(server);
+    const subs=PS_RECVS.filter(r=>psSub[r.id]===topic);
+    if(!subs.length){
+      stats.lost++;
+      markAt(area,server,'❌ 无人订阅 '+topic);
+      results.push('❌ '+s.ico+s.name+' 的消息发到了「'+topic+'」,可是<b>没有任何设备订阅</b>这个主题,消息无人接收!');
+      addLog('搭建','消息 '+topic+' 无人接收','❌');
+      await new Promise(r=>setTimeout(r,500));
+    }else{
+      await Promise.all(subs.map(r=>{stats.msg++;return flyDot(area,server,$('dev_'+r.id),s.data,'up');}));
+      subs.forEach(r=>{
+        flashEl($('dev_'+r.id)); psShow[r.id]=s.data;
+        const ok=(r.want===s.need);
+        results.push(ok?('✅ '+r.ico+r.name+' 通过「'+topic+'」收到了'+s.data+'——正好是它需要的!')
+                      :('⚠️ '+r.ico+r.name+' 收到了「'+s.data+'」,可它想要的是'+r.wantName+',它看不懂!主题接错线路啦。'));
+        addLog('搭建',r.name+' 通过 '+topic+' 收到 '+s.data,(ok?'✅ 匹配':'⚠️ 收错'));
+      });
+    }
+  }
+  renderPS();
+  const distinct=new Set(PS_SENDERS.map(s=>psPub[s.id]).filter(Boolean)).size===3;
+  const allOk=PS_RECVS.every((r,i)=>{
+    const s=PS_SENDERS[i];
+    return psPub[s.id]&&psSub[r.id]===psPub[s.id];
+  })&&distinct;
+  const html='<div style="margin-bottom:6px">'+results.join('<br>')+'</div>';
+  if(allOk){
+    const usedRec=PS_SENDERS.every(s=>psPub[s.id]===RECOMMEND[s.id]);
+    fb('fb1','ok',html+'🎉 三条线路全部接通!每个接收端都<b>只</b>收到了自己需要的数据——这就是发布/订阅按主题路由的威力。'+(usedRec?'你用的主题名"见名知意",非常专业!':'消息送到了!小建议:主题名最好能看出内容,比如温度用 farm/temp,别人一看就懂。')+' 去「② 消息格式实验」继续吧!');
+    if(!progress.ps){progress.ps=true;setBadge(1);}
+    addLog('搭建','发布/订阅系统搭建成功','🎉');
+  }else{
+    fb('fb1','bad',html+'🤔 还有线路没接通或接错了。记住两条规则:<b>①发布主题和订阅主题必须一字不差</b>;<b>②三个传感器要用三个不同的主题</b>,不然接收端会收到别人的数据。点「💡 分层提示」看看。');
+  }
+  psBusy=false;
+}
+function psHint(){
+  psHintLv=Math.min(psHintLv+1,3);
+  const hs=[
+    '提示①:水泵想要"土壤湿度"数据,那它订阅的主题必须和湿度传感器发布的主题<b>一模一样</b>。发布和订阅就像对暗号,差一个字母都对不上。',
+    '提示②:三个传感器要用三个<b>不同</b>的主题,不然水泵会收到温度消息,吓一跳!推荐:温度用 farm/temp、土壤湿度用 farm/soil、光照用 farm/light。farm/door 和 home/music 是干扰项。',
+    '提示③:标准接法——🌡️温度传感器发布 farm/temp,📺显示屏订阅 farm/temp;💧湿度传感器发布 farm/soil,🚿水泵订阅 farm/soil;☀️光照传感器发布 farm/light,💡补光灯订阅 farm/light。'
+  ];
+  fb('fb1','info','💡 '+hs[psHintLv-1]);
+}
+function psReset(){
+  Object.keys(psPub).forEach(k=>psPub[k]=null);
+  Object.keys(psSub).forEach(k=>psSub[k]=null);
+  Object.keys(psShow).forEach(k=>psShow[k]=null);
+  psSelTopic=null; psHintLv=0;
+  renderTopicPool(); renderPS();
+  fb('fb1','info','已重置,重新配置主题吧!');
+}
+
+/* ============================================================
+   模块二:消息格式实验
+============================================================ */
+const fmtSel={topic:false,val:false,unit:false,time:false};
+function syncFmtChips(){
+  [['topic','fc_topic'],['val','fc_val'],['unit','fc_unit'],['time','fc_time']].forEach(p=>{
+    $(p[1]).classList.toggle('selon',fmtSel[p[0]]);
+  });
+}
+function fmtToggle(k,btn){
+  fmtSel[k]=!fmtSel[k];
+  btn.classList.toggle('selon',fmtSel[k]);
+  renderFmt();
+  const names={topic:'主题',val:'数值',unit:'单位',time:'时间'};
+  $('fmtWhy').innerHTML='💬 你'+(fmtSel[k]?'装上':'取下')+'了「'+names[k]+'」积木。看左下角的消息预览变了吗?再点「📨 发送」看接收端的反应。';
+}
+function renderFmt(){
+  const v=$('fmtVal').value;
+  const parts=[];
+  if(fmtSel.topic)parts.push('farm/temp');
+  if(fmtSel.val)parts.push(v);
+  if(fmtSel.unit)parts.push('℃');
+  if(fmtSel.time)parts.push('10:00');
+  $('fmtPrev').textContent=parts.length?parts.join(' | '):'(空消息)';
+}
+function fmtValChanged(){
+  const v=$('fmtVal').value;
+  $('fmtValOut').textContent=v; $('fcValLb').textContent=v;
+  renderFmt();
+  $('fmtWhy').innerHTML='💬 数值变成了 '+v+'。格式不变、内容可以变——这就是约定格式的好处:接收端按同一套"读法"就能读懂每天不同的数据。';
+}
+function fmtSend(){
+  const v=$('fmtVal').value;
+  const anyOn=Object.values(fmtSel).some(Boolean);
+  if(!anyOn){
+    $('fmtRecv').innerHTML='📭 收到一条<b>空消息</b>……显示屏眨眨眼:啥也没有呀?';
+    fb('fb2m','info','💡 先点击左边的"消息积木"装点内容进去,再发送。');
+    return;
+  }
+  const lines=[];
+  if(fmtSel.topic)lines.push('<li>✅ 看到主题 farm/temp:哦!这是发给我的<b>温度</b>数据,水泵知道这条不用管。</li>');
+  else lines.push('<li>❓ 没有主题:这消息是给显示屏的还是给水泵的?是温度还是湿度?完全猜不出!</li>');
+  if(fmtSel.val)lines.push('<li>✅ 数值 '+v+':有具体数字了。</li>');
+  else lines.push('<li>❓ 没有数值:连数字都没有,什么都显示不了。</li>');
+  if(fmtSel.unit)lines.push('<li>✅ 单位 ℃:确定是摄氏度,不会和湿度的 % 搞混。</li>');
+  else lines.push('<li>❓ 没有单位:'+(fmtSel.val?v:'这个数')+' 是 '+(fmtSel.val?v:'?')+'℃ 还是 '+(fmtSel.val?v:'?')+'%?差别可太大了!</li>');
+  if(fmtSel.time)lines.push('<li>✅ 时间 10:00:知道是什么时候测的,数据新不新一目了然。</li>');
+  else lines.push('<li>❓ 没有时间:不知道是刚测的,还是昨天的旧数据。</li>');
+  const missing=4-Object.values(fmtSel).filter(Boolean).length;
+  const all=missing===0;
+  $('fmtRecv').innerHTML='<b>显示屏读到:</b><ul>'+lines.join('')+'</ul>'+
+    (all?('<div class="okscreen">🕙 10:00 · 农场温度 '+v+'℃</div>'):'');
+  addLog('格式','发送消息:'+$('fmtPrev').textContent,(all?'✅ 完整':'❓ 缺 '+missing+' 块'));
+  if(all){
+    stats.fmtOk++;
+    fb('fb2m','ok','🎉 完美!主题+数值+单位+时间,四块积木齐了,接收端一眼读懂、正确显示。<b>这就是为什么消息要有约定格式</b>:发送方和接收方说好"每一块放什么",信息才不会被误会。');
+    if(!progress.fmt){progress.fmt=true;setBadge(2);}
+  }else{
+    fb('fb2m','bad','🤔 接收端还有 '+missing+' 个疑问(看上面的 ❓)。把缺少的积木装上,再发一次试试——你马上就能让它完全读懂!');
+  }
+}
+function fmtCompare(){
+  const v=$('fmtVal').value;
+  $('fmtCmp').innerHTML='<div class="grid2" style="margin-top:10px;gap:10px">'+
+    '<div class="cmpmini"><h4>只发数值:「'+v+'」</h4>📺 显示屏:"'+v+'??? 是温度还是湿度?什么单位?什么时候测的?给我的还是给水泵的?" 🚿 水泵:"该不该浇水?不敢动!"</div>'+
+    '<div class="cmpmini"><h4>完整消息:「farm/temp | '+v+' | ℃ | 10:00」</h4>📺 显示屏:"明白!10:00 农场温度 '+v+'℃,马上显示。" 🚿 水泵:"主题不是发给我的,不用理会。"</div></div>';
+  fb('fb2m','info','💬 同样的数字,加上<b>主题、单位、时间</b>后,接收端就能准确理解、正确行动。约定消息格式,就像大家说好同一种"语言"。');
+  addLog('格式','一键对比:只发数值 vs 完整消息');
+}
+function fmtReset(){
+  Object.keys(fmtSel).forEach(k=>fmtSel[k]=false);
+  syncFmtChips(); renderFmt();
+  $('fmtRecv').innerHTML='📭 还没有收到消息。拼好消息后点「📨 发送这条消息」。';
+  $('fmtCmp').innerHTML='';
+  fb('fb2m','info','已清空,重新拼装吧!');
+}
+
+/* ============================================================
+   模块三:发布订阅 vs 请求响应 对比模拟
+============================================================ */
+const cmp={running:false,t:0,timer:null,pubMsgs:0,reqMsgs:0,pubUsers:[],reqUsers:[],
+           pubStale:0,reqStale:0,samples:0,concluded:false,sensor:26};
+function cmpInit(){
+  const n=+$('subN').value;
+  cmp.t=0; cmp.pubMsgs=0; cmp.reqMsgs=0; cmp.pubStale=0; cmp.reqStale=0; cmp.samples=0; cmp.concluded=false;
+  cmp.pubUsers=[]; cmp.reqUsers=[];
+  for(let i=0;i<n;i++){
+    cmp.pubUsers.push({val:null,at:-1});
+    cmp.reqUsers.push({val:null,at:-1,next:1+i});
+  }
+  $('pubUsers').innerHTML=cmp.pubUsers.map((u,i)=>'<div class="urow" id="pu'+i+'">📟 订阅者'+(i+1)+':<b id="puv'+i+'">--</b> <span class="ago" id="pua'+i+'">(还没收到)</span></div>').join('');
+  $('reqUsers').innerHTML=cmp.reqUsers.map((u,i)=>'<div class="urow" id="ru'+i+'">📱 用户'+(i+1)+':<b id="ruv'+i+'">--</b> <span class="ago" id="rua'+i+'">(还没问过)</span></div>').join('');
+  $('pubLast').textContent='还没开始'; $('reqLast').textContent='还没开始';
+  $('cmpConcl').innerHTML='';
+  cmpRender();
+}
+function cmpToggle(){
+  cmp.running=!cmp.running;
+  $('cmpRunBtn').textContent=cmp.running?'⏸ 暂停':'▶ 运行';
+  $('cmpRunBtn').className='btn small '+(cmp.running?'orange':'green');
+  if(cmp.running){cmp.timer=setInterval(cmpTickStep,600);}
+  else clearInterval(cmp.timer);
+}
+function cmpStepBtn(){if(cmp.running)cmpToggle();cmpTickStep();}
+function cmpReset(){
+  if(cmp.running)cmpToggle();
+  cmpInit();
+  $('cmpWhy').innerHTML='💬 已重置。点「▶ 运行」或「⏭ 单步」,跑满 30 分钟就会给出对比结论。';
+}
+function cmpTickStep(){
+  cmp.t++;
+  cmp.sensor=Math.round(24+4*Math.sin(cmp.t/5))+(Math.random()<.5?0:1);
+  const n=cmp.pubUsers.length, pf=+$('pubFreq').value, rg=+$('reqGap').value;
+  if(cmp.t%pf===0){
+    cmp.pubMsgs+=1+n;
+    flashEl($('pubSensor')); flashEl($('pubSrv'));
+    cmp.pubUsers.forEach((u,i)=>{u.val=cmp.sensor;u.at=cmp.t;flashEl($('pu'+i));});
+    $('pubLast').textContent='第'+cmp.t+'分钟:传感器发布 '+cmp.sensor+'℃ → 服务器同时推送给 '+n+' 个订阅者(共 '+(1+n)+' 条消息)';
+  }
+  cmp.reqUsers.forEach((u,i)=>{
+    if(cmp.t>=u.next){
+      cmp.reqMsgs+=2; u.val=cmp.sensor; u.at=cmp.t; u.next=cmp.t+rg;
+      flashEl($('ru'+i)); flashEl($('reqSrv'));
+      $('reqLast').textContent='第'+cmp.t+'分钟:用户'+(i+1)+'发出询问,服务器回答 '+cmp.sensor+'℃(一问一答 2 条消息)';
+    }
+  });
+  let ps=0,rs=0;
+  cmp.pubUsers.forEach(u=>ps+=(u.at<0?cmp.t:(cmp.t-u.at)));
+  cmp.reqUsers.forEach(u=>rs+=(u.at<0?cmp.t:(cmp.t-u.at)));
+  cmp.pubStale+=ps/n; cmp.reqStale+=rs/n; cmp.samples++;
+  cmpRender();
+  if(cmp.t>=30&&!cmp.concluded)cmpConclude();
+  if(cmp.t>=60&&cmp.running)cmpToggle();
+}
+function cmpRender(){
+  $('cmpClock').textContent='第 '+cmp.t+' 分钟';
+  $('pubMsgs').textContent=cmp.pubMsgs; $('reqMsgs').textContent=cmp.reqMsgs;
+  const avg=(arr)=>{let s=0;arr.forEach(u=>s+=(u.at<0?cmp.t:(cmp.t-u.at)));return arr.length?(s/arr.length):0;};
+  $('pubFresh').textContent=cmp.t?avg(cmp.pubUsers).toFixed(1)+' 分钟':'—';
+  $('reqFresh').textContent=cmp.t?avg(cmp.reqUsers).toFixed(1)+' 分钟':'—';
+  cmp.pubUsers.forEach((u,i)=>{
+    const v=$('puv'+i),a=$('pua'+i); if(!v)return;
+    v.textContent=u.val===null?'--':u.val+'℃';
+    a.textContent=u.val===null?'(还没收到)':'('+(cmp.t-u.at)+' 分钟前的数据)';
+  });
+  cmp.reqUsers.forEach((u,i)=>{
+    const v=$('ruv'+i),a=$('rua'+i); if(!v)return;
+    v.textContent=u.val===null?'--':u.val+'℃';
+    a.textContent=u.val===null?'(还没问过)':'('+(cmp.t-u.at)+' 分钟前的数据)';
+  });
+}
+function cmpConclude(){
+  cmp.concluded=true;
+  const ap=(cmp.pubStale/cmp.samples).toFixed(1), ar=(cmp.reqStale/cmp.samples).toFixed(1);
+  $('cmpConcl').innerHTML='<div class="why" style="margin-top:12px">📊 <b>30 分钟对比结果:</b>发布/订阅共用了 <b>'+cmp.pubMsgs+'</b> 条消息,大家手里的数据平均只有 <b>'+ap+'</b> 分钟"旧";请求/响应共用了 <b>'+cmp.reqMsgs+'</b> 条消息,数据平均 <b>'+ar+'</b> 分钟"旧"。💬 <b>发布/订阅</b>:一次发布、所有订阅者同时更新,订阅的人越多越划算,数据始终新鲜——适合传感器数据的持续推送;<b>请求/响应</b>:不问就不答,每个人都得单独问,两次询问之间数据会变旧——适合偶尔查一次的场合。</div>';
+  stats.cmpMsgs=cmp.pubMsgs+cmp.reqMsgs;
+  addLog('对比','30分钟对比:发布订阅 '+cmp.pubMsgs+' 条 / 请求响应 '+cmp.reqMsgs+' 条','完成');
+  fb('fb3','ok','🎉 完成 30 分钟对比实验!结论已生成在下方。试着把"用户设备数量"调到 5、"询问间隔"调到 2,重新跑一遍,看看消息条数差距会不会拉大。');
+  if(!progress.cmp){progress.cmp=true;setBadge(3);}
+}
+function cmpParamChanged(kind){
+  const v=$(kind).value;
+  if(kind==='subN'){
+    $('subNOut').textContent=v+' 个';
+    cmpInit();
+    $('cmpWhy').innerHTML='💬 用户设备改为 '+v+' 个:发布/订阅一次发布就能同步 '+v+' 个人;请求/响应则要 '+v+' 个人各自去问,消息量成倍增长。计数已清零,重新跑一遍比比看!';
+  }
+  if(kind==='pubFreq'){
+    $('pubFreqOut').textContent='每 '+v+' 分钟';
+    $('cmpWhy').innerHTML='💬 传感器每 '+v+' 分钟发布一次:间隔越短,订阅者的数据越新鲜,但消息条数也越多——"新鲜"和"省消息"要权衡。';
+  }
+  if(kind==='reqGap'){
+    $('reqGapOut').textContent='每 '+v+' 分钟';
+    $('cmpWhy').innerHTML='💬 用户每 '+v+' 分钟询问一次:间隔越长越省消息,可两次询问之间,大家拿着的都是越来越旧的数据。';
+  }
+}
+
+/* ============================================================
+   模块四:接收确认(ACK)实验
+============================================================ */
+const ack={sent:0,got:0,conf:0,assume:0,resend:0,seq:0,epoch:0,
+           gotIds:new Set(),confIds:new Set(),doneOff:false,doneOn:false};
+function renderAck(){
+  $('akSent').textContent=ack.sent;
+  $('akGot').textContent=ack.got;
+  $('akConf').textContent=ack.assume+ack.conf;
+  $('akRe').textContent=ack.resend;
+}
+function addAckLog(t){
+  const box=$('ackLog');
+  if(box.children.length===1&&box.textContent.includes('暂无'))box.innerHTML='';
+  const d=document.createElement('div'); d.textContent='['+nowStr()+'] '+t;
+  box.prepend(d);
+  while(box.children.length>40)box.lastChild.remove();
+}
+function ackModeChanged(){
+  const on=$('ackOn').checked;
+  $('ackWhy').innerHTML=on?'💬 已开启确认机制:接收方每收到一条消息就回一张"收到啦"的回执(ACK)。发送方等不到回执就会<b>超时重发</b>,直到确认送达(最多试 3 次)。'
+                          :'💬 已关闭确认机制:发送方把消息扔出去就不管了,丢没丢、到没到,它完全不知道。';
+  addLog('确认','确认机制 '+(on?'开启':'关闭'));
+}
+function ackLossChanged(){
+  const v=$('ackLoss').value;
+  $('ackLossOut').textContent=v+'%';
+  $('ackWhy').innerHTML='💬 丢包率调到 '+v+'%:大约每 10 条就有 '+(v/10)+' 条半路丢失。丢包率越高,越能看出"有没有确认机制"的差别。';
+}
+function ackToChanged(){
+  const v=(+$('ackTo').value).toFixed(1);
+  $('ackToOut').textContent=v+' 秒';
+  $('ackWhy').innerHTML='💬 超时时间调到 '+v+' 秒:发送方等 '+v+' 秒还没收到确认,就认为消息丢了、自动重发。太短会"心急"重发太多,太长丢了半天才补救。';
+}
+function maybeAckBadge(){
+  if(ack.doneOff&&ack.doneOn&&!progress.ack){
+    progress.ack=true; setBadge(4);
+    setTimeout(()=>fb('fb4','ok','🏆 你已经在"无确认"和"有确认"两种情况下都做过实验,徽章点亮!把你的发现写进「⑥ 我的消息方案」吧。'),2600);
+  }
+}
+function ackBatch(n){
+  const lane=$('ackLane');
+  if(lane.querySelectorAll('.fly').length>26){fb('fb4','info','⏳ 实验区太热闹啦,等小球飞完或点「🧹 清零重来」。');return;}
+  const loss=+$('ackLoss').value, on=$('ackOn').checked;
+  for(let i=0;i<n;i++){
+    const id=++ack.seq;
+    setTimeout(()=>ackLaunch(id,1,ack.epoch),i*320);
+  }
+  if(loss>0){ if(on)ack.doneOn=true; else ack.doneOff=true; maybeAckBadge(); }
+  addLog('确认','发送 '+n+' 条消息(丢包率'+loss+'%,确认'+(on?'开':'关')+')');
+  if(loss===0)fb('fb4','info','💡 丢包率是 0%,消息一条也不会丢,看不出差别。把丢包率调大(比如 30%)再实验,对比才明显!');
+  else fb('fb4','info','👀 已发送!盯住小球:变红消失的就是丢了的消息。稍等几秒,下面会给出统计对比。');
+  const wait=n*320+(on?5200:2600);
+  setTimeout(ackVerdict,wait);
+}
+function ackLaunch(id,tryNo,epoch){
+  if(epoch!==ack.epoch)return;
+  const lane=$('ackLane'), loss=+$('ackLoss').value/100, on=$('ackOn').checked, to=+$('ackTo').value*1000;
+  ack.sent++; renderAck();
+  const lost=Math.random()<loss;
+  addAckLog('📨 消息#'+id+' 第'+tryNo+'次发送…');
+  flyDot(lane,$('ackS'),$('ackR'),'#'+id,'',lost?0.5:1,700).then(()=>{
+    if(epoch!==ack.epoch)return;
+    if(lost){
+      addAckLog('❌ 消息#'+id+' 半路丢失!');
+      if(on){
+        setTimeout(()=>{
+          if(epoch!==ack.epoch||ack.confIds.has(id))return;
+          if(tryNo<3){ack.resend++;renderAck();addAckLog('⏰ 超时没等到确认,自动重发消息#'+id);ackLaunch(id,tryNo+1,epoch);}
+          else addAckLog('🛑 消息#'+id+' 连试 3 次都失败,向主人报告网络故障!');
+        },to);
+      }else{
+        ack.assume++;
+        addAckLog('😵 没有确认机制:发送方不知道#'+id+'丢了,还以为送到了!');
+      }
+      renderAck(); return;
+    }
+    if(ack.gotIds.has(id)){
+      addAckLog('📦 接收方发现#'+id+'是重复消息(靠编号识别),忽略不重复处理。');
+    }else{
+      ack.gotIds.add(id); ack.got++;
+    }
+    flashEl($('ackR')); renderAck();
+    if(on){
+      const ackLost=Math.random()<loss;
+      flyDot(lane,$('ackR'),$('ackS'),'ACK#'+id,'up',ackLost?0.5:1,700).then(()=>{
+        if(epoch!==ack.epoch)return;
+        if(ackLost){
+          addAckLog('❌ 确认回执 ACK#'+id+' 半路丢了!');
+          setTimeout(()=>{
+            if(epoch!==ack.epoch||ack.confIds.has(id))return;
+            if(tryNo<3){ack.resend++;renderAck();addAckLog('⏰ 超时没等到确认,重发消息#'+id+'(其实接收方已收到,会自动去重)');ackLaunch(id,tryNo+1,epoch);}
+            else addAckLog('🛑 消息#'+id+' 尝试次数用完。');
+          },to);
+        }else{
+          if(!ack.confIds.has(id)){ack.confIds.add(id);ack.conf++;}
+          flashEl($('ackS'));
+          addAckLog('✅ 发送方收到 ACK#'+id+':确认送达!');
+        }
+        renderAck();
+      });
+    }else{
+      ack.assume++; renderAck();
+    }
+  });
+}
+function ackVerdict(){
+  const believed=ack.assume+ack.conf, got=ack.got, on=$('ackOn').checked;
+  if(ack.sent===0)return;
+  if(believed>got){
+    fb('fb4','bad','📊 目前统计:发送方以为送达 <b>'+believed+'</b> 条,接收方实际只收到 <b>'+got+'</b> 条——有 <b>'+(believed-got)+'</b> 条丢了发送方却蒙在鼓里!😱 快打开「📬 接收确认」再发一批,看看确认+重发怎么补救。');
+  }else if(on&&ack.resend>0){
+    fb('fb4','ok','📊 目前统计:发送 '+ack.sent+' 次(其中重发 '+ack.resend+' 次),接收方收到 '+got+' 条,发送方确认送达 '+(ack.conf)+' 条。💪 虽然网络丢包,但靠"确认回执 + 超时重发",消息最终都送到了,发送方心里也有数!');
+  }else{
+    fb('fb4','info','📊 目前统计:发送 '+ack.sent+' 次,接收方收到 '+got+' 条,发送方以为/确认送达 '+believed+' 条。调高丢包率、切换确认开关,再多做几组对比!');
+  }
+  addLog('确认','统计:发'+ack.sent+'次/收到'+got+'条/以为送达'+believed+'条/重发'+ack.resend+'次');
+  refreshStats();
+}
+function ackReset(){
+  ack.epoch++;
+  ack.sent=0;ack.got=0;ack.conf=0;ack.assume=0;ack.resend=0;ack.seq=0;
+  ack.gotIds=new Set();ack.confIds=new Set();
+  $('ackLane').querySelectorAll('.fly').forEach(d=>d.remove());
+  $('ackLog').innerHTML='<div style="color:#5b7186">暂无记录</div>';
+  renderAck();
+  fb('fb4','info','已清零。先关确认发一批,再开确认发一批,对比"发送方以为送达"和"接收方实际收到"这两个数!');
+}
+
+/* ============================================================
+   模块五:故障诊断室
+============================================================ */
+const CASES=[
+  {name:'病号1:主题拼写错误',
+   symptom:'显示屏一直显示"暂无数据"。温度传感器明明每分钟都在发消息,服务器也开着。',
+   checks:[
+     {t:'检查消息服务器是否启动',r:'✅ 服务器运行中,而且收到了传感器发来的消息'},
+     {t:'查看显示屏订阅的主题',r:'✅ 订阅的是 farm/temp,没问题'},
+     {t:'查看传感器发布的主题',r:'❗ 发布到了 farm/tmep——字母顺序打错了!'},
+     {t:'检查显示屏电源',r:'✅ 电源正常,屏幕亮着'}],
+   causes:['显示屏坏了','传感器把主题拼错了,消息进了一个没人订阅的主题','服务器转发太慢'],a:1,
+   fixes:['把传感器的发布主题改回 farm/temp,和订阅一致','换一台新显示屏','把服务器重启 10 次'],fa:0,
+   lesson:'主题就像收件地址,一个字母都不能错!发布主题和订阅主题必须一字不差,消息才能找到订阅者。'},
+  {name:'病号2:订阅了不存在的主题',
+   symptom:'新安装的补光灯从来没亮过。光照传感器工作正常,显示屏都能收到它的光照数据。',
+   checks:[
+     {t:'查看光照传感器发布的主题',r:'✅ 发布到 farm/light,消息正常发出'},
+     {t:'查看服务器的主题列表',r:'❗ 列表里只有 farm/temp、farm/soil、farm/light 三个主题'},
+     {t:'查看补光灯订阅的主题',r:'❗ 订阅的是 farm/lamp——这个主题根本没有人发布!'},
+     {t:'检查补光灯灯泡',r:'✅ 灯泡是好的,通电能亮'}],
+   causes:['灯泡坏了','补光灯订阅了一个没人发布的主题,当然什么也收不到','光照传感器坏了'],a:1,
+   fixes:['把补光灯的订阅主题改成 farm/light','换一个新灯泡','给传感器换电池'],fa:0,
+   lesson:'订阅要"订"在真正有人发布的主题上。配置前先看看服务器的主题列表,别订了一个空栏目!'},
+  {name:'病号3:服务器未启动',
+   symptom:'今天所有设备都收不到任何消息,昨天还好好的。传感器们都提示"连接失败"。',
+   checks:[
+     {t:'检查温度传感器',r:'✅ 正在尝试发送,但一直提示"连接失败"'},
+     {t:'检查水泵和显示屏',r:'✅ 设备通电正常,只是收不到任何消息'},
+     {t:'查看消息服务器',r:'❗ 服务器程序没有启动,指示灯不亮!'},
+     {t:'检查 Wi-Fi 网络',r:'✅ 网络畅通,其他上网都正常'}],
+   causes:['所有设备同时坏了','消息服务器没启动——消息失去了"中转站",谁也收不到','主题全都拼错了'],a:1,
+   fixes:['启动消息服务器,再让各设备重新连接','把所有设备都换成新的','把主题全部改名'],fa:0,
+   lesson:'发布/订阅模式里,服务器是消息的中转站。中转站"关门"了,发布的消息无处投递,订阅的设备也收不到任何东西。'},
+  {name:'病号4:消息格式错误',
+   symptom:'小组约定:给水泵发「farm/pump | 打开 | 30秒」它就浇水 30 秒。小美发了消息,水泵却毫无反应。',
+   checks:[
+     {t:'检查水泵的订阅和在线状态',r:'✅ 订阅 farm/pump,设备在线'},
+     {t:'查看服务器转发记录',r:'✅ 消息已成功送达水泵'},
+     {t:'查看小美发送的消息内容',r:'❗ 只发了「30」——没写"打开",也没写单位,没按约定格式!'},
+     {t:'检查水管和水箱',r:'✅ 水管通畅,水箱是满的'}],
+   causes:['水泵电机坏了','消息没按约定格式写,水泵看不懂「30」是什么意思,不敢乱动','服务器把消息弄丢了'],a:1,
+   fixes:['按约定格式重新发送:farm/pump | 打开 | 30秒','拆开水泵检修电机','换一个消息服务器'],fa:0,
+   lesson:'消息"送到了"不等于"能被理解"。发送方和接收方必须提前约定消息格式,并且严格照着写——这正是任务二的知识!'},
+];
+let caseIdx=0; const caseSolved=[false,false,false,false];
+const caseHintLv=[0,0,0,0]; const causeOk=[false,false,false,false];
+function renderCaseTabs(){
+  $('caseTabs').innerHTML=CASES.map((c,i)=>
+    '<button id="ct'+i+'" class="'+(i===caseIdx?'on':'')+' '+(caseSolved[i]?'solved':'')+'" onclick="openCase('+i+')">'+c.name+'</button>').join('');
+}
+function openCase(i){
+  caseIdx=i; renderCaseTabs();
+  const c=CASES[i];
+  $('caseBody').innerHTML=
+    '<div class="task"><b>🩺 症状:</b>'+c.symptom+'</div>'+
+    '<h3>第1步:点击检查项,收集线索</h3>'+
+    c.checks.map((ch,j)=>'<div class="checkline"><button class="btn small ghost" onclick="doCheck('+i+','+j+')">🔍 '+ch.t+'</button><span class="res" id="chk'+i+'_'+j+'"></span></div>').join('')+
+    '<h3>第2步:判断故障原因</h3>'+
+    c.causes.map((o,j)=>'<button class="opt" id="cs'+i+'o'+j+'" onclick="pickCause('+i+','+j+')">'+'ABC'[j]+'. '+o+'</button>').join('')+
+    '<h3>第3步:选择修复方法</h3>'+
+    c.fixes.map((o,j)=>'<button class="opt" id="fx'+i+'o'+j+'" onclick="pickFix('+i+','+j+')">'+'ABC'[j]+'. '+o+'</button>').join('')+
+    '<div style="margin-top:8px"><button class="btn ghost small" onclick="caseHint('+i+')">💡 分层提示</button></div>'+
+    '<div class="feedback" id="fbCase"></div>';
+}
+function doCheck(i,j){
+  const el=$('chk'+i+'_'+j); if(!el)return;
+  el.textContent=CASES[i].checks[j].r;
+  addLog('诊断',CASES[i].name+':'+CASES[i].checks[j].t,CASES[i].checks[j].r.slice(0,18));
+}
+function pickCause(i,j){
+  const c=CASES[i]; if(!$('cs'+i+'o'+j))return;
+  c.causes.forEach((_,k)=>{const e=$('cs'+i+'o'+k);if(e)e.classList.remove('right','wrong');});
+  if(j===c.a){$('cs'+i+'o'+j).classList.add('right');causeOk[i]=true;
+    fb('fbCase','ok','✅ 判断正确!现在到第3步选修复方法。');}
+  else{$('cs'+i+'o'+j).classList.add('wrong');causeOk[i]=false;
+    fb('fbCase','bad','🤔 不太对。把第1步的检查项都点一遍,带 ❗ 的线索最关键!');}
+}
+function pickFix(i,j){
+  const c=CASES[i]; if(!$('fx'+i+'o'+j))return;
+  c.fixes.forEach((_,k)=>{const e=$('fx'+i+'o'+k);if(e)e.classList.remove('right','wrong');});
+  if(!causeOk[i]){fb('fbCase','bad','先在第2步判断出正确的故障原因哦。');return;}
+  if(j===c.fa){
+    $('fx'+i+'o'+j).classList.add('right');
+    if(!caseSolved[i]){
+      caseSolved[i]=true; progress.fix++; $('bgFix').textContent=progress.fix;
+      if(progress.fix>=4)setBadge(5);
+      addLog('诊断',c.name+' 修复成功','✅');
+    }
+    renderCaseTabs();
+    fb('fbCase','ok','🎉 修复成功!<b>本课收获:</b>'+c.lesson+(progress.fix<4?' 继续修下一套吧!':' 四套全修好,你是合格的消息系统诊断师!'));
+  }else{
+    $('fx'+i+'o'+j).classList.add('wrong');
+    fb('fbCase','bad','这个方法治不了这个病~再看看 ❗ 线索指向哪一环。');
+  }
+}
+function caseHint(i){
+  caseHintLv[i]=Math.min(caseHintLv[i]+1,3);
+  const c=CASES[i];
+  const hs=[
+    '提示①:把第1步的 4 个检查项都点开,重点看带 ❗ 的结果。',
+    '提示②:沿着消息的路走一遍找断点:发送端发布 → 服务器按主题转发 → 订阅者接收 → 按格式理解。这套系统断在哪一环?',
+    '提示③:正确原因是 '+'ABC'[c.a]+',对应的修复方法是 '+'ABC'[c.fa]+'。想一想为什么!'
+  ];
+  fb('fbCase','info','💡 '+hs[caseHintLv[i]-1]);
+}
+
+/* ============================================================
+   模块六:方案生成、日志与本机数据
+============================================================ */
+function refreshStats(){
+  $('sRoute').textContent=stats.route;
+  $('sMsg').textContent=stats.msg+ack.sent;
+  $('sLost').textContent=stats.lost;
+  $('sRe').textContent=ack.resend;
+  $('sFix').textContent=progress.fix+'/4';
+  $('sCmp').textContent=stats.cmpMsgs;
+}
+function ackChoiceVal(){
+  const r=document.querySelector('input[name=ackChoice]:checked');
+  return r?r.value:'on';
+}
+function renderPlanTables(){
+  const contents=['温度','土壤湿度','光照'];
+  $('planTopics').innerHTML='<table><thead><tr><th>信息内容</th><th>发送端(发布)</th><th>发布主题</th><th>接收端(订阅)</th><th>订阅主题</th><th>匹配</th></tr></thead><tbody>'+
+    PS_SENDERS.map((s,i)=>{
+      const r=PS_RECVS[i];
+      const pt=psPub[s.id]||'(未设置)', st=psSub[r.id]||'(未设置)';
+      const match=(psPub[s.id]&&psPub[s.id]===psSub[r.id])?'✅':'⚠️';
+      return '<tr><td>'+contents[i]+'</td><td>'+s.ico+s.name+'</td><td>'+pt+'</td><td>'+r.ico+r.name+'</td><td>'+st+'</td><td>'+match+'</td></tr>';
+    }).join('')+'</tbody></table>';
+  const v=$('fmtVal').value;
+  const parts=[];
+  if(fmtSel.topic)parts.push('主题 farm/temp');
+  if(fmtSel.val)parts.push('数值 '+v);
+  if(fmtSel.unit)parts.push('单位 ℃');
+  if(fmtSel.time)parts.push('时间 10:00');
+  $('planFmt').innerHTML=parts.length
+    ?'<div class="msgprev">'+parts.join(' | ')+'</div><p style="font-size:13.5px;color:var(--ink-2)">'+(parts.length===4?'✅ 四要素齐全,接收端能完整理解。':'⚠️ 目前只有 '+parts.length+' 块积木,建议回任务二补齐"主题+数值+单位+时间"。')+'</p>'
+    :'<p style="font-size:14px;color:var(--ink-2)">(还没有在任务二里拼装消息,回去点一点"消息积木"吧)</p>';
+}
+function planUseDefault(){
+  Object.keys(RECOMMEND).forEach(k=>{
+    if(k[0]==='s')psPub[k]=RECOMMEND[k]; else psSub[k]=RECOMMEND[k];
+  });
+  Object.keys(fmtSel).forEach(k=>fmtSel[k]=true);
+  syncFmtChips(); renderFmt(); renderPS(); renderPlanTables();
+  fb('fb6','info','🪄 已填入推荐方案(温度 farm/temp / 土壤湿度 farm/soil / 光照 farm/light,消息四要素齐全)。建议回任务一、任务二亲手发一发消息,验证它真的能跑通!');
+  addLog('方案','一键填入推荐方案');
+}
+function planHTML(){
+  const f=id=>{const e=$(id);return (e&&e.value.trim())||'(还没有填写)';};
+  const contents=['温度','土壤湿度','光照'];
+  const rows=PS_SENDERS.map((s,i)=>{
+    const r=PS_RECVS[i];
+    return '<tr><td>'+contents[i]+'</td><td>'+s.name+'</td><td>'+(psPub[s.id]||'(未设置)')+'</td><td>'+r.name+'</td><td>'+(psSub[r.id]||'(未设置)')+'</td></tr>';
+  }).join('');
+  const v=$('fmtVal').value;
+  const parts=[];
+  if(fmtSel.topic)parts.push('farm/temp');
+  if(fmtSel.val)parts.push(v);
+  if(fmtSel.unit)parts.push('℃');
+  if(fmtSel.time)parts.push('10:00');
+  const ackTxt=ackChoiceVal()==='on'?'开启接收确认(ACK):等不到回执就超时重发,最多 3 次':'不开启接收确认:省消息,允许偶尔丢失';
+  return '<div style="font-family:sans-serif;max-width:720px;margin:auto">'+
+  '<h1 style="color:#1a5cb8">📨 我的智能种植消息方案</h1>'+
+  '<p>课程:清华版《信息科技》五年级下册 第2单元第3课 | 生成时间:'+new Date().toLocaleString()+'</p>'+
+  '<h2>一、项目名称与背景</h2><p>'+f('p1')+'</p>'+
+  '<h2>二、主题方案表(发布/订阅)</h2>'+
+  '<table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;width:100%"><tr style="background:#f2f7fd"><th>信息内容</th><th>发送端(发布)</th><th>发布主题</th><th>接收端(订阅)</th><th>订阅主题</th></tr>'+rows+'</table>'+
+  '<h2>三、消息格式约定</h2><p>'+(parts.length?('示例消息:<code>'+parts.join(' | ')+'</code>(包含 '+parts.length+'/4 个要素:主题、数值、单位、时间)'):'(未拼装消息格式)')+'</p>'+
+  '<h2>四、确认机制选择</h2><p>'+ackTxt+'</p><p>理由:'+f('p3')+'</p>'+
+  '<h2>五、实验数据统计</h2><ul>'+
+  '<li>路由测试次数:'+stats.route+'</li><li>发送消息总数:'+(stats.msg+ack.sent)+'</li>'+
+  '<li>丢失/无人接收:'+stats.lost+'</li><li>超时重发次数:'+ack.resend+'</li>'+
+  '<li>修好的故障:'+progress.fix+'/4</li><li>对比实验消息数:'+stats.cmpMsgs+'</li></ul>'+
+  '<h2>六、我的收获与反思</h2><p>'+f('p2')+'</p></div>';
+}
+function genPlan(){
+  const empty=['p1','p2','p3'].filter(id=>!$(id).value.trim());
+  if(empty.length){
+    fb('fb6','bad','还有 '+empty.length+' 段文字没填完呢!把你实验中的发现写进去,方案才有说服力。');
+  }else{
+    fb('fb6','ok','✅ 方案已生成!检查一下预览,满意就点「导出方案」保存到电脑,交给小组讨论吧。');
+    if(!progress.plan){progress.plan=true;setBadge(6);}
+    addLog('方案','生成消息方案','✅');
+  }
+  renderPlanTables();
+  $('planPreview').innerHTML='<div class="card" style="margin-top:12px">'+planHTML()+'</div>';
+  refreshStats();
+}
+function exportPlan(){
+  downloadFile('我的智能种植消息方案.html','<!DOCTYPE html><html><head><meta charset="utf-8"><title>我的智能种植消息方案</title></head><body>'+planHTML()+'</body></html>','text/html');
+}
+function renderLog(){
+  $('logCount').textContent=logRows.length;
+  $('logBody').innerHTML=logRows.length?logRows.slice().reverse().map(r=>
+    '<tr><td>'+r.time+'</td><td>'+r.mod+'</td><td style="text-align:left">'+r.content+'</td><td>'+r.result+'</td></tr>').join('')
+    :'<tr><td colspan="4" style="color:#5b7186">暂无记录</td></tr>';
+}
+function exportCSV(){
+  const head='时间,模块,事件,结果\n';
+  const body=logRows.map(r=>[r.time,r.mod,r.content,r.result].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  downloadFile('消息实验日志.csv','\ufeff'+head+body,'text/csv');
+}
+function clearLog(){logRows=[];renderLog();}
+
+const LS_KEY='u2l3_msg_lab';
+function projectData(){
+  return {ver:1,psPub:{...psPub},psSub:{...psSub},fmtSel:{...fmtSel},fmtVal:$('fmtVal').value,
+    ackChoice:ackChoiceVal(),
+    texts:{p1:$('p1').value,p2:$('p2').value,p3:$('p3').value},
+    stats:{...stats},progress:{...progress},
+    ackSum:{sent:ack.sent,got:ack.got,conf:ack.conf,assume:ack.assume,resend:ack.resend,doneOn:ack.doneOn,doneOff:ack.doneOff},
+    log:logRows.slice(-100)};
+}
+function applyProject(d){
+  try{
+    if(d.psPub)Object.keys(psPub).forEach(k=>psPub[k]=d.psPub[k]||null);
+    if(d.psSub)Object.keys(psSub).forEach(k=>psSub[k]=d.psSub[k]||null);
+    if(d.fmtSel)Object.keys(fmtSel).forEach(k=>fmtSel[k]=!!d.fmtSel[k]);
+    if(d.fmtVal){$('fmtVal').value=d.fmtVal;$('fmtValOut').textContent=d.fmtVal;$('fcValLb').textContent=d.fmtVal;}
+    if(d.ackChoice){const r=document.querySelector('input[name=ackChoice][value="'+d.ackChoice+'"]');if(r)r.checked=true;}
+    if(d.texts){$('p1').value=d.texts.p1||'';$('p2').value=d.texts.p2||'';$('p3').value=d.texts.p3||'';}
+    if(d.stats)Object.assign(stats,d.stats);
+    if(d.ackSum){ack.sent=d.ackSum.sent||0;ack.got=d.ackSum.got||0;ack.conf=d.ackSum.conf||0;
+      ack.assume=d.ackSum.assume||0;ack.resend=d.ackSum.resend||0;
+      ack.doneOn=!!d.ackSum.doneOn;ack.doneOff=!!d.ackSum.doneOff;}
+    if(d.progress){
+      Object.assign(progress,d.progress);
+      if(progress.ps)setBadge(1);if(progress.fmt)setBadge(2);if(progress.cmp)setBadge(3);
+      if(progress.ack)setBadge(4);if(progress.fix>=4)setBadge(5);if(progress.plan)setBadge(6);
+      $('bgFix').textContent=progress.fix;
+    }
+    if(Array.isArray(d.log))logRows=d.log;
+    syncFmtChips(); renderFmt(); renderPS(); renderAck(); renderPlanTables(); refreshStats(); renderLog();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('消息实验项目进度.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 项目导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的项目文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'), raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderTopicPool(); renderPS();
+  syncFmtChips(); renderFmt();
+  cmpInit();
+  ['subN','pubFreq','reqGap'].forEach(k=>{
+    if(k==='subN')$('subNOut').textContent=$(k).value+' 个';
+    else $(k+'Out').textContent='每 '+$(k).value+' 分钟';
+  });
+  renderAck(); ackLossChanged(); ackToChanged();
+  $('ackWhy').innerHTML='💬 先在"关闭确认"状态下把丢包率调到 30%,连发 5 条看看会怎样。';
+  renderCaseTabs(); openCase(0);
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  renderPlanTables(); refreshStats();
+})();
+</script>
+</body>
+</html>

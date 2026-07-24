@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小程序远程控制系统模拟器 · 单元3第2课 智能家居背后的技术原理——小程序控制开关灯</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6; --indigo:#4f46e5;
+    --bg:#eef2fb; --card:#ffffff; --ink:#20344b; --ink-2:#5b7186;
+    --line:#d9e0f0; --soft:#f2f5fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#4338ca,#0ea5e9); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(40,50,140,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--green-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--indigo);}
+  nav button.on{background:var(--indigo); border-color:var(--indigo); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(40,60,130,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--blue); border:2px solid var(--blue);}
+  .btn.gray{background:#8aa0b5;}
+  .btn:disabled{background:#c4d2df; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#e8f1fd; border:1px solid var(--blue); color:var(--blue-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  /* ---------- 模块一:实验室三栏布局 ---------- */
+  .lab{display:grid; grid-template-columns:284px 1fr 292px; gap:14px;}
+  @media(max-width:1100px){.lab{grid-template-columns:1fr;}}
+  /* 虚构手机 */
+  .phone{width:252px; margin:0 auto; background:#111827; border-radius:34px; padding:10px 10px 8px; box-shadow:0 10px 26px rgba(0,0,0,.35);}
+  .p-screen{background:linear-gradient(#eef4ff,#f8fafc); border-radius:24px; overflow:hidden;}
+  .p-status{display:flex; justify-content:space-between; font-size:11px; padding:6px 12px 2px; color:#334155;}
+  .p-head{background:linear-gradient(120deg,#4f46e5,#0ea5e9); color:#fff; padding:10px 12px 8px; font-weight:800; font-size:16px;}
+  .p-head .chip{display:block; font-size:11px; font-weight:400; opacity:.92; margin-top:2px;}
+  .dev{display:flex; align-items:center; gap:8px; background:#fff; border:1.5px solid var(--line); border-radius:12px; margin:8px; padding:8px;}
+  .devlamp{font-size:30px; filter:grayscale(1) brightness(.55); transition:.3s;}
+  .devlamp.on{filter:none; text-shadow:0 0 10px #ffd75e, 0 0 22px #ffbf3f;}
+  .devinfo{flex:1; min-width:0;}
+  .devinfo b{font-size:14px; display:block;}
+  .devst{font-size:11.5px; color:var(--ink-2);}
+  .devst.wait{color:#b45309; font-weight:700;}
+  .devbtn{border:none; border-radius:10px; background:var(--blue); color:#fff; font-weight:700; padding:9px 11px; font-size:13px; cursor:pointer; flex-shrink:0;}
+  .devbtn:active{transform:scale(.95);}
+  .p-refresh{display:block; margin:4px 8px 10px; width:calc(100% - 16px); border:1.5px dashed var(--blue); background:#fff; color:var(--blue-d); border-radius:10px; padding:7px; font-size:12.5px; cursor:pointer;}
+  .p-home{width:70px; height:5px; background:#4b5563; border-radius:3px; margin:8px auto 2px;}
+  /* 房间 */
+  .rooms{display:flex; gap:12px; margin-bottom:10px;}
+  .room{flex:1; border-radius:14px; padding:12px 8px; text-align:center; transition:.4s; border:2px solid #33415c; font-size:14px; font-weight:700;}
+  .rooms.amb0 .room{background:#1c2a44; border-color:#2f4366; color:#dbe7f5;}
+  .rooms.amb1 .room{background:#40507a; border-color:#566a9e; color:#e6edf9;}
+  .rooms.amb2 .room{background:#dbe7f5; border-color:#b7c9dd; color:#33475e;}
+  .rooms .room.lit{background:#fff3c9; color:#7a5c10; border-color:#f2cf6b;}
+  .rlamp{font-size:46px; display:block; filter:grayscale(1) brightness(.5); transition:.3s;}
+  .room.lit .rlamp{filter:none; text-shadow:0 0 18px #ffd75e, 0 0 46px #ffbf3f;}
+  /* 消息管道 */
+  .clock{font-size:15px; background:#20344b; color:#a8c7ff; font-weight:700; border-radius:10px; padding:6px 12px; display:inline-block; margin-bottom:6px; font-family:monospace;}
+  .pipe-wrap{position:relative; padding:6px 0 2px;}
+  .pipe{display:flex; justify-content:space-between; position:relative; margin:10px 6px 2px;}
+  .pipe::before{content:""; position:absolute; top:34px; left:44px; right:44px; height:6px; background:repeating-linear-gradient(90deg,#c4cdf0 0 14px,#e6eafb 14px 24px); border-radius:3px;}
+  .node{width:88px; text-align:center; position:relative; z-index:2;}
+  .node .nico{width:68px; height:68px; margin:0 auto; background:#fff; border:3px solid var(--line); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:32px; transition:.2s;}
+  .node.active .nico{border-color:var(--green); box-shadow:0 0 0 4px #d8f5e5;}
+  .node.err .nico{border-color:var(--red); background:#fdeaea;}
+  .node small{display:block; font-size:13px; font-weight:700; margin-top:4px;}
+  .node .st{font-size:12px; color:var(--ink-2);}
+  .msg-dot{position:absolute; top:22px; z-index:3; font-size:13px; font-weight:700; background:var(--orange); color:#fff; border-radius:14px; padding:3px 9px; transition:left .55s linear; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .msg-dot.up{background:var(--green); top:52px;}
+  .msg-dot.lost{background:var(--red); text-decoration:line-through; opacity:.6;}
+  .msg-dot.queued{background:#8aa0b5;}
+  .msglist{max-height:140px; overflow:auto; font-size:13.5px; background:var(--soft); border-radius:10px; padding:8px 10px; margin-top:10px;}
+  .msglist div{padding:2px 0; border-bottom:1px dashed var(--line);}
+  .msglist .s-ok{color:var(--green-d);} .msglist .s-bad{color:var(--red);} .msglist .s-wait{color:#b45309;}
+  .why{background:#eef7ff; border-left:4px solid var(--blue); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  /* 控制面板 */
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--blue-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--blue); height:26px;}
+  .switch{display:flex; align-items:center; gap:10px; margin-top:10px; font-weight:700; font-size:15px;}
+  .switch input{width:44px; height:24px; accent-color:var(--green); cursor:pointer;}
+  .runbar{display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+  /* 四层结构配对 */
+  .pool{display:flex; flex-wrap:wrap; gap:10px; padding:12px; background:var(--soft); border-radius:12px; min-height:74px;}
+  .comp{border:2px solid var(--line); background:#fff; border-radius:12px; padding:10px 14px; font-size:15px; font-weight:700; cursor:pointer; user-select:none; transition:.15s; text-align:center;}
+  .comp .ico{font-size:26px; display:block;}
+  .comp:hover{border-color:var(--blue); transform:translateY(-2px);}
+  .comp.sel{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 3px #fde9c2;}
+  .layers{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:14px 0;}
+  @media(max-width:900px){.layers{grid-template-columns:1fr 1fr;}}
+  .slot{min-height:104px; border:2.5px dashed #9db0d8; border-radius:12px; background:var(--soft); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; padding:8px 6px; text-align:center; transition:.15s;}
+  .slot .lname{font-weight:800; font-size:15px; color:var(--indigo);}
+  .slot .hint{color:var(--ink-2); font-size:12.5px;}
+  .slot.filled{border-style:solid; border-color:var(--blue); background:#fff;}
+  .slot.right{border-color:var(--green); background:#e7f9ef;}
+  .slot.wrong{border-color:var(--red); background:#fdeaea; animation:shake .3s;}
+  @keyframes shake{25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+  /* 观察站生命周期表 */
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{border:1px solid var(--line); padding:6px 8px; text-align:center;}
+  th{background:var(--soft);}
+  .stage-ok{color:var(--green-d); font-weight:800;}
+  .stage-no{color:#b8c4d6;}
+  .logwrap{max-height:320px; overflow:auto; border-radius:10px; border:1px solid var(--line);}
+  /* 网络实验 */
+  .netgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  @media(max-width:800px){.netgrid{grid-template-columns:1fr;}}
+  .expcard{border:2px solid var(--line); border-radius:12px; padding:12px;}
+  .expcard h4{font-size:15.5px; margin-bottom:6px;}
+  .expcard p{font-size:13.5px; color:var(--ink-2);}
+  .accbtn{border:2px solid var(--line); background:#fff; border-radius:10px; padding:8px 14px; font-size:14.5px; font-weight:700; cursor:pointer; margin:2px;}
+  .accbtn.on{background:var(--indigo); border-color:var(--indigo); color:#fff;}
+  /* 故障排查 */
+  .case-tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+  .case-tabs button{border:2px solid var(--line); background:#fff; border-radius:10px; padding:8px 14px; font-size:14.5px; font-weight:700; cursor:pointer;}
+  .case-tabs button.on{background:var(--purple); border-color:var(--purple); color:#fff;}
+  .case-tabs button.solved::after{content:" ✅";}
+  .checkline{display:flex; align-items:center; gap:8px; background:var(--soft); border-radius:10px; padding:8px 12px; margin:6px 0; font-size:14.5px; flex-wrap:wrap;}
+  .checkline .res{margin-left:auto; font-weight:700;}
+  .opt{display:block; width:100%; text-align:left; border:2px solid var(--line); background:#fff; border-radius:10px; padding:10px 14px; margin:6px 0; font-size:15px; cursor:pointer; transition:.15s;}
+  .opt:hover{border-color:var(--purple);}
+  .opt.right{border-color:var(--green); background:#e7f9ef;}
+  .opt.wrong{border-color:var(--red); background:#fdeaea;}
+  /* 报告 */
+  textarea{width:100%; min-height:74px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  textarea:focus{outline:none; border-color:var(--blue);}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:24px; color:var(--blue-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  pre.saved{background:#20344b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>💡 小程序远程控制系统模拟器</h1>
+  <p>清华版《信息科技》五年级下册 · 第3单元 第2课 智能家居背后的技术原理——小程序控制开关灯(教材 P91—101)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 四层结构配对</span>
+    <span class="badge" id="bg2">② 远程点灯闭环</span>
+    <span class="badge" id="bg3">③ 回传对比实验</span>
+    <span class="badge" id="bg4">④ 网络与权限实验</span>
+    <span class="badge" id="bg5">⑤ 故障排查 <span id="bgFix">0</span>/4</span>
+    <span class="badge" id="bg6">⑥ 项目报告</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">📱 ① 小程序控灯实验室</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">🔁 ② 状态回传观察站</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">📡 ③ 网络与权限实验</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">🔧 ④ 故障排查诊所</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">📋 ⑤ 实验日志</button>
+  <button data-tab="t6" onclick="showTab('t6',this)">📑 ⑥ 项目报告</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:小程序控灯实验室 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>📱 任务一:用「我家小屋」小程序远程开关灯</h2>
+    <div class="task"><b>任务:</b>点击手机里小程序的<b>客厅灯 / 卧室灯</b>按钮,盯住中间的消息通道:指令会沿「小程序 → 网络 → 物联网平台 → 控制器 → 灯具」一跳一跳前进;灯亮之后还有一条<b>绿色的状态回传</b>消息跑回小程序,小程序图标才会变亮。试着用「⏭ 单步」一步一步看清每一跳!(小程序和账号都是<b>虚构的</b>,只在本页面里模拟)</div>
+    <div class="lab">
+      <!-- 左:虚构手机小程序 -->
+      <div class="card" style="margin:0; text-align:center;">
+        <h3>虚构手机 ·「我家小屋」小程序</h3>
+        <div class="phone">
+          <div class="p-screen">
+            <div class="p-status"><span>20:08</span><span>📶 Wi-Fi&nbsp;&nbsp;🔋 90%</span></div>
+            <div class="p-head">🏠 我家小屋<span class="chip" id="accChip">👨‍👩‍👧 家人账号 · 小清(虚构)</span></div>
+            <div class="dev">
+              <span class="devlamp" id="appIcoLiving">💡</span>
+              <div class="devinfo"><b>客厅灯</b><span class="devst" id="appStLiving">显示:已关</span></div>
+              <button class="devbtn" id="btnLiving" onclick="appClick('living')">开/关</button>
+            </div>
+            <div class="dev">
+              <span class="devlamp" id="appIcoBed">💡</span>
+              <div class="devinfo"><b>卧室灯</b><span class="devst" id="appStBed">显示:已关</span></div>
+              <button class="devbtn" id="btnBed" onclick="appClick('bed')">开/关</button>
+            </div>
+            <button class="p-refresh" onclick="appRefresh()">🔄 下拉刷新:主动查询灯的真实状态</button>
+          </div>
+          <div class="p-home"></div>
+        </div>
+        <p style="font-size:12.5px;color:var(--ink-2);margin-top:8px">小程序图标显示的是它<b>“以为”</b>的状态,<br>只有收到回传消息才会更新哦!</p>
+      </div>
+      <!-- 中:真实房间 + 消息管道 -->
+      <div class="card" style="margin:0">
+        <h3>家里真实的灯(虚拟房间)</h3>
+        <div class="rooms amb0" id="rooms">
+          <div class="room" id="roomLiving"><span class="rlamp" id="realLiving">💡</span>🛋️ 客厅 · 真实:<b id="realStLiving">灭</b></div>
+          <div class="room" id="roomBed"><span class="rlamp" id="realBed">💡</span>🛏️ 卧室 · 真实:<b id="realStBed">灭</b></div>
+        </div>
+        <h3>消息传输通道(每一跳都看得见)</h3>
+        <div class="clock" id="clock">第 0 步 · 20:00</div>
+        <div class="pipe-wrap">
+          <div class="pipe" id="pipe">
+            <div class="node" id="n0"><div class="nico">📱</div><small>小程序</small><span class="st" id="st0">待命</span></div>
+            <div class="node" id="n1"><div class="nico">🌐</div><small>网络</small><span class="st" id="st1">畅通</span></div>
+            <div class="node" id="n2"><div class="nico">☁️</div><small>物联网平台</small><span class="st" id="st2">队列 0</span></div>
+            <div class="node" id="n3"><div class="nico">🎛️</div><small>控制器(主控板)</small><span class="st" id="st3">在线</span></div>
+            <div class="node" id="n4"><div class="nico">💡</div><small>灯具</small><span class="st" id="st4">全灭</span></div>
+          </div>
+        </div>
+        <div class="why" id="why">💬 点小程序里的按钮发出第一条指令吧!橙色是<b>下行指令</b>(小程序→灯),绿色是<b>上行回传</b>(灯的状态→小程序)。</div>
+        <h3 style="margin-top:10px">最近消息</h3>
+        <div class="msglist" id="msglist"><div style="color:#5b7186">暂无消息</div></div>
+      </div>
+      <!-- 右:控制面板 -->
+      <div class="card ctl" style="margin:0">
+        <h3>🎮 控制面板</h3>
+        <div class="runbar">
+          <button class="btn green small" id="btnRun" onclick="toggleRun()">▶ 运行</button>
+          <button class="btn orange small" onclick="stepOnce()">⏭ 单步</button>
+          <button class="btn gray small" onclick="resetSim()">🔄 重置</button>
+          <button class="btn ghost small" onclick="loadExample()">📖 恢复教材示例</button>
+        </div>
+        <label><span>模拟速度</span><output id="spdOut">中</output></label>
+        <input type="range" id="spd" min="1" max="3" value="2" oninput="setSpeed()">
+        <label><span>房间环境光</span><output id="ambOut">深夜</output></label>
+        <input type="range" id="amb" min="0" max="2" value="0" oninput="setAmbient()">
+        <div class="why" id="paramWhy" style="min-height:34px">💬 试着调整参数,这里会解释变化的原因。</div>
+        <hr style="border:none; border-top:1px dashed var(--line); margin:12px 0">
+        <p style="font-size:13.5px;color:var(--ink-2)">这套系统对应教材图 3.2.8「智能手机控制开关灯的过程」:</p>
+        <p style="margin-top:4px"><span class="pill">连接网络</span><span class="pill">小程序布置</span><span class="pill">小程序发送消息</span><span class="pill">主控板接收消息</span><span class="pill">控制实现</span></p>
+        <p style="font-size:13.5px;color:var(--ink-2);margin-top:8px">💡 想做延迟、丢包、断网、权限、防抖实验?去「③ 网络与权限实验」!</p>
+      </div>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+
+  <div class="card">
+    <h2>🧩 任务二:这套系统里藏着物联网的四层结构</h2>
+    <div class="task"><b>任务:</b>教材告诉我们,智能家居遵循物联网体系结构:<b>感知、传输、处理、应用</b>。请<b>先点击下方零件卡片选中它</b>,再<b>点击上方对应的结构层</b>放进去。放错了?再点一下那层就能取回。(有 1 个零件是干扰项哦!)</div>
+    <div class="layers">
+      <div class="slot" data-lslot="sense" onclick="lslotClick(this)"><span class="lname">感知层</span><span class="hint">获取信息<br>(像人的眼睛和耳朵)</span></div>
+      <div class="slot" data-lslot="trans" onclick="lslotClick(this)"><span class="lname">传输层</span><span class="hint">搬运信息<br>(像信息的快递员)</span></div>
+      <div class="slot" data-lslot="proc" onclick="lslotClick(this)"><span class="lname">处理层</span><span class="hint">存储和判断信息<br>(像会思考的大脑)</span></div>
+      <div class="slot" data-lslot="app" onclick="lslotClick(this)"><span class="lname">应用层</span><span class="hint">和人打交道<br>(像贴心的服务台)</span></div>
+    </div>
+    <h3>零件仓库</h3>
+    <div class="pool" id="lpool"></div>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="checkLayers()">✅ 检查配对</button>
+      <button class="btn ghost" onclick="layerHint()">💡 分层提示</button>
+      <button class="btn gray" onclick="resetLayers()">🔄 重新配对</button>
+    </div>
+    <div class="feedback" id="fbLayer"></div>
+  </div>
+</section>
+
+<!-- ================= 模块二:状态回传观察站 ================= -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>🔁 任务三:指令与状态回传观察站</h2>
+    <div class="task"><b>任务:</b>每条指令都有自己的“一生”:<b>📤发送 → 📬送达 → ⚡执行 → 🔁回传确认</b>。下表实时记录每条指令走到了哪一步。先按一次卧室灯,看四个阶段依次点亮 ✅!</div>
+    <div style="margin-bottom:8px">
+      <button class="btn" onclick="appClick('bed')">📱 按一下卧室灯(和①里点小程序一样)</button>
+      <button class="btn purple" onclick="appClick('living')">📱 按一下客厅灯</button>
+    </div>
+    <div class="logwrap" style="max-height:260px">
+      <table>
+        <thead><tr><th>编号</th><th>指令内容</th><th>📤 发送</th><th>📬 送达控制器</th><th>⚡ 执行</th><th>🔁 回传确认</th><th>结果</th></tr></thead>
+        <tbody id="lifeBody"><tr><td colspan="7" style="color:#5b7186">还没有指令,按一下上面的按钮吧!</td></tr></tbody>
+      </table>
+    </div>
+    <div class="feedback" id="fbLife"></div>
+  </div>
+  <div class="card">
+    <h2>🧪 对比实验:没有状态回传会怎样?</h2>
+    <div class="task"><b>按 4 步做:</b>① 保持「状态回传」开启,按一次灯,看小程序图标<b>同步变化</b> → ② <b>关闭</b>「状态回传」,再按一次灯 → ③ 点「🔍 检查一致性」,看看小程序显示和真实的灯是不是<b>对不上了</b> → ④ 重新打开回传,点「🔄 下拉刷新」把状态修回来。</div>
+    <div class="switch"><input type="checkbox" id="ackOn" checked onchange="ackChanged()"><span>🔁 状态回传(执行后把灯的真实状态发回小程序)</span></div>
+    <div style="margin-top:10px">
+      <button class="btn green" onclick="checkConsistency()">🔍 检查一致性(小程序显示 vs 真实的灯)</button>
+      <button class="btn" onclick="appRefresh()">🔄 下拉刷新(主动查询修复)</button>
+    </div>
+    <div id="consistBox"></div>
+    <div class="feedback" id="fb2"></div>
+    <div class="why" id="ackWhy">💬 想一想:如果没有回传,你在外面用手机看到“灯是关的”,可家里的灯其实亮了一整天——多浪费电!<b>状态回传让小程序显示的状态和真实设备保持一致</b>,这就是为什么小程序图标要“等确认才变亮”。</div>
+  </div>
+</section>
+
+<!-- ================= 模块三:网络与权限实验 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>📡 任务四:网络会捣乱,平台会把关</h2>
+    <div class="task"><b>任务:</b>完成下面 5 个小实验(至少 4 个),观察指令的遭遇。动画都在「① 实验室」的消息通道里演示,记录会写进「⑤ 实验日志」。</div>
+    <div class="netgrid">
+      <div class="expcard">
+        <h4>实验1 ⏱ 网络延迟</h4>
+        <p>把延迟调大再开灯,数一数按下按钮到灯亮隔了几步——远程控制会变“迟钝”。</p>
+        <label style="display:flex;justify-content:space-between;font-size:14px;font-weight:700"><span>网络延迟</span><output id="latOut">正常</output></label>
+        <input type="range" id="lat" min="0" max="3" value="0" style="width:100%" oninput="setLatency()">
+        <button class="btn small" onclick="expLatency()">发送测试开灯指令</button>
+        <div class="feedback" id="fbLat"></div>
+      </div>
+      <div class="expcard">
+        <h4>实验2 📉 消息丢失</h4>
+        <p>调高丢包率,连发 5 条指令,看看几条“半路失踪”——灯就没反应了。</p>
+        <label style="display:flex;justify-content:space-between;font-size:14px;font-weight:700"><span>丢包率</span><output id="lossOut">0%</output></label>
+        <input type="range" id="loss" min="0" max="80" step="10" value="0" style="width:100%" oninput="setLoss()">
+        <button class="btn small" onclick="expLoss()">连发 5 条指令</button>
+        <div class="feedback" id="fbLoss"></div>
+      </div>
+      <div class="expcard">
+        <h4>实验3 📵 断网与过期指令</h4>
+        <p>断网时发的指令会先<b>排队</b>;排队太久的指令已经<b>过期</b>,控制器应拒绝执行——不然半夜网络一恢复,灯突然亮起来多吓人!</p>
+        <button class="btn red small" id="btnOffline" onclick="toggleOffline()">🔌 断开网络</button>
+        <button class="btn small" onclick="expOffline()">断网时发开灯指令</button>
+        <div class="feedback" id="fbOff"></div>
+      </div>
+      <div class="expcard">
+        <h4>实验4 🔐 权限校验</h4>
+        <p>切换成<b>访客账号</b>再开灯,看看物联网平台怎么把关。(账号都是虚构的)</p>
+        <div style="margin:4px 0">
+          <button class="accbtn on" id="accFam" onclick="setAccount('family')">👨‍👩‍👧 家人账号 · 小清</button>
+          <button class="accbtn" id="accGuest" onclick="setAccount('guest')">👤 访客账号 · 小访</button>
+        </div>
+        <button class="btn small" onclick="expPermission()">用当前账号开客厅灯</button>
+        <div class="feedback" id="fbPerm"></div>
+      </div>
+      <div class="expcard">
+        <h4>实验5 🛡 按钮防抖</h4>
+        <p>先<b>关掉</b>防抖,点「手抖连点」,看灯是不是“抽风”似的闪;再打开防抖对比。</p>
+        <div class="switch" style="margin-top:4px"><input type="checkbox" id="debounce" checked onchange="debounceChanged()"><span>🛡 按钮防抖保护</span></div>
+        <button class="btn small" onclick="expShake()">🫨 手抖连点客厅灯 6 次</button>
+        <div class="feedback" id="fbShake"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🧠 实验小测:你观察到了吗?</h2>
+    <div id="quizNet"></div>
+    <div class="feedback" id="fbQuiz"></div>
+  </div>
+</section>
+
+<!-- ================= 模块四:故障排查诊所 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>🔧 任务五:智能灯出毛病了,当一次小小维修工!</h2>
+    <div class="task"><b>任务:</b>4 户人家的小程序控灯系统出了不同的毛病。请按 3 步排查:①读症状 → ②点击检查项收集线索 → ③判断故障原因并选修复方法。修好一户点亮一颗 ✅!排查口诀:<b>沿着“小程序→网络→平台→控制器→灯”逐环找断点</b>。</div>
+    <div class="case-tabs" id="caseTabs"></div>
+    <div id="caseBody"></div>
+  </div>
+</section>
+
+<!-- ================= 模块五:实验日志 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>📋 实验数据日志</h2>
+    <div class="task"><b>说明:</b>实验室会自动记录每条指令、回传、拒绝和排查动作。这些记录只保存在你自己的电脑里,可以随时导出或清空。</div>
+    <div style="margin-bottom:10px">
+      <button class="btn small" onclick="renderLog()">🔄 刷新</button>
+      <button class="btn green small" onclick="exportCSV()">📥 导出日志(CSV)</button>
+      <button class="btn red small" onclick="clearLog()">🗑 清空日志</button>
+      <span class="pill">共 <b id="logCount">0</b> 条记录</span>
+    </div>
+    <div class="logwrap">
+      <table>
+        <thead><tr><th>模拟时间</th><th>类型</th><th>内容</th><th>客厅灯(真/显)</th><th>卧室灯(真/显)</th><th>备注</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="6" style="color:#5b7186">暂无记录,去①号实验室点亮第一盏灯吧!</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 模块六:项目报告 ================= -->
+<section class="tab" id="t6">
+  <div class="card">
+    <h2>📑 任务六:生成我的项目报告</h2>
+    <div class="task"><b>任务:</b>下面的数据是实验室自动统计的,请把 4 个空填完整,然后点「生成报告」。这就是你的项目日志!</div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="sCmd">0</b><span>发出指令总数</span></div>
+      <div class="stat"><b id="sOk">0</b><span>成功执行数</span></div>
+      <div class="stat"><b id="sRej">0</b><span>被拒绝数(权限/过期)</span></div>
+      <div class="stat"><b id="sLost">0</b><span>丢失消息数</span></div>
+      <div class="stat"><b id="sAck">0</b><span>回传确认数</span></div>
+      <div class="stat"><b id="sFix">0/4</b><span>修好的故障</span></div>
+    </div>
+    <h3>1️⃣ 控制一盏灯的完整过程,我来说</h3>
+    <textarea id="r1" placeholder="例:我在「我家小屋」小程序里按下客厅灯按钮 → 指令经过Wi-Fi网络发到物联网平台 → 平台检查权限后转发给控制器(主控板) → 控制器让灯点亮 → 灯的状态又回传给小程序,图标才变亮。"></textarea>
+    <h3>2️⃣ 为什么需要状态回传?</h3>
+    <textarea id="r2" placeholder="例:我把回传关掉后,灯明明亮了,小程序图标还是灰的,我差点又按一次把灯关掉。有了回传,小程序显示的状态才和真实的灯一致。"></textarea>
+    <h3>3️⃣ 我发现的问题与解决办法</h3>
+    <textarea id="r3" placeholder="例:丢包率调到40%时,5条指令丢了2条,灯没反应。解决办法:让平台做「确认+重发」,小程序还可以下拉刷新主动查询。"></textarea>
+    <h3>4️⃣ 权限与安全,我主张</h3>
+    <textarea id="r4" placeholder="例:访客账号不能随便控制我家的灯,平台要做权限校验;断网太久的过期指令要拒绝执行;打开防抖,防止手抖连点让灯乱闪。"></textarea>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genReport()">📄 生成报告预览</button>
+      <button class="btn" onclick="exportReport()">📥 导出报告(HTML文件)</button>
+    </div>
+    <div class="feedback" id="fb6"></div>
+    <div id="reportPreview"></div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出项目(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入项目</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>小程序远程控制系统模拟器 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态
+============================================================ */
+const $=id=>document.getElementById(id);
+const progress={layer:false,light:false,ackExp:false,net:false,fix:0,report:false};
+let netExpSet=new Set();          // 已完成的网络实验
+let logRows=[];                   // {time,type,content,living,bed,note}
+let stats={cmd:0,success:0,rejected:0,lost:0,ack:0};
+let cmdList=[];                   // 指令生命周期表(引用消息对象)
+let acct='family';
+let lastClick={living:0,bed:0};
+let didAckOffCmd=false;           // 是否在“回传关闭”状态下执行过指令
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t2')renderLife();
+  if(id==='t5')renderLog();
+  if(id==='t6')refreshStats();
+}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function fb(id,cls,html){const e=$(id);e.className='feedback '+cls;e.innerHTML=html;}
+
+/* ============================================================
+   模拟引擎:小程序 → 网络 → 平台 → 控制器 → 灯
+============================================================ */
+const sim={
+  running:false,tick:0,timer:null,speedMs:700,offline:false,
+  msgs:[],msgId:0,
+  lamps:{
+    living:{name:'客厅灯',real:false,app:false,intent:false},
+    bed:{name:'卧室灯',real:false,app:false,intent:false},
+  },
+};
+const NODE_X=[0,25,50,75,100];
+const latencyExtra=()=>+$('lat').value;
+const lossRate=()=>+$('loss').value/100;
+
+function speedName(v){return{1:'慢',2:'中',3:'快'}[v];}
+function setSpeed(){
+  const v=+$('spd').value; $('spdOut').textContent=speedName(v);
+  sim.speedMs={1:1200,2:700,3:350}[v];
+  $('paramWhy').innerHTML='💬 模拟速度调为「'+speedName(v)+'」:速度只影响你观察的节奏,不改变消息要走的路——每条指令仍然要经过同样的 4 跳。';
+  if(sim.running){clearInterval(sim.timer);sim.timer=setInterval(tickOnce,sim.speedMs);}
+}
+function setAmbient(){
+  const v=+$('amb').value, names=['深夜','傍晚','白天'];
+  $('ambOut').textContent=names[v];
+  $('rooms').className='rooms amb'+v;
+  $('paramWhy').innerHTML='💬 环境光调为「'+names[v]+'」:'+(v===2
+    ?'白天房间本来就亮,开灯效果不明显。教材说,智能家居可以用<b>光线传感器</b>感知亮度,自动决定要不要开灯,既方便又省电!'
+    :'光线越暗,越需要开灯。<b>光线传感器</b>感知到变暗,智能家居就能自动点亮灯——这就是“通过光线强度决定是否开灯”。');
+  addLog('调参','环境光调为 '+names[v],'—');
+}
+function toggleRun(){
+  sim.running=!sim.running;
+  $('btnRun').textContent=sim.running?'⏸ 暂停':'▶ 运行';
+  $('btnRun').className='btn small '+(sim.running?'orange':'green');
+  if(sim.running){sim.timer=setInterval(tickOnce,sim.speedMs);}
+  else clearInterval(sim.timer);
+}
+function ensureRunning(){if(!sim.running)toggleRun();}
+function stepOnce(){if(sim.running)toggleRun();tickOnce();}
+function resetSim(){
+  if(sim.running)toggleRun();
+  sim.tick=0; sim.offline=false; sim.msgs=[]; cmdList=[];
+  Object.values(sim.lamps).forEach(L=>{L.real=false;L.app=false;L.intent=false;});
+  document.querySelectorAll('.msg-dot').forEach(d=>d.remove());
+  $('msglist').innerHTML='<div style="color:#5b7186">暂无消息</div>';
+  $('btnOffline').textContent='🔌 断开网络';
+  setWhy('已重置:两盏灯都熄灭,消息清空。点小程序按钮发出新指令,用「⏭ 单步」一步步观察。');
+  renderLife(); render();
+}
+function loadExample(){
+  resetSim();
+  $('spd').value=2; setSpeed();
+  $('amb').value=0; $('ambOut').textContent='深夜'; $('rooms').className='rooms amb0';
+  $('lat').value=0; $('loss').value=0; setLatency(); setLoss();
+  $('debounce').checked=true; $('ackOn').checked=true;
+  setAccount('family');
+  setWhy('📖 已恢复教材示例:网络畅通、回传开启、家人账号。像教材图3.2.8那样,先点「▶ 运行」,再按小程序里的客厅灯,观察“小程序发送消息 → 主控板接收消息 → 控制实现”。');
+  addLog('系统','恢复教材示例参数','—');
+}
+function setWhy(t){$('why').innerHTML='💬 '+t;}
+function clockStr(){
+  const mins=1200+sim.tick, h=Math.floor(mins/60)%24, m=mins%60;
+  return `第 ${sim.tick} 步 · ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+/* ---- 消息系统 ----
+   msg:{id,label,dir,kind,lamp,action,hop,wait,status,done,queued,el,bornTick,account,
+        stages:{d,e,c},closed,resultText,cmdRef,state} */
+function sendMsg(label,dir,kind,extra){
+  const m=Object.assign({
+    id:++sim.msgId,label,dir,kind,hop:dir==='down'?0:4,wait:0,
+    status:'发送中',done:false,queued:false,bornTick:sim.tick,account:acct,
+  },extra||{});
+  const el=document.createElement('div');
+  el.className='msg-dot'+(dir==='up'?' up':''); el.textContent=label;
+  $('pipe').appendChild(el); m.el=el;
+  positionMsg(m); sim.msgs.push(m); renderMsgs();
+  return m;
+}
+function positionMsg(m){
+  const pct=NODE_X[0]+(NODE_X[4]-NODE_X[0])*(m.hop/4);
+  m.el.style.left=`calc(${pct}% - 8px)`;
+}
+function finishMsg(m,status,cls){
+  m.status=status; m.done=true;
+  if(cls)m.el.classList.add(cls);
+  setTimeout(()=>{m.el.remove();},1600);
+}
+function flashNode(i){
+  const n=$('n'+Math.max(0,Math.min(4,i))); if(!n)return;
+  n.classList.add('active'); setTimeout(()=>n.classList.remove('active'),450);
+}
+function advanceMsgs(){
+  for(const m of sim.msgs){
+    if(m.done)continue;
+    if(m.wait>0){m.wait--;m.status='传输中(延迟)';continue;}
+    if(m.queued){
+      if(!sim.offline){
+        m.queued=false; m.el.classList.remove('queued');
+        if(sim.tick-m.bornTick>15){       // 排队太久 → 过期
+          stats.rejected++;
+          if(m.kind==='cmd'){m.closed=true;m.resultText='⛔ 过期,被拒绝执行';}
+          finishMsg(m,'已过期,拒绝执行 ⛔','lost');
+          addLog('安全','过期指令被拒绝执行(断网排队太久)','安全机制生效');
+          setWhy('⛔ 这条指令在断网期间排队太久,已经<b>过期</b>。控制器拒绝执行它——不然半夜网络恢复,灯突然亮起来多吓人!这是重要的<b>安全机制</b>。');
+          continue;
+        }
+        m.status='恢复发送';
+      } else {m.status='排队中(断网)';continue;}
+    }
+    const step=m.dir==='down'?1:-1;
+    const inNet=(m.dir==='down'&&m.hop<2)||(m.dir==='up'&&m.hop>2);
+    if(inNet&&sim.offline&&!m.queued){
+      m.queued=true;m.status='排队中(断网)';m.el.classList.add('queued');renderMsgs();continue;
+    }
+    if(inNet&&Math.random()<lossRate()){
+      stats.lost++;
+      if(m.kind==='cmd'){m.closed=true;m.resultText='❌ 半路丢失,灯没反应';
+        setWhy('❌ 一条<b>开关灯指令</b>在网络中丢失了!灯永远收不到它,不会有任何反应。所以物联网需要「确认回执 + 重发」。');}
+      if(m.kind==='ack'){
+        const c=cmdList.find(x=>x.id===m.cmdRef);
+        if(c){c.closed=true;c.resultText='⚠️ 执行了,但回传丢失';}
+        setWhy('⚠️ <b>状态回传消息</b>丢了!灯其实已经变了,可小程序不知道——图标和真实状态<b>不同步</b>了。去「② 观察站」点「检查一致性」看看,或者「下拉刷新」修复。');
+      }
+      finishMsg(m,'丢失 ❌','lost');
+      addLog('网络','消息丢失:'+m.label,'丢包');
+      renderMsgs(); continue;
+    }
+    m.hop+=step; m.wait=latencyExtra(); positionMsg(m); flashNode(m.hop);
+    if(m.dir==='down'){
+      m.status=['在小程序','经过网络','到达平台','到达控制器','到达灯具'][m.hop]||'传输中';
+      if(m.hop===2&&m.kind==='cmd'&&m.account==='guest'){
+        stats.rejected++; m.closed=true; m.resultText='⛔ 权限不足,被平台拒绝';
+        finishMsg(m,'权限不足,被拒绝 ⛔','lost');
+        addLog('安全','平台拒绝访客账号的指令:'+m.label,'权限校验');
+        setWhy('⛔ 物联网平台做了<b>权限校验</b>:访客账号「小访」没有控制这盏灯的权限,指令被拒绝。这样陌生人就不能随便开关你家的灯——这就是权限校验的意义!');
+        continue;
+      }
+      if(m.hop===3){
+        if(m.kind==='cmd'){m.stages.d=true;m.status='控制器已接收';if(!m.closed)m.resultText='📬 已送达,准备执行';}
+        if(m.kind==='query'){
+          finishMsg(m,'控制器已答复 ✅');
+          const L1=sim.lamps.living,L2=sim.lamps.bed;
+          sendMsg(`状态:客厅${L1.real?'亮':'灭'}·卧室${L2.real?'亮':'灭'}`,'up','state');
+          addLog('查询','控制器答复灯的真实状态','主动查询');
+          continue;
+        }
+      }
+      if(m.hop>=4&&m.kind==='cmd')execCmd(m);
+    }else{
+      m.status=['回到小程序','经过网络','经过平台','离开控制器','出发'][m.hop]||'回传中';
+      if(m.hop<=0)arriveApp(m);
+    }
+  }
+  renderMsgs(); renderLife();
+}
+function execCmd(m){
+  const L=sim.lamps[m.lamp];
+  L.real=(m.action==='on');
+  m.stages.e=true; stats.success++;
+  finishMsg(m,'已执行 ✅');
+  addLog('执行',`${L.name}${L.real?'点亮':'熄灭'}(${m.account==='guest'?'访客':'家人'}指令)`,'控制器执行');
+  if($('ackOn').checked){
+    m.resultText='⚡ 已执行,等待回传…';
+    sendMsg(`回传:${L.name}${L.real?'已开':'已关'}`,'up','ack',{lamp:m.lamp,state:L.real,cmdRef:m.id});
+    setWhy(`⚡ 控制器让<b>${L.name}${L.real?'亮了':'灭了'}</b>!现在一条<b>绿色回传消息</b>正带着“真实状态”跑回小程序——收到它,小程序图标才会变。`);
+  }else{
+    m.closed=true; m.resultText='⚡ 已执行(回传关闭,小程序不知道!)';
+    didAckOffCmd=true;
+    setWhy(`⚠️ ${L.name}${L.real?'亮了':'灭了'},但<b>状态回传是关的</b>——小程序完全不知道!看,小程序图标没变。去「② 观察站」点「检查一致性」抓住这个不一致!`);
+  }
+  render();
+}
+function arriveApp(m){
+  if(m.kind==='ack'){
+    const L=sim.lamps[m.lamp];
+    L.app=m.state; stats.ack++;
+    finishMsg(m,'小程序已更新 ✅');
+    const c=cmdList.find(x=>x.id===m.cmdRef);
+    if(c){c.stages.c=true;c.closed=true;c.resultText='✅ 全部完成';}
+    addLog('回传',`小程序收到回传:${L.name}${m.state?'已开':'已关'}`,'图标同步');
+    setWhy(`✅ 回传到达!小程序图标同步成<b>${L.name}${m.state?'亮':'灭'}</b>。一条指令的完整一生:📤发送 → 📬送达 → ⚡执行 → 🔁回传确认。`);
+    if(!progress.light){progress.light=true;setBadge(2);
+      fb('fb1','ok','🎉 恭喜!你完成了一次完整的<b>远程控制闭环</b>:小程序发送消息 → 网络传输 → 平台转发 → 控制器执行 → 状态回传让小程序图标同步变化!再试试卧室灯,或去「② 观察站」看指令的“一生”。');}
+  }
+  if(m.kind==='state'){
+    sim.lamps.living.app=sim.lamps.living.real; sim.lamps.living.intent=sim.lamps.living.real;
+    sim.lamps.bed.app=sim.lamps.bed.real; sim.lamps.bed.intent=sim.lamps.bed.real;
+    finishMsg(m,'状态已同步 ✅');
+    addLog('查询','小程序收到真实状态,显示已同步','主动查询修复');
+    setWhy('🔄 小程序<b>主动查询</b>拿到了灯的真实状态,显示已同步!当回传丢失或被关闭时,“下拉刷新”就是最好的补救办法。');
+  }
+  render();
+}
+function renderMsgs(){
+  const live=sim.msgs.slice(-8).reverse();
+  $('msglist').innerHTML=live.length?live.map(m=>{
+    const cls=/✅|已执行|已更新|已同步/.test(m.status)?'s-ok':(/丢失|过期|拒绝|离线/.test(m.status)?'s-bad':'s-wait');
+    return `<div>#${m.id} ${m.dir==='down'?'⬇指令':'⬆回传'}「${m.label}」— <b class="${cls}">${m.status}</b></div>`;
+  }).join(''):'<div style="color:#5b7186">暂无消息</div>';
+}
+function renderLife(){
+  const rows=cmdList.slice(-12).reverse();
+  const mk=(ok,txt)=>ok?`<span class="stage-ok">✅</span>`:`<span class="stage-no">${txt||'·'}</span>`;
+  $('lifeBody').innerHTML=rows.length?rows.map(c=>
+    `<tr><td>#${c.id}</td><td style="text-align:left">${c.label}(${c.account==='guest'?'访客':'家人'})</td>
+     <td>${mk(true)}</td><td>${mk(c.stages.d)}</td><td>${mk(c.stages.e)}</td><td>${mk(c.stages.c)}</td>
+     <td style="text-align:left">${c.resultText||'📤 发送中…'}</td></tr>`).join('')
+    :'<tr><td colspan="7" style="color:#5b7186">还没有指令,按一下上面的按钮吧!</td></tr>';
+}
+
+/* ---- 每 tick 主逻辑 ---- */
+function tickOnce(){
+  sim.tick++;
+  advanceMsgs();
+  render();
+}
+function render(){
+  $('clock').textContent=clockStr();
+  const L1=sim.lamps.living,L2=sim.lamps.bed;
+  // 房间真实灯
+  $('roomLiving').classList.toggle('lit',L1.real);
+  $('roomBed').classList.toggle('lit',L2.real);
+  $('realStLiving').textContent=L1.real?'亮':'灭';
+  $('realStBed').textContent=L2.real?'亮':'灭';
+  // 小程序显示
+  renderPhoneLamp('living','appIcoLiving','appStLiving');
+  renderPhoneLamp('bed','appIcoBed','appStBed');
+  // 节点状态
+  $('st0').textContent=acct==='guest'?'访客登录':'家人登录';
+  $('st1').textContent=sim.offline?'📵 断网':'畅通';
+  $('st2').textContent='队列 '+sim.msgs.filter(m=>m.queued&&!m.done).length;
+  $('st3').textContent='在线';
+  $('st4').textContent=`客厅${L1.real?'亮':'灭'}·卧室${L2.real?'亮':'灭'}`;
+  $('n1').classList.toggle('err',sim.offline);
+}
+function renderPhoneLamp(k,icoId,stId){
+  const L=sim.lamps[k];
+  const pending=cmdList.some(c=>c.lamp===k&&!c.closed);
+  $(icoId).classList.toggle('on',L.app);
+  const st=$(stId);
+  if(pending){st.textContent='⏳ 等待确认…';st.className='devst wait';}
+  else{st.textContent='显示:'+(L.app?'已开 💡':'已关');st.className='devst';}
+}
+
+/* ---- 小程序端操作 ---- */
+function appClick(lamp){
+  const now=Date.now();
+  if($('debounce').checked&&now-lastClick[lamp]<600){
+    addLog('防抖','忽略了过快的重复点击('+sim.lamps[lamp].name+')','防抖保护');
+    setWhy('🛡 <b>防抖保护</b>发现你在 0.6 秒内重复点击,自动忽略了这一下——防止灯“抽风”闪烁,也防止发出一堆重复指令。');
+    return;
+  }
+  lastClick[lamp]=now;
+  const L=sim.lamps[lamp];
+  L.intent=!L.intent;
+  const action=L.intent?'on':'off';
+  const m=sendMsg(`${action==='on'?'开':'关'}${L.name}`,'down','cmd',
+    {lamp,action,stages:{d:false,e:false,c:false},closed:false,resultText:'📤 发送中…'});
+  cmdList.push(m); stats.cmd++;
+  addLog('指令',`📱 小程序发送「${action==='on'?'开':'关'}${L.name}」`,acct==='guest'?'访客账号':'家人账号');
+  setWhy(`📱 小程序发出「${action==='on'?'开':'关'}${L.name}」指令!看橙色消息沿通道前进:小程序 → 网络 → 物联网平台(检查权限、转发) → 控制器 → 灯具。`);
+  renderLife(); render();
+  if(!sim.running){toggleRun();
+    fb('fb1','info','💡 已自动开始运行。想一步一步看清每一跳?点「⏸ 暂停」再用「⏭ 单步」。');}
+}
+function appRefresh(){
+  sendMsg('查询灯状态','down','query');
+  addLog('查询','📱 小程序下拉刷新,主动查询灯的真实状态','—');
+  setWhy('🔄 小程序发出「查询」请求:控制器会把两盏灯的<b>真实状态</b>沿绿色方向发回来,小程序显示随之同步。');
+  ensureRunning();
+}
+function ackChanged(){
+  const on=$('ackOn').checked;
+  addLog('调参','状态回传 '+(on?'开启':'关闭'),'—');
+  fb('fb2',on?'info':'bad',on
+    ?'🔁 状态回传已开启:每次执行后,灯的真实状态都会发回小程序,图标保持同步。'
+    :'⚠️ 状态回传已关闭!接下来按一次灯,灯会变,但小程序图标<b>不会变</b>。然后点「🔍 检查一致性」抓住这个问题!');
+}
+function checkConsistency(){
+  const rows=Object.keys(sim.lamps).map(k=>{
+    const L=sim.lamps[k], same=L.app===L.real;
+    return {name:L.name,app:L.app,real:L.real,same};
+  });
+  $('consistBox').innerHTML='<div class="logwrap" style="margin-top:10px;max-height:none"><table><thead><tr><th>灯</th><th>📱 小程序显示</th><th>🏠 真实状态</th><th>结论</th></tr></thead><tbody>'+
+    rows.map(r=>`<tr><td>${r.name}</td><td>${r.app?'亮 💡':'灭'}</td><td>${r.real?'亮 💡':'灭'}</td>
+      <td>${r.same?'<span class="stage-ok">✅ 一致</span>':'<b style="color:var(--red)">⚠️ 不一致!</b>'}</td></tr>`).join('')+
+    '</tbody></table></div>';
+  const bad=rows.filter(r=>!r.same);
+  if(bad.length){
+    addLog('实验','检查一致性:发现 '+bad.length+' 盏灯显示与真实不符','回传实验');
+    fb('fb2','ok','🎯 你抓到了!<b>'+bad.map(r=>r.name).join('、')+'</b>的小程序显示和真实状态对不上——因为执行后没有(或没收到)状态回传,小程序还蒙在鼓里。这正是<b>状态回传</b>要解决的问题!现在打开回传开关,点「🔄 下拉刷新」修复吧。');
+    if(didAckOffCmd&&!progress.ackExp){progress.ackExp=true;setBadge(3);}
+  }else{
+    fb('fb2','info',didAckOffCmd
+      ?'✅ 现在显示和真实完全一致。回传(或下拉刷新)把它们“对齐”了!'
+      :'目前显示和真实一致。想看“不一致”长什么样?按任务提示:先<b>关闭状态回传</b>,再按一次灯,然后回来检查。');
+  }
+}
+
+/* ============================================================
+   模块一B:物联网四层结构配对(点击选择→点击放置)
+============================================================ */
+const LPARTS=[
+  {k:'sense',ico:'🔘',name:'按键·光线传感器'},
+  {k:'trans',ico:'📶',name:'Wi-Fi网络与网关'},
+  {k:'proc',ico:'🖥️',name:'物联网平台(服务器)'},
+  {k:'app',ico:'📱',name:'「我家小屋」小程序'},
+  {k:'x1',ico:'🎮',name:'游戏手柄'},
+];
+let selPart=null, layerHintLv=0;
+function renderParts(){
+  const pool=$('lpool'); pool.innerHTML='';
+  const placed=[...document.querySelectorAll('.slot[data-lslot]')].map(s=>s.dataset.has).filter(Boolean);
+  LPARTS.filter(c=>!placed.includes(c.k)).forEach(c=>{
+    const d=document.createElement('div'); d.className='comp'; d.dataset.k=c.k;
+    d.innerHTML=`<span class="ico">${c.ico}</span>${c.name}`;
+    d.onclick=()=>{document.querySelectorAll('#lpool .comp').forEach(x=>x.classList.remove('sel'));
+      if(selPart===c.k){selPart=null;}else{selPart=c.k;d.classList.add('sel');}};
+    pool.appendChild(d);
+  });
+}
+function lslotClick(slot){
+  if(slot.dataset.has){
+    slot.dataset.has=''; slot.className='slot';
+    slot.innerHTML=slot.dataset.orig;
+    renderParts(); return;
+  }
+  if(!selPart){fb('fbLayer','info','💡 先在下方“零件仓库”里点击选中一个零件,再点击结构层放入。');return;}
+  const c=LPARTS.find(x=>x.k===selPart);
+  if(!slot.dataset.orig)slot.dataset.orig=slot.innerHTML;
+  slot.dataset.has=c.k; slot.classList.add('filled');
+  slot.innerHTML=`<span class="lname">${slot.dataset.orig.match(/<span class="lname">(.*?)<\/span>/)[1]}</span><span style="font-size:24px">${c.ico}</span><b style="font-size:13px">${c.name}</b>`;
+  selPart=null; renderParts();
+}
+function checkLayers(){
+  let allFilled=true, allRight=true, wrongNames=[];
+  document.querySelectorAll('.slot[data-lslot]').forEach(s=>{
+    s.classList.remove('right','wrong');
+    if(!s.dataset.has){allFilled=false;return;}
+    if(s.dataset.has===s.dataset.lslot){s.classList.add('right');}
+    else{s.classList.add('wrong');allRight=false;wrongNames.push(LPARTS.find(c=>c.k===s.dataset.has).name);}
+  });
+  if(!allFilled){fb('fbLayer','bad','🌱 还有结构层空着呢!提示:游戏手柄是干扰项,不属于这套系统。');return;}
+  if(allRight){
+    fb('fbLayer','ok','🎉 配对正确!<b>感知层</b>(传感器获取信息)→<b>传输层</b>(网络与网关搬运信息)→<b>处理层</b>(平台/服务器存储判断)→<b>应用层</b>(小程序和人打交道)。教材说的“感知、传输、处理、应用”你已经掌握啦!');
+    progress.layer=true; setBadge(1);
+    addLog('学习','完成物联网四层结构配对','配对正确');
+  }else{
+    fb('fbLayer','bad',`🤔 有 ${wrongNames.length} 个零件放错了(红色框):${wrongNames.join('、')}。想想每层的提示语,或点「💡 分层提示」。`);
+  }
+}
+function layerHint(){
+  layerHintLv=Math.min(layerHintLv+1,3);
+  const hints=[
+    '提示①:感知层负责“看和听”——哪个零件能感觉到按键和光线的变化?',
+    '提示②:传输层是信息的快递员(Wi-Fi、网关);处理层是会思考、能存储的大脑(服务器)。',
+    '提示③:感知层=🔘按键·光线传感器,传输层=📶Wi-Fi网络与网关,处理层=🖥️物联网平台(服务器),应用层=📱小程序。🎮游戏手柄是干扰项!'
+  ];
+  fb('fbLayer','info','💡 '+hints[layerHintLv-1]);
+}
+function resetLayers(){
+  document.querySelectorAll('.slot[data-lslot]').forEach(s=>{
+    if(s.dataset.orig)s.innerHTML=s.dataset.orig;
+    s.dataset.has=''; s.className='slot';
+  });
+  selPart=null; layerHintLv=0; renderParts();
+  fb('fbLayer','info','已重置,重新配对吧!');
+}
+
+/* ============================================================
+   模块三:网络与权限实验
+============================================================ */
+function setLatency(){
+  const v=+$('lat').value;
+  $('latOut').textContent=['正常','轻微卡顿','明显延迟','严重延迟'][v];
+  if(v>0)$('paramWhy').innerHTML='💬 延迟调为「'+['正常','轻微卡顿','明显延迟','严重延迟'][v]+'」:消息每跳一步都要多等一会儿,你按下按钮到灯亮的时间会变长——远程控制变“迟钝”了。';
+}
+function setLoss(){
+  $('lossOut').textContent=$('loss').value+'%';
+  if(+$('loss').value>0)$('paramWhy').innerHTML='💬 丢包率调为 '+$('loss').value+'%:每条消息经过网络时,都有 '+$('loss').value+'% 的概率半路失踪。指令丢了灯没反应,回传丢了图标不同步!';
+}
+function markNetExp(name){
+  netExpSet.add(name);
+  if(netExpSet.size>=4&&!progress.net){progress.net=true;setBadge(4);}
+}
+function expLatency(){
+  if(+$('lat').value===0){fb('fbLat','bad','先把上面的延迟滑块调大(比如“明显延迟”),再发指令,对比才明显哦。');return;}
+  ensureRunning(); appClickForce('living');
+  fb('fbLat','info','👀 已发送!切到「① 实验室」看指令走得多慢——延迟大时,你按了按钮灯却半天不亮,还以为没按上,忍不住又按一次(所以更需要防抖!)。');
+  markNetExp('lat');
+}
+function expLoss(){
+  if(+$('loss').value===0){fb('fbLoss','bad','先把丢包率调大一点(比如 40%),不然一条也不会丢哦。');return;}
+  ensureRunning();
+  let n=0; const t=setInterval(()=>{appClickForce('bed');if(++n>=5)clearInterval(t);},420);
+  fb('fbLoss','info','👀 已连发 5 条开/关卧室灯指令!切到「① 实验室」数一数几条变红 ❌ 消失,再到「② 观察站」看哪些指令永远停在“发送”阶段。');
+  markNetExp('loss');
+}
+/* 实验用:绕过防抖直接发送(模拟连点效果由 expShake 负责) */
+function appClickForce(lamp){
+  const L=sim.lamps[lamp];
+  L.intent=!L.intent;
+  const action=L.intent?'on':'off';
+  const m=sendMsg(`${action==='on'?'开':'关'}${L.name}`,'down','cmd',
+    {lamp,action,stages:{d:false,e:false,c:false},closed:false,resultText:'📤 发送中…'});
+  cmdList.push(m); stats.cmd++;
+  addLog('指令',`📱 实验发送「${action==='on'?'开':'关'}${L.name}」`,acct==='guest'?'访客账号':'家人账号');
+  renderLife(); render();
+}
+function toggleOffline(){
+  sim.offline=!sim.offline;
+  $('btnOffline').textContent=sim.offline?'🔗 恢复网络':'🔌 断开网络';
+  addLog('网络',sim.offline?'网络断开':'网络恢复',sim.offline?'离线':'在线');
+  setWhy(sim.offline?'📵 网络断开了!此时发送的消息会在网络处<b>排队等待</b>(变灰)。':'🔗 网络恢复!排队的消息继续出发,但排队太久的指令会被判定<b>过期</b>而拒绝执行。');
+  render();
+}
+function expOffline(){
+  if(!sim.offline){fb('fbOff','bad','要先点「🔌 断开网络」,再发指令,才能看到排队现象。');return;}
+  ensureRunning(); appClickForce('living');
+  fb('fbOff','info','👀 指令发出但网络不通,它会变灰排队。两种结局都试试:①马上恢复网络 → 指令继续送达;②等一会儿(约15步)再恢复 → 指令过期被拒绝。');
+  markNetExp('off');
+}
+function setAccount(k){
+  acct=k;
+  $('accFam').classList.toggle('on',k==='family');
+  $('accGuest').classList.toggle('on',k==='guest');
+  $('accChip').textContent=k==='family'?'👨‍👩‍👧 家人账号 · 小清(虚构)':'👤 访客账号 · 小访(虚构)';
+  addLog('账号','切换为 '+(k==='family'?'家人账号':'访客账号'),'—');
+  setWhy(k==='family'
+    ?'👨‍👩‍👧 已切换为<b>家人账号</b>:平台认识小清,允许她控制家里的灯。'
+    :'👤 已切换为<b>访客账号</b>:平台不认识小访,他的控制指令会在平台被<b>权限校验</b>拦下来。发一条试试!');
+  render();
+}
+function expPermission(){
+  ensureRunning(); appClickForce('living');
+  if(acct==='guest'){
+    fb('fbPerm','info','👀 已用访客账号发送!切到「① 实验室」看:指令走到<b>☁️ 物联网平台</b>就被拦下变红 ⛔——平台核对了账号权限,不放行。这样陌生人就不能随便控制你家的灯。记得切回家人账号再对比一次!');
+    markNetExp('perm');
+  }else{
+    fb('fbPerm','info','✅ 家人账号发送成功,平台放行了。现在点上面的「👤 访客账号」再试一次,看看有什么不同!');
+  }
+}
+function debounceChanged(){
+  const on=$('debounce').checked;
+  addLog('调参','按钮防抖 '+(on?'开启':'关闭'),'—');
+  fb('fbShake',on?'info':'bad',on
+    ?'🛡 防抖已开启:0.6 秒内的重复点击会被忽略,只算一次。'
+    :'⚠️ 防抖已关闭!现在点「手抖连点」,每一下都会变成一条指令,灯会“抽风”似的开开关关。');
+}
+function expShake(){
+  ensureRunning();
+  let i=0; const t=setInterval(()=>{appClick('living');if(++i>=6)clearInterval(t);},180);
+  const on=$('debounce').checked;
+  fb('fbShake','info',on
+    ?'🛡 防抖开着:6 次连点大部分被忽略,只发出了 1~2 条指令,灯稳稳的。再把防抖<b>关掉</b>点一次,对比一下!'
+    :'⚠️ 防抖关着:6 次连点发出 6 条“开/关”指令,看客厅灯抽风闪烁!💬 <b>防抖</b>就是让按钮“冷静一下”:短时间内重复点击只算一次,既保护设备,又不让网络里挤满重复指令。');
+  markNetExp('shake');
+}
+/* 网络小测 */
+const NETQ=[
+  {q:'为什么小程序图标要等“状态回传”才变亮?',opts:['为了省电','只有收到设备的真实状态,显示才可靠、才和真实一致','因为网络太慢了'],a:1,
+   why:'小程序显示的必须是灯的真实状态,回传就是设备发来的“确认书”。'},
+  {q:'访客账号点灯被平台拒绝,说明平台在做什么?',opts:['权限校验:检查这个人有没有资格控制这个设备','平台出故障了','灯泡坏了'],a:0,
+   why:'权限校验保护你家的设备,不让陌生人随便控制。'},
+  {q:'关闭防抖后快速连点开关按钮,灯会怎样?',opts:['变得更亮','开开关关“抽风”闪烁,还可能损坏设备','没有任何变化'],a:1,
+   why:'每次点击都变成一条指令,灯就跟着乱闪,所以需要防抖。'},
+];
+function renderQuiz(){
+  $('quizNet').innerHTML=NETQ.map((it,i)=>`<h3>${i+1}. ${it.q}</h3>`+
+    it.opts.map((o,j)=>`<button class="opt" id="q${i}o${j}" onclick="answerQ(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')).join('');
+}
+function answerQ(i,j){
+  const it=NETQ[i];
+  for(let k=0;k<it.opts.length;k++)$('q'+i+'o'+k).classList.remove('right','wrong');
+  if(j===it.a){$('q'+i+'o'+j).classList.add('right');
+    fb('fbQuiz','ok','✅ 答对了!'+it.why);}
+  else{$('q'+i+'o'+j).classList.add('wrong');
+    fb('fbQuiz','bad','再想想:回忆一下刚才实验里看到的现象。提示:'+it.why.slice(0,12)+'……');}
+}
+
+/* ============================================================
+   模块四:故障排查诊所
+============================================================ */
+const CASES=[
+  {name:'病例1:平台地址写错了',
+   symptom:'小清在小程序上点开灯,小程序显示“发送成功”,可平台后台一条消息记录都没有,灯自然也不亮。小程序里配置的平台地址是「iot-home.example.cn」。',
+   checks:[
+     {t:'检查手机网络',r:'✅ Wi-Fi 正常,手机能上网'},
+     {t:'查看控制器连接的平台地址',r:'❗ 控制器连的是「iot-house.example.cn」,和小程序配置的不一样!'},
+     {t:'检查控制器在线状态',r:'✅ 控制器在自己的平台上显示在线'},
+     {t:'检查灯泡',r:'✅ 灯泡完好'}],
+   causes:['灯泡坏了','小程序配置的平台地址写错,消息发到了“别的地方”,控制器永远收不到','网络太慢了'],a:1,
+   fixes:['换一个新灯泡','把小程序的平台地址改成和控制器一致(iot-house.example.cn),再重试','反复多点几次开灯按钮'],fa:1,
+   lesson:'地址(配置)必须完全一致,就像寄快递要写对收货地址——写错了,消息永远到不了收件人手里!'},
+  {name:'病例2:控制器离线',
+   symptom:'平台收到了开灯指令,但显示“控制器最后在线:昨天 21:00”,转发失败,灯不亮。',
+   checks:[
+     {t:'查看平台消息记录',r:'✅ 平台已收到开灯指令,尝试转发'},
+     {t:'查看控制器(主控板)指示灯',r:'❗ 一个灯都不亮,像是没通电'},
+     {t:'检查家里路由器',r:'✅ 路由器正常,其他设备都能上网'},
+     {t:'检查控制器电源',r:'❗ 控制器的电源插头被碰掉了!'}],
+   causes:['控制器断电离线,收不到平台转发的指令','小程序版本太旧','丢包率太高'],a:0,
+   fixes:['插回电源,等控制器重新联网上线后再试','换一部新手机','把灯泡拧得更紧'],fa:0,
+   lesson:'链路上任何一环掉线,指令都会中断。排查时沿着“小程序→网络→平台→控制器→灯”逐环检查,很快就能找到断点!'},
+  {name:'病例3:灯泡坏了',
+   symptom:'控制器日志显示“已收到开灯指令,已输出开灯信号”,小程序也收到了回传“已开”,可房间还是黑的。',
+   checks:[
+     {t:'查看控制器日志',r:'✅ 指令已执行,开关电路已接通'},
+     {t:'查看小程序状态',r:'✅ 显示“已开”,回传正常'},
+     {t:'把灯泡换到别的灯座试试',r:'❗ 换了灯座也不亮——灯泡烧坏了!'},
+     {t:'检查网络延迟',r:'✅ 网络正常'}],
+   causes:['回传消息丢了','灯泡本身坏了,电路接通了灯也不会亮','账号权限不足'],a:1,
+   fixes:['更换新灯泡','重启物联网平台','关闭防抖保护'],fa:0,
+   lesson:'信息链路全部正常,问题也可能出在最末端的执行设备上。“软件”没毛病时,别忘了检查“硬件”!'},
+  {name:'病例4:图标不同步',
+   symptom:'点开灯后房间的灯确实亮了,可小程序图标一直是灰色“已关”。小清以为没开成,又点了一次,反而把灯关了!',
+   checks:[
+     {t:'看房间里的灯',r:'✅ 第一次点击后灯真的亮了'},
+     {t:'查看控制器日志',r:'✅ 已执行开灯,并发送了状态回传'},
+     {t:'查看平台回传记录',r:'❗ 回传消息在网络中丢失,小程序始终没收到!'},
+     {t:'检查账号权限',r:'✅ 家人账号,权限正常'}],
+   causes:['灯泡坏了','状态回传消息丢失,小程序不知道灯已经亮了','控制器离线'],a:1,
+   fixes:['让小程序下拉刷新(主动查询真实状态),并给回传消息也加上“确认+重发”','换一个更亮的灯泡','把网络延迟调大'],fa:0,
+   lesson:'状态回传让小程序和真实设备保持一致;但回传本身也可能丢,所以还要有“主动查询”和“重发”来兜底。'},
+];
+let caseIdx=0; let caseSolved=[false,false,false,false]; let caseHintLv=[0,0,0,0];
+let causeOk=[false,false,false,false];
+function renderCaseTabs(){
+  $('caseTabs').innerHTML=CASES.map((c,i)=>
+    `<button id="ct${i}" class="${i===caseIdx?'on':''} ${caseSolved[i]?'solved':''}" onclick="openCase(${i})">${c.name}</button>`).join('');
+}
+function openCase(i){
+  caseIdx=i; renderCaseTabs();
+  const c=CASES[i];
+  $('caseBody').innerHTML=`
+    <div class="task"><b>🩺 症状:</b>${c.symptom}</div>
+    <h3>第1步:点击检查项,收集线索</h3>
+    ${c.checks.map((ch,j)=>`<div class="checkline"><button class="btn small ghost" onclick="doCheck(${i},${j})">🔍 ${ch.t}</button><span class="res" id="chk${i}_${j}"></span></div>`).join('')}
+    <h3>第2步:判断故障原因</h3>
+    ${c.causes.map((o,j)=>`<button class="opt" id="cs${i}o${j}" onclick="pickCause(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')}
+    <h3>第3步:选择修复方法</h3>
+    ${c.fixes.map((o,j)=>`<button class="opt" id="fx${i}o${j}" onclick="pickFix(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')}
+    <div style="margin-top:8px"><button class="btn ghost small" onclick="caseHint(${i})">💡 分层提示</button></div>
+    <div class="feedback" id="fbCase"></div>`;
+}
+function doCheck(i,j){
+  const el=$('chk'+i+'_'+j); if(!el)return;
+  el.textContent=CASES[i].checks[j].r;
+  addLog('排查',CASES[i].name+':'+CASES[i].checks[j].t,CASES[i].checks[j].r.slice(0,20));
+}
+function pickCause(i,j){
+  const c=CASES[i];
+  if(!$('cs'+i+'o'+j))return;
+  c.causes.forEach((_,k)=>{const e=$('cs'+i+'o'+k);if(e)e.classList.remove('right','wrong');});
+  if(j===c.a){$('cs'+i+'o'+j).classList.add('right');causeOk[i]=true;
+    fb('fbCase','ok','✅ 判断正确!现在选一个修复方法。');}
+  else{$('cs'+i+'o'+j).classList.add('wrong');causeOk[i]=false;
+    fb('fbCase','bad','🤔 不太对。先把上面的检查项都点一遍,带 ❗ 的线索最关键!');}
+}
+function pickFix(i,j){
+  const c=CASES[i];
+  if(!$('fx'+i+'o'+j))return;
+  c.fixes.forEach((_,k)=>{const e=$('fx'+i+'o'+k);if(e)e.classList.remove('right','wrong');});
+  if(!causeOk[i]){fb('fbCase','bad','先在第2步判断出正确的故障原因哦。');return;}
+  if(j===c.fa){$('fx'+i+'o'+j).classList.add('right');
+    if(!caseSolved[i]){caseSolved[i]=true;progress.fix++;$('bgFix').textContent=progress.fix;
+      if(progress.fix>=4)setBadge(5);
+      addLog('排查',c.name+' 修复成功','✅ 已修复');}
+    renderCaseTabs();
+    fb('fbCase','ok','🎉 修复成功!<b>本课收获:</b>'+c.lesson+(progress.fix<4?' 继续修下一户吧!':' 四户全修好,你是合格的智能家居维修工!'));}
+  else{$('fx'+i+'o'+j).classList.add('wrong');
+    fb('fbCase','bad','这个方法治不了这个病~再看看 ❗ 线索指向哪一环。');}
+}
+function caseHint(i){
+  caseHintLv[i]=Math.min(caseHintLv[i]+1,3);
+  const lv=caseHintLv[i], c=CASES[i];
+  const hs=[
+    '提示①:把第1步的 4 个检查都点开,重点看带 ❗ 的结果。',
+    '提示②:沿着信息流找断点:小程序 → 网络 → 平台 → 控制器 → 灯,✅ 说明这一环没问题,❗ 就是断点所在。',
+    '提示③:正确原因是 '+'ABC'[c.a]+',对应的修复方法是 '+'ABC'[c.fa]+'。想一想为什么!'
+  ];
+  fb('fbCase','info','💡 '+hs[lv-1]);
+}
+
+/* ============================================================
+   模块五:日志
+============================================================ */
+function lampTxt(k){const L=sim.lamps[k];return `真${L.real?'亮':'灭'}/显${L.app?'亮':'灭'}`;}
+function addLog(type,content,note){
+  logRows.push({time:clockStr(),type,content,living:lampTxt('living'),bed:lampTxt('bed'),note:note||'—'});
+  if(logRows.length>500)logRows.shift();
+}
+function renderLog(){
+  $('logCount').textContent=logRows.length;
+  $('logBody').innerHTML=logRows.length?logRows.slice().reverse().map(r=>
+    `<tr><td>${r.time}</td><td>${r.type}</td><td style="text-align:left">${r.content}</td><td>${r.living}</td><td>${r.bed}</td><td>${r.note}</td></tr>`).join('')
+    :'<tr><td colspan="6" style="color:#5b7186">暂无记录</td></tr>';
+}
+function exportCSV(){
+  const head='模拟时间,类型,内容,客厅灯(真/显),卧室灯(真/显),备注\n';
+  const body=logRows.map(r=>[r.time,r.type,r.content,r.living,r.bed,r.note].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  downloadFile('小程序控灯实验日志.csv','\ufeff'+head+body,'text/csv');
+}
+function clearLog(){logRows=[];renderLog();}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ============================================================
+   模块六:报告与本机数据
+============================================================ */
+function refreshStats(){
+  $('sCmd').textContent=stats.cmd;
+  $('sOk').textContent=stats.success;
+  $('sRej').textContent=stats.rejected;
+  $('sLost').textContent=stats.lost;
+  $('sAck').textContent=stats.ack;
+  $('sFix').textContent=progress.fix+'/4';
+}
+function reportHTML(){
+  const f=id=>{const v=$(id).value.trim();return v?v.replace(/</g,'&lt;'):'(还没有填写)';};
+  return `<div style="font-family:sans-serif;max-width:720px;margin:auto">
+  <h1 style="color:#4338ca">💡 小程序控制开关灯项目报告</h1>
+  <p>课程:清华版《信息科技》五年级下册 第3单元第2课 | 生成时间:${new Date().toLocaleString()}</p>
+  <h2>一、实验数据统计</h2>
+  <ul><li>发出指令总数:${stats.cmd}</li><li>成功执行数:${stats.success}</li>
+  <li>被拒绝数(权限/过期):${stats.rejected}</li><li>丢失消息数:${stats.lost}</li>
+  <li>回传确认数:${stats.ack}</li><li>修复故障:${progress.fix}/4</li>
+  <li>当前实验参数:延迟「${['正常','轻微卡顿','明显延迟','严重延迟'][+$('lat').value]}」 / 丢包率${$('loss').value}% / 防抖${$('debounce').checked?'开':'关'} / 状态回传${$('ackOn').checked?'开':'关'}</li></ul>
+  <h2>二、控制一盏灯的完整过程,我来说</h2><p>${f('r1')}</p>
+  <h2>三、为什么需要状态回传</h2><p>${f('r2')}</p>
+  <h2>四、我发现的问题与解决办法</h2><p>${f('r3')}</p>
+  <h2>五、权限与安全,我主张</h2><p>${f('r4')}</p>
+  <p style="color:#888;font-size:13px">本报告由离线模拟器生成,所有账号与设备均为虚构。</p></div>`;
+}
+function genReport(){
+  const empty=['r1','r2','r3','r4'].filter(id=>!$(id).value.trim());
+  if(empty.length){fb('fb6','bad',`还有 ${empty.length} 个空没填完呢!把你实验中的发现写进去,报告才有价值。`);}
+  else{fb('fb6','ok','✅ 报告已生成!检查一下预览,满意就点「导出报告」保存到电脑。');
+    if(!progress.report){progress.report=true;setBadge(6);}}
+  $('reportPreview').innerHTML='<div class="card" style="margin-top:12px">'+reportHTML()+'</div>';
+  refreshStats();
+}
+function exportReport(){
+  downloadFile('小程序控灯项目报告.html','<!DOCTYPE html><html><head><meta charset="utf-8"><title>项目报告</title></head><body>'+reportHTML()+'</body></html>','text/html');
+}
+const LS_KEY='u3l2_miniapp_lab';
+function projectData(){
+  return {ver:1,
+    report:{r1:$('r1').value,r2:$('r2').value,r3:$('r3').value,r4:$('r4').value},
+    params:{lat:$('lat').value,loss:$('loss').value,amb:$('amb').value,spd:$('spd').value,
+      debounce:$('debounce').checked,ack:$('ackOn').checked,acct},
+    stats,caseSolved,
+    progress:{layer:progress.layer,light:progress.light,ackExp:progress.ackExp,net:progress.net,
+      fix:progress.fix,report:progress.report,netExp:[...netExpSet]},
+    log:logRows.slice(-100)};
+}
+function applyProject(d){
+  try{
+    if(d.report)['r1','r2','r3','r4'].forEach(k=>$(k).value=d.report[k]||'');
+    if(d.params){
+      $('lat').value=d.params.lat;$('loss').value=d.params.loss;setLatency();setLoss();
+      $('amb').value=d.params.amb;$('ambOut').textContent=['深夜','傍晚','白天'][+d.params.amb];
+      $('rooms').className='rooms amb'+(+d.params.amb);
+      $('spd').value=d.params.spd;$('spdOut').textContent=speedName(+d.params.spd);
+      sim.speedMs={1:1200,2:700,3:350}[+d.params.spd];
+      $('debounce').checked=!!d.params.debounce;$('ackOn').checked=!!d.params.ack;
+      if(d.params.acct)setAccount(d.params.acct);
+    }
+    if(d.stats)stats=Object.assign(stats,d.stats);
+    if(Array.isArray(d.caseSolved)){caseSolved=d.caseSolved.slice(0,4);renderCaseTabs();}
+    if(d.progress){
+      progress.layer=!!d.progress.layer;progress.light=!!d.progress.light;
+      progress.ackExp=!!d.progress.ackExp;progress.net=!!d.progress.net;
+      progress.fix=d.progress.fix||0;progress.report=!!d.progress.report;
+      netExpSet=new Set(d.progress.netExp||[]);
+      if(progress.layer)setBadge(1);if(progress.light)setBadge(2);if(progress.ackExp)setBadge(3);
+      if(progress.net)setBadge(4);if(progress.fix>=4)setBadge(5);if(progress.report)setBadge(6);
+      $('bgFix').textContent=progress.fix;
+    }
+    if(Array.isArray(d.log))logRows=d.log;
+    refreshStats();renderLog();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('小程序控灯项目进度.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 项目导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的项目文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'), raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderParts(); renderQuiz(); renderCaseTabs(); openCase(0);
+  setLatency(); setLoss();
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  render(); renderLife(); refreshStats();
+})();
+</script>
+</body>
+</html>

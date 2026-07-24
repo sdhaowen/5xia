@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能家居设计沙盘 · 单元3第3课 智能家居项目设计——小小家居设计师</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6;
+    --bg:#eef4fb; --card:#ffffff; --ink:#20344b; --ink-2:#5b7186;
+    --line:#d9e4f0; --soft:#f2f7fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#1a5cb8,#8b5cf6); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(20,60,120,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--green-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--blue);}
+  nav button.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(30,60,110,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--blue); border:2px solid var(--blue);}
+  .btn.gray{background:#8aa0b5;}
+  .btn:disabled{background:#c4d2df; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.warn{display:block; background:#fff4dd; border:1px solid var(--orange); color:#93540a;}
+  .feedback.info{display:block; background:#e8f1fd; border:1px solid var(--blue); color:var(--blue-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+  .why{background:#eef7ff; border-left:4px solid var(--blue); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  /* ---------- 平面图沙盘 ---------- */
+  .plan{display:grid; grid-template-columns:repeat(10,1fr); gap:3px; background:#c3d3e6; padding:8px; border-radius:14px; max-width:700px; transition:background .4s;}
+  .plan.night{background:#2c3a55;}
+  .cell{position:relative; aspect-ratio:1/1; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:24px; transition:.15s; min-height:38px;}
+  .plan.click .cell{cursor:pointer;}
+  .plan.click .cell:hover{outline:3px solid var(--blue); z-index:3;}
+  .cell.living{background:#e8f1fd;} .cell.bed{background:#f1e8fd;} .cell.kitchen{background:#fdeee4;}
+  .cell.bath{background:#e4f7fd;} .cell.balcony{background:#eafbe9;} .cell.hall{background:#fdf6df;}
+  .plan.night .cell{filter:brightness(.55);}
+  .plan.night .cell.lit{filter:none; background:#fff3bf; box-shadow:0 0 12px 3px #ffe066;}
+  .cell.has{box-shadow:inset 0 0 0 2px #fff, 0 1px 4px rgba(0,0,0,.25);}
+  .cell.on{box-shadow:inset 0 0 0 3px var(--green), 0 1px 4px rgba(0,0,0,.25);}
+  .cell.ring{animation:ringP .5s infinite; box-shadow:inset 0 0 0 3px var(--red);}
+  @keyframes ringP{50%{background:#ffd6d6; transform:scale(1.06);}}
+  .cell.pulse{animation:pulseS .6s;}
+  @keyframes pulseS{0%{box-shadow:0 0 0 0 rgba(245,158,11,.9);}100%{box-shadow:0 0 0 14px rgba(245,158,11,0);}}
+  .cell.shake{animation:shake .3s;}
+  @keyframes shake{25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+  .rlabel{position:absolute; top:1px; left:3px; font-size:11px; color:#3d5570; white-space:nowrap; z-index:2; font-weight:700; pointer-events:none; text-shadow:0 0 3px #fff;}
+  .plan.night .rlabel{color:#dbe6f5; text-shadow:none;}
+  .occm{font-size:13px;}
+  .legend{margin-top:8px; font-size:13px; color:var(--ink-2);}
+  .legend i{display:inline-block; width:14px; height:14px; border-radius:4px; vertical-align:-2px; margin:0 3px 0 8px;}
+  /* 设备库 */
+  .devgroup{font-size:14px; font-weight:700; color:var(--ink-2); margin:10px 0 4px;}
+  .pool{display:flex; flex-wrap:wrap; gap:8px; padding:10px; background:var(--soft); border-radius:12px;}
+  .comp{border:2px solid var(--line); background:#fff; border-radius:12px; padding:8px 12px; font-size:14px; font-weight:700; cursor:pointer; user-select:none; transition:.15s; text-align:center;}
+  .comp .ico{font-size:24px; display:block;}
+  .comp:hover{border-color:var(--blue); transform:translateY(-2px);}
+  .comp.sel{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 3px #fde9c2;}
+  .comp small{display:block; font-weight:400; font-size:11.5px; color:var(--ink-2);}
+  /* 规则搭建 */
+  .rulerow{display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:var(--soft); border-radius:12px; padding:12px; margin:8px 0; font-size:16px; font-weight:700;}
+  .rulerow select{padding:9px 10px; border:2px solid var(--line); border-radius:10px; font-size:15px; font-weight:700; background:#fff; color:var(--ink); max-width:260px;}
+  .rulerow select:focus{outline:none; border-color:var(--blue);}
+  .rulerow .kw{color:var(--blue-d);}
+  table{width:100%; border-collapse:collapse; font-size:14px;}
+  th,td{border:1px solid var(--line); padding:7px 8px; text-align:center;}
+  th{background:var(--soft);}
+  /* 模拟 */
+  .lab{display:grid; grid-template-columns:1fr 320px; gap:14px;}
+  @media(max-width:1000px){.lab{grid-template-columns:1fr;}}
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--blue-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--blue); height:26px;}
+  .runbar{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;}
+  .clock{font-size:16px; background:#20344b; color:#ffe08a; font-weight:700; border-radius:10px; padding:6px 14px; display:inline-block; margin-bottom:6px; font-family:monospace;}
+  .statebox{background:var(--soft); border-radius:10px; padding:8px 12px; margin-top:8px; font-size:14px;}
+  .statebox b{color:var(--blue-d);}
+  .simlog{max-height:220px; overflow:auto; font-size:13.5px; background:var(--soft); border-radius:10px; padding:8px 10px; margin-top:10px;}
+  .simlog div{padding:2px 0; border-bottom:1px dashed var(--line);}
+  .simlog .l-ok{color:var(--green-d);} .simlog .l-bad{color:var(--red);} .simlog .l-ev{color:#93540a;}
+  /* 评分 */
+  .scorebig{display:flex; gap:16px; flex-wrap:wrap; margin:10px 0;}
+  .scorebox{flex:1; min-width:200px; background:var(--soft); border-radius:14px; padding:14px; text-align:center;}
+  .scorebox b{font-size:38px; display:block;}
+  .scorebox span{font-size:14px; color:var(--ink-2);}
+  .bar{height:18px; background:#e3ecf6; border-radius:9px; overflow:hidden; margin-top:6px;}
+  .bar i{display:block; height:100%; border-radius:9px; transition:width .5s, background .5s;}
+  .tips li{margin:6px 0 6px 20px; font-size:14.5px;}
+  canvas{max-width:100%; background:#fff; border:1px solid var(--line); border-radius:12px;}
+  /* 输出 */
+  textarea,input[type=text]{width:100%; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit;}
+  textarea{min-height:70px; resize:vertical;}
+  textarea:focus,input[type=text]:focus{outline:none; border-color:var(--blue);}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:24px; color:var(--blue-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  pre.saved{background:#20344b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏠 智能家居设计沙盘</h1>
+  <p>清华版《信息科技》五年级下册 · 第3单元 第3课 智能家居项目设计——小小家居设计师(教材 P102—108)</p>
+  <div class="badges">
+    <span class="badge" id="bg1">① 设备布置</span>
+    <span class="badge" id="bg2">② 规则搭建 <span id="bgRule">0</span>/3</span>
+    <span class="badge" id="bg3">③ 模拟测试</span>
+    <span class="badge" id="bg4">④ 评分优化</span>
+    <span class="badge" id="bg5">⑤ 设计方案</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">🏠 ① 平面图设计沙盘</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">🧩 ② 自动化规则搭建</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">🎬 ③ 场景模拟测试</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">📊 ④ 能耗与安全评分</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">📑 ⑤ 设计方案输出</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:平面图设计沙盘 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>📖 项目怎么做?先看小设计师的工作流程</h2>
+    <p>教材告诉我们,做一个智能家居项目要经历 4 个环节:<b>项目创意</b>(从解决问题出发,想清楚给谁用、在哪用)→ <b>项目分析与计划</b>(材料清单、任务分解、成本预算、关键问题)→ <b>项目实施</b>(边做边测试、优化,记录遇到的问题)→ <b>项目总结</b>(写项目日志:问题与反思、改进方法)。</p>
+    <p style="margin-top:6px">这个沙盘就是你的"项目实施现场":布置的设备会自动变成<b>材料清单</b>,搭建的规则就是你的<b>控制方案</b>,最后在「⑤ 设计方案输出」里生成完整的项目计划书。<b>智能家居设计师</b>既要懂室内设计,又要懂信息技术——现在,你也来当一次!</p>
+    <p style="margin-top:6px"><span class="pill">发现需求</span><span class="pill">选择设备</span><span class="pill">设计规则</span><span class="pill">模拟测试</span><span class="pill">评价优化</span><span class="pill">安全隐私</span></p>
+  </div>
+  <div class="card">
+    <h2>🏠 任务一:给小清家布置智能设备</h2>
+    <div class="task"><b>任务:</b>先在下方"设备库"里<b>点击选中</b>一个设备,再<b>点击平面图的格子</b>把它装上(再点一下已放的设备可以取回)。要求:至少放 <b>3 个传感器 + 3 个执行器</b>,覆盖 <b>4 个以上区域</b>,而且位置要合理——放错地方沙盘会提醒你哦!完成后点「✅ 检查布置」。</div>
+    <div class="grid2">
+      <div>
+        <div class="plan click" id="plan1"></div>
+        <div class="legend">房间图例:<i style="background:#e8f1fd"></i>客厅 <i style="background:#f1e8fd"></i>卧室 <i style="background:#fdeee4"></i>厨房 <i style="background:#e4f7fd"></i>卫生间 <i style="background:#eafbe9"></i>阳台 <i style="background:#fdf6df"></i>玄关(入户门🚪)</div>
+      </div>
+      <div>
+        <div class="devgroup">📡 传感器(负责"感知")</div>
+        <div class="pool" id="poolS"></div>
+        <div class="devgroup">⚙️ 执行器(负责"动作")</div>
+        <div class="pool" id="poolA"></div>
+        <div class="statebox">已放置:传感器 <b id="cntS">0</b> 个 · 执行器 <b id="cntA">0</b> 个 · 覆盖区域 <b id="cntR">0</b>/6</div>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="checkLayout()">✅ 检查布置</button>
+      <button class="btn ghost" onclick="layoutHint()">💡 布置提示</button>
+      <button class="btn purple" onclick="loadExample()">📖 载入示例设计(布置+规则)</button>
+      <button class="btn gray" onclick="clearLayout()">🗑 清空沙盘</button>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+</section>
+
+<!-- ================= 模块二:自动化规则搭建 ================= -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>🧩 任务二:搭建"当…就…"自动化规则</h2>
+    <div class="task"><b>任务:</b>智能家居的聪明之处在于"自动"。请用下面的积木,基于<b>你自己放置的设备</b>搭出至少 <b>3 条</b>规则,例如「当厨房的燃气传感器检测到燃气泄漏,就让报警器响铃报警」。下拉框里只会出现你已放置的设备——如果是空的,先回「①」放设备!</div>
+    <div class="statebox" id="devSummary">你已放置的设备会显示在这里。</div>
+    <div class="rulerow">
+      <span class="kw">当</span>
+      <select id="rSensor" onchange="rSensorChanged()"></select>
+      <select id="rCond"></select>
+      <span class="kw">就</span>
+      <select id="rAct1" onchange="rActChanged(1)"></select>
+      <select id="rAction1"></select>
+      <span class="kw">并且(可不选)</span>
+      <select id="rAct2" onchange="rActChanged(2)"></select>
+      <select id="rAction2"></select>
+    </div>
+    <button class="btn green" onclick="addRule()">➕ 添加这条规则</button>
+    <button class="btn ghost" onclick="ruleHint()">💡 规则提示</button>
+    <div class="feedback" id="fb2"></div>
+    <h3>📋 我的规则表(实时更新,模拟测试就按它执行)</h3>
+    <table>
+      <thead><tr><th style="width:50px">编号</th><th>当(触发条件)</th><th>就(执行动作)</th><th style="width:110px">状态</th><th style="width:80px">删除</th></tr></thead>
+      <tbody id="ruleBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= 模块三:场景模拟测试 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>🎬 任务三:模拟一天,检验你的设计</h2>
+    <div class="task"><b>任务A:</b>点「🌞 模拟一天」,看着虚拟的一家人从早晨 06:00 生活到午夜:传感器感知 → 规则触发 → 设备动作,整个连锁反应都画在平面图上。<br><b>任务B:</b>在模拟中点事件按钮(比如「💨 燃气泄漏」),检查你的规则是否按预期工作。不符合预期?回「②」修改规则再来测!</div>
+    <div class="lab">
+      <div class="card" style="margin:0">
+        <div class="clock" id="sTime">06:00</div>
+        <span class="pill" id="sSky">🌙 天黑</span>
+        <span class="pill">室外 <b id="sTemp">24℃</b></span>
+        <span class="pill">在家:<b id="sWho">—</b></span>
+        <span class="pill" id="sGas">燃气:正常</span>
+        <div class="plan" id="plan2"></div>
+        <div class="legend">💛发光=灯亮 · 绿框=设备开启 · 红框闪=报警器响 · 🧍=这个房间有人 · 夜晚整屋变暗</div>
+        <div class="why" id="simWhy">💬 点「🌞 模拟一天」开始。橙色光圈表示传感器被触发,绿框表示执行器开启。</div>
+        <h3>📜 模拟事件记录</h3>
+        <div class="simlog" id="simLog"><div style="color:#5b7186">暂无记录</div></div>
+      </div>
+      <div class="card ctl" style="margin:0">
+        <h3>🎮 运行控制</h3>
+        <div class="runbar">
+          <button class="btn green small" onclick="startDay()">🌞 模拟一天</button>
+          <button class="btn orange small" id="btnRun" onclick="toggleRun()">▶ 运行</button>
+          <button class="btn small" onclick="stepOnce()">⏭ 单步</button>
+          <button class="btn gray small" onclick="resetSim()">🔄 重置</button>
+        </div>
+        <h3 style="margin-top:12px">⚡ 触发事件试一试</h3>
+        <div class="runbar">
+          <button class="btn small" onclick="evHome()">🏃 有人回家</button>
+          <button class="btn red small" onclick="evGas()">💨 燃气泄漏</button>
+          <button class="btn purple small" onclick="evDark()">🌙 天黑了</button>
+          <button class="btn gray small" onclick="evLeave()">🚶 全家外出</button>
+        </div>
+        <h3 style="margin-top:12px">🎚 可调参数(改了立刻生效)</h3>
+        <label><span>模拟速度</span><output id="spdOut">中</output></label>
+        <input type="range" id="spd" min="1" max="3" value="2" oninput="setSpeed()">
+        <label><span>电价(元/度)</span><output id="priceOut">0.5 元</output></label>
+        <input type="range" id="price" min="0.3" max="1.2" step="0.1" value="0.5" oninput="priceChanged()">
+        <label><span>天黑时刻</span><output id="darkOut">19:00</output></label>
+        <input type="range" id="darkH" min="18" max="21" step="0.5" value="19" oninput="darkChanged()">
+        <label><span>白天最高气温</span><output id="maxTOut">33℃</output></label>
+        <input type="range" id="maxT" min="26" max="38" value="33" oninput="maxTChanged()">
+        <div class="why" id="paramWhy" style="min-height:34px">💬 试着调整参数,这里会解释它带来的变化。</div>
+        <div class="statebox">今日用电:<b id="sKwh">0.00</b> 度 · 电费:<b id="sCost">0.00</b> 元<br>规则触发:<b id="sFired">0</b> 次 · 安全隐患:<b id="sInc">0</b> 次</div>
+      </div>
+    </div>
+    <div class="feedback" id="fb3"></div>
+  </div>
+</section>
+
+<!-- ================= 模块四:能耗与安全评分 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>📊 任务四:给你的设计打分,再优化它</h2>
+    <div class="task"><b>任务:</b>点「🧮 开始评分」,评分台会根据你的<b>设备布置</b>和<b>规则设计</b>算出"能耗分"和"安全分",并给出改进建议。按建议回「①」「②」优化设计,再评一次分——比一比前后的变化,这就是工程师的"迭代优化"!</div>
+    <button class="btn green" onclick="doScore()">🧮 开始评分</button>
+    <div class="scorebig">
+      <div class="scorebox"><span>⚡ 能耗分(越高越省电)</span><b id="scE" style="color:var(--green-d)">—</b>
+        <div class="bar"><i id="scEBar" style="width:0%; background:#2eb872"></i></div></div>
+      <div class="scorebox"><span>🛡 安全分(越高越安心)</span><b id="scS" style="color:var(--blue-d)">—</b>
+        <div class="bar"><i id="scSBar" style="width:0%; background:#2b7de9"></i></div></div>
+    </div>
+    <div class="feedback" id="fb4"></div>
+    <h3>📈 评分历史对比(绿色=能耗分,蓝色=安全分)</h3>
+    <canvas id="scoreCv" width="640" height="240"></canvas>
+    <h3>💡 改进建议</h3>
+    <ul class="tips" id="tipList"><li>还没有评分。点上面的「🧮 开始评分」试试。</li></ul>
+    <div class="statebox" id="simRef">📎 模拟参考:还没有完成过一整天模拟。完成「③」的模拟后,这里会显示实际用电量和浪费情况。</div>
+  </div>
+</section>
+
+<!-- ================= 模块五:设计方案输出 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>📑 任务五:生成我的智能家居设计方案</h2>
+    <div class="task"><b>任务:</b>像教材里的项目计划书一样,填好下面 4 个空(项目创意 + 项目日志),然后点「📄 生成方案预览」。方案里会自动带上你的<b>设计平面图、设备清单(材料清单)、规则表和评分</b>。</div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="oDev">0</b><span>放置设备数</span></div>
+      <div class="stat"><b id="oRule">0</b><span>自动化规则数</span></div>
+      <div class="stat"><b id="oScore">—</b><span>最新评分(能耗/安全)</span></div>
+    </div>
+    <h3>1️⃣ 项目创意名称</h3>
+    <input type="text" id="o1" placeholder="例:小清家的安心节能屋">
+    <h3>2️⃣ 项目概述(给谁用?解决什么问题?在什么场景?)</h3>
+    <textarea id="o2" placeholder="例:给小清一家三口设计,解决出门忘关灯费电、厨房燃气泄漏没人知道的问题,主要用在客厅、厨房和卧室。"></textarea>
+    <h3>3️⃣ 项目日志·问题与反思(设计和测试中遇到了什么问题?)</h3>
+    <textarea id="o3" placeholder="例:第一次模拟时燃气泄漏没人报警,检查发现我只放了燃气传感器,忘了搭「泄漏就报警」的规则。"></textarea>
+    <h3>4️⃣ 项目日志·改进的方法(你是怎么优化的?评分有什么变化?)</h3>
+    <textarea id="o4" placeholder="例:加了「燃气泄漏→响铃报警」和「30分钟没人→关灯」两条规则,安全分从60提高到90,能耗分也提高了15分。"></textarea>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genPlan()">📄 生成方案预览</button>
+      <button class="btn" onclick="exportPlan()">📥 导出设计方案(HTML文件)</button>
+    </div>
+    <div class="feedback" id="fb5"></div>
+    <div id="planPreview"></div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出设计数据(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入设计数据</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>智能家居设计沙盘 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局辅助
+============================================================ */
+const $=id=>document.getElementById(id);
+function fb(id,cls,html){const e=$(id);e.className='feedback '+cls;e.innerHTML=html;}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t2')renderRuleUI();
+  if(id==='t4')drawScoreChart();
+  if(id==='t5')refreshOutStats();
+}
+const progress={layout:false,rules:false,sim:false,score:false,plan:false};
+
+/* ============================================================
+   数据定义:房间 / 设备 / 条件 / 动作
+============================================================ */
+const ROOMS={
+  living:{name:'客厅',color:'#e8f1fd'},
+  bed:{name:'卧室',color:'#f1e8fd'},
+  kitchen:{name:'厨房',color:'#fdeee4'},
+  bath:{name:'卫生间',color:'#e4f7fd'},
+  balcony:{name:'阳台',color:'#eafbe9'},
+  hall:{name:'玄关',color:'#fdf6df'},
+};
+const ANCHOR={balcony:[0,0],living:[1,0],bed:[1,5],kitchen:[5,0],bath:[5,4],hall:[5,7]};
+function roomOf(r,c){
+  if(r===0)return 'balcony';
+  if(r<=4)return c<=4?'living':'bed';
+  return c<=3?'kitchen':(c<=6?'bath':'hall');
+}
+const DEVICES=[
+  {k:'motion', ico:'🚶', name:'人体感应传感器', cat:'sensor', tip:'感知有没有人'},
+  {k:'temp',   ico:'🌡️', name:'温度传感器',     cat:'sensor', tip:'感知冷热'},
+  {k:'gas',    ico:'💨', name:'燃气传感器',     cat:'sensor', tip:'感知燃气泄漏'},
+  {k:'light_s',ico:'☀️', name:'光照传感器',     cat:'sensor', tip:'感知天亮天黑'},
+  {k:'door',   ico:'🚪', name:'门磁传感器',     cat:'sensor', tip:'感知开门关门'},
+  {k:'lamp',   ico:'💡', name:'智能灯',         cat:'act', watt:40,  tip:'自动开关灯'},
+  {k:'ac',     ico:'❄️', name:'智能空调',       cat:'act', watt:1000,tip:'调节温度(耗电大)'},
+  {k:'curtain',ico:'🪟', name:'窗帘电机',       cat:'act', watt:0,   tip:'自动开合窗帘'},
+  {k:'alarm',  ico:'🚨', name:'报警器',         cat:'act', watt:10,  tip:'危险时响铃'},
+  {k:'cam',    ico:'📷', name:'摄像头',         cat:'act', watt:8,   tip:'只装门口/阳台!'},
+];
+const DEV=k=>DEVICES.find(d=>d.k===k);
+const CONDS={
+  motion:[['occ','检测到有人'],['idle','连续30分钟没有人']],
+  temp:[['hot','温度高于28℃'],['cold','温度低于20℃']],
+  gas:[['leak','检测到燃气泄漏']],
+  light_s:[['dark','天黑了'],['bright','天亮了']],
+  door:[['open','门被打开']],
+};
+const ACTS={
+  lamp:[['on','开灯'],['off','关灯']],
+  ac:[['on','打开空调(26℃制冷)'],['off','关闭空调']],
+  curtain:[['open','拉开窗帘'],['close','合上窗帘']],
+  alarm:[['on','响铃报警'],['off','停止报警']],
+  cam:[['on','开始录像'],['off','停止录像']],
+};
+function condText(sk,ck){const o=(CONDS[sk]||[]).find(x=>x[0]===ck);return o?o[1]:ck;}
+function actText(ak,a){const o=(ACTS[ak]||[]).find(x=>x[0]===a);return o?o[1]:a;}
+
+/* ============================================================
+   状态:放置的设备 / 规则
+============================================================ */
+let placed=[];   // {id,k,room,r,c}
+let devSeq=0;
+let rules=[];    // {id,sensorId,condK,acts:[{devId,actK}],prev,text}
+let ruleSeq=0;
+let scoreHist=[]; // {e,s,total}
+let lastDay=null; // {kwh,cost,fired,incidents,wasteL,wasteA}
+
+/* ============================================================
+   模块一:平面图沙盘
+============================================================ */
+let selDev=null, layoutHintLv=0;
+const badTry={};
+const BADHINT={
+  gas:['提示①:想一想,家里哪个房间用燃气灶做饭?','提示②:燃气泄漏最可能发生在燃气灶附近,传感器要装得离它近。','提示③:答案是【厨房】(左下角橙色区域),快把燃气传感器放到那里!'],
+  cam:['提示①:想一想,哪些房间是家人的隐私空间,画面绝不能被拍到?','提示②:卧室、卫生间是隐私区,摄像头装在那里既不礼貌也不安全。','提示③:摄像头只装在【玄关(门口)】或【阳台】,负责看家护院,不拍家人的私人生活。'],
+};
+function renderPools(){
+  const mk=(pid,cat)=>{
+    const pool=$(pid); pool.innerHTML='';
+    DEVICES.filter(d=>d.cat===cat).forEach(d=>{
+      const e=document.createElement('div');
+      e.className='comp'+(selDev===d.k?' sel':'');
+      e.innerHTML=`<span class="ico">${d.ico}</span>${d.name}<small>${d.tip}</small>`;
+      e.onclick=()=>{selDev=(selDev===d.k?null:d.k);renderPools();
+        if(selDev)fb('fb1','info',`已选中「${d.ico} ${d.name}」,现在点击平面图上的格子放置它。再点一次卡片可取消选择。`);};
+      pool.appendChild(e);
+    });
+  };
+  mk('poolS','sensor'); mk('poolA','act');
+}
+function renderPlan(cid,mode){
+  const el=$(cid); el.innerHTML='';
+  for(let r=0;r<7;r++)for(let c=0;c<10;c++){
+    const room=roomOf(r,c);
+    const d=document.createElement('div');
+    d.className='cell '+room;
+    d.id='p'+mode+'_'+r+'_'+c;
+    const an=ANCHOR[room];
+    if(an&&an[0]===r&&an[1]===c){
+      const lb=document.createElement('span'); lb.className='rlabel';
+      lb.innerHTML=(room==='hall'?'玄关🚪':ROOMS[room].name)+`<span class="occm" id="occ${mode}_${room}"></span>`;
+      d.appendChild(lb);
+    }
+    const p=placed.find(x=>x.r===r&&x.c===c);
+    if(p){d.classList.add('has');
+      const ic=document.createElement('span'); ic.textContent=DEV(p.k).ico; d.appendChild(ic);}
+    if(mode===1)d.onclick=()=>cellClick(r,c);
+    el.appendChild(d);
+  }
+}
+function cellClick(r,c){
+  const exist=placed.find(p=>p.r===r&&p.c===c);
+  if(exist){
+    placed=placed.filter(p=>p.id!==exist.id);
+    fb('fb1','info',`已取回「${DEV(exist.k).ico} ${DEV(exist.k).name}」。注意:如果有规则用到它,规则会暂时失效哦。`);
+    renderAll(); return;
+  }
+  if(!selDev){fb('fb1','info','💡 先在右边"设备库"里点击选中一个设备,再点击格子放置。');return;}
+  const room=roomOf(r,c);
+  const v=placeCheck(selDev,room);
+  const cell=$('p1_'+r+'_'+c);
+  if(v.lv==='bad'){
+    badTry[selDev]=(badTry[selDev]||0)+1;
+    const hs=BADHINT[selDev];
+    const hint=hs?hs[Math.min(badTry[selDev],hs.length)-1]:'再想一想这个设备的作用,换个房间试试。';
+    if(cell){cell.classList.add('shake');setTimeout(()=>cell.classList.remove('shake'),400);}
+    fb('fb1','bad','🙅 '+v.msg+'<br>💡 '+hint);
+    return;
+  }
+  placed.push({id:++devSeq,k:selDev,room,r,c});
+  fb('fb1',v.lv==='warn'?'warn':'ok',(v.lv==='warn'?'⚠️ ':'✅ ')+v.msg);
+  selDev=null; renderAll();
+}
+function placeCheck(k,room){
+  const R=ROOMS[room].name;
+  const ok=m=>({lv:'ok',msg:m}), warn=m=>({lv:'warn',msg:m}), bad=m=>({lv:'bad',msg:m});
+  switch(k){
+    case 'gas':
+      return room==='kitchen'?ok('燃气传感器装在厨房,离燃气灶最近,能第一时间发现泄漏!')
+        :bad('燃气传感器装在'+R+'可发现不了燃气泄漏,没放上去。');
+    case 'cam':
+      if(room==='bed'||room==='bath')return bad(R+'是隐私空间,装摄像头会侵犯家人隐私,绝对不行!');
+      if(room==='hall'||room==='balcony')return ok('摄像头装在'+R+',对着门口/室外方向看家护院,不侵犯隐私,棒!');
+      return warn('摄像头装在'+R+'会拍到家人的日常生活,要注意隐私。更推荐只装在玄关或阳台。已放置,但评分时想想要不要挪走。');
+    case 'door':
+      if(room==='hall')return ok('门磁贴在入户门上,有人开门马上就知道!');
+      if(room==='balcony')return ok('门磁贴在阳台门上,防止有人从阳台进来,考虑得很周到!');
+      return warn('门磁要贴在需要防护的门上才有用。'+R+'的门不太需要,更推荐玄关的入户门或阳台门。');
+    case 'ac':
+      if(room==='living'||room==='bed')return ok('空调装在'+R+',家人待得最久的房间最需要调温。');
+      return warn(R+'一般不装空调:'+(room==='kitchen'?'厨房油烟大,空调容易脏。':(room==='balcony'?'阳台通风,冷气都跑光啦。':'这里停留时间短,装了浪费电。'))+'已放置,但会拉低能耗分哦。');
+    case 'curtain':
+      if(room==='living'||room==='bed'||room==='balcony')return ok('窗帘电机装在'+R+'的大窗上,窗帘可以自动开合啦。');
+      return warn(R+'一般没有大窗帘。装在客厅、卧室或阳台更合适。');
+    case 'light_s':
+      if(room==='balcony'||room==='living')return ok('光照传感器放在'+R+'靠窗的位置,感知天亮天黑最灵敏!');
+      return warn('光照传感器放在'+R+'离窗远,感光不太准。放阳台或客厅窗边更好。');
+    case 'motion':
+      if(room==='balcony')return warn('阳台上风吹动衣物容易让人体感应"误报",装在室内房间更稳定。');
+      return ok('人体感应装在'+R+',有人经过就能感知到。');
+    case 'temp':
+      if(room==='balcony')return warn('阳台温度受室外影响大,温度传感器装室内测得更准。');
+      return ok('温度传感器装在'+R+',随时掌握室温。');
+    case 'lamp':return ok('智能灯装在'+R+',可以远程和自动控制啦。');
+    case 'alarm':return ok('报警器装在'+R+'。放厨房或客厅,响铃时全家都听得到。');
+  }
+  return ok('已放置。');
+}
+function renderCounts(){
+  const s=placed.filter(p=>DEV(p.k).cat==='sensor').length;
+  const a=placed.filter(p=>DEV(p.k).cat==='act').length;
+  $('cntS').textContent=s; $('cntA').textContent=a;
+  $('cntR').textContent=new Set(placed.map(p=>p.room)).size;
+}
+function checkLayout(){
+  const s=placed.filter(p=>DEV(p.k).cat==='sensor').length;
+  const a=placed.filter(p=>DEV(p.k).cat==='act').length;
+  const rms=new Set(placed.map(p=>p.room)).size;
+  const need=[];
+  if(s<3)need.push('传感器还差 '+(3-s)+' 个');
+  if(a<3)need.push('执行器还差 '+(3-a)+' 个');
+  if(rms<4)need.push('覆盖区域还差 '+(4-rms)+' 个');
+  if(need.length){fb('fb1','bad','🌱 还没完成:'+need.join(';')+'。想想哪个房间还需要"感知"或"动作"?点「💡 布置提示」可以获得帮助。');return;}
+  progress.layout=true; setBadge(1);
+  fb('fb1','ok','🎉 布置合格!传感器 '+s+' 个、执行器 '+a+' 个,覆盖 '+rms+' 个区域。现在去「② 自动化规则搭建」,让这些设备"联动"起来!');
+}
+function layoutHint(){
+  layoutHintLv=Math.min(layoutHintLv+1,3);
+  const hs=[
+    '提示①:每种传感器都要"感知"某样东西——把它放到最需要它的房间。比如燃气传感器要感知什么?哪个房间有燃气?',
+    '提示②:燃气传感器→厨房;门磁→玄关入户门或阳台门;光照传感器→窗边(阳台/客厅);摄像头只装门口或阳台——卧室和卫生间是隐私区!',
+    '提示③:一套参考布置:厨房(燃气传感器+报警器)、玄关(门磁+摄像头)、客厅(人体感应+智能灯)、卧室(温度传感器+空调+智能灯)、阳台(光照传感器)、卧室窗(窗帘电机)。点「📖 载入示例设计」可以直接看。'
+  ];
+  fb('fb1','info','💡 '+hs[layoutHintLv-1]);
+}
+function clearLayout(){
+  if(!confirm('确定要清空沙盘上的所有设备吗?规则表也会失效。'))return;
+  placed=[]; selDev=null;
+  fb('fb1','info','沙盘已清空,重新设计吧!(规则表里引用旧设备的规则已失效,可去②删除)');
+  renderAll();
+}
+function loadExample(){
+  if(placed.length&&!confirm('载入示例会替换你当前的布置和规则,继续吗?'))return;
+  placed=[]; rules=[]; devSeq=0; ruleSeq=0;
+  const put=(k,r,c)=>{placed.push({id:++devSeq,k,room:roomOf(r,c),r,c});return devSeq;};
+  const gasId=put('gas',5,1), alarmId=put('alarm',6,2);
+  const motionId=put('motion',2,1), lampLId=put('lamp',2,3);
+  const doorId=put('door',6,8), camId=put('cam',5,8);
+  const tempId=put('temp',2,6), acId=put('ac',1,8), lampBId=put('lamp',3,6);
+  const lightId=put('light_s',0,2), curId=put('curtain',1,6);
+  const mkRule=(sensorId,condK,acts)=>{
+    const s=placed.find(p=>p.id===sensorId);
+    const txt=acts.map(a=>{const d=placed.find(p=>p.id===a.devId);return ROOMS[d.room].name+'的'+DEV(d.k).name+'·'+actText(d.k,a.actK);}).join(',并且');
+    rules.push({id:++ruleSeq,sensorId,condK,acts,prev:false,
+      text:'当'+ROOMS[s.room].name+'的'+DEV(s.k).name+'「'+condText(s.k,condK)+'」,就 '+txt});
+  };
+  mkRule(gasId,'leak',[{devId:alarmId,actK:'on'}]);
+  mkRule(lightId,'dark',[{devId:lampLId,actK:'on'}]);
+  mkRule(motionId,'idle',[{devId:lampLId,actK:'off'},{devId:acId,actK:'off'}]);
+  mkRule(doorId,'open',[{devId:camId,actK:'on'}]);
+  renderAll();
+  fb('fb1','ok','📖 已载入示例设计:11 个设备 + 4 条规则(燃气报警、天黑开灯、人走关灯关空调、开门录像)。去「③」模拟一天看看效果,或在此基础上改成你自己的设计!');
+}
+function renderAll(){
+  renderPlan('plan1',1); $('plan1').classList.add('click');
+  renderPlan('plan2',2);
+  renderPools(); renderCounts(); renderRuleUI(); refreshOutStats(); updateSimPlan();
+}
+
+/* ============================================================
+   模块二:规则搭建
+============================================================ */
+let ruleHintLv=0;
+function fillSelect(sel,opts,emptyText){
+  const old=sel.value; sel.innerHTML='';
+  if(!opts.length){const o=document.createElement('option');o.value='';o.textContent=emptyText;sel.appendChild(o);return;}
+  opts.forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;sel.appendChild(o);});
+  if([...sel.options].some(o=>o.value===String(old)))sel.value=old;
+}
+function renderRuleUI(){
+  const sensors=placed.filter(p=>DEV(p.k).cat==='sensor');
+  const acts=placed.filter(p=>DEV(p.k).cat==='act');
+  fillSelect($('rSensor'),sensors.map(p=>[p.id,ROOMS[p.room].name+'的'+DEV(p.k).name]),'(先去①放置传感器)');
+  rSensorChanged();
+  fillSelect($('rAct1'),acts.map(p=>[p.id,ROOMS[p.room].name+'的'+DEV(p.k).name]),'(先去①放置执行器)');
+  rActChanged(1);
+  fillSelect($('rAct2'),[['','(不加第二个动作)']].concat(acts.map(p=>[String(p.id),ROOMS[p.room].name+'的'+DEV(p.k).name])),'(不加第二个动作)');
+  rActChanged(2);
+  const sum=placed.length
+    ?'你已放置:'+placed.map(p=>DEV(p.k).ico+ROOMS[p.room].name+DEV(p.k).name).join(' · ')
+    :'⚠️ 沙盘上还没有任何设备!先回「① 平面图设计沙盘」放置设备,这里的下拉框才会有内容。';
+  $('devSummary').innerHTML=sum;
+  renderRules();
+}
+function rSensorChanged(){
+  const p=placed.find(x=>x.id===+$('rSensor').value);
+  fillSelect($('rCond'),p?CONDS[p.k]:[],'—');
+}
+function rActChanged(n){
+  const sel=$('rAct'+n), aSel=$('rAction'+n);
+  const p=placed.find(x=>x.id===+sel.value);
+  fillSelect(aSel,(p&&sel.value!=='')?ACTS[p.k]:[],'—');
+}
+function addRule(){
+  const sid=+$('rSensor').value;
+  const s=placed.find(p=>p.id===sid);
+  if(!s){fb('fb2','bad','🙅 还不能添加规则:没有可用的传感器。请先去「①」放置传感器(它是规则的"眼睛"),再回来搭规则。');return;}
+  const a1=placed.find(p=>p.id===+$('rAct1').value);
+  if(!a1){fb('fb2','bad','🙅 还不能添加规则:没有可用的执行器。请先去「①」放置智能灯、报警器等执行器(它是规则的"手脚")。');return;}
+  const condK=$('rCond').value;
+  const acts=[{devId:a1.id,actK:$('rAction1').value}];
+  const a2=placed.find(p=>p.id===+$('rAct2').value);
+  if(a2&&$('rAct2').value!==''){
+    if(a2.id===a1.id&&$('rAction2').value===$('rAction1').value){}
+    else acts.push({devId:a2.id,actK:$('rAction2').value});
+  }
+  const txt=acts.map(a=>{const d=placed.find(p=>p.id===a.devId);return ROOMS[d.room].name+'的'+DEV(d.k).name+'·'+actText(d.k,a.actK);}).join(',并且');
+  const text='当'+ROOMS[s.room].name+'的'+DEV(s.k).name+'「'+condText(s.k,condK)+'」,就 '+txt;
+  if(rules.some(r=>r.text===text)){fb('fb2','warn','⚠️ 这条规则已经在规则表里啦,不用重复添加。试试搭一条不同的?');return;}
+  rules.push({id:++ruleSeq,sensorId:sid,condK,acts,prev:false,text});
+  renderRules(); refreshOutStats();
+  const n=rules.length;
+  fb('fb2','ok','🎉 规则 #'+n+' 添加成功:'+text+'。'+(n<3?'再搭 '+(3-n)+' 条就完成任务啦!':'已完成 3 条规则任务!去「③」模拟测试它们是否按预期工作。'));
+}
+function ruleValid(rl){
+  if(!placed.find(p=>p.id===rl.sensorId))return false;
+  return rl.acts.every(a=>placed.find(p=>p.id===a.devId));
+}
+function renderRules(){
+  const tb=$('ruleBody');
+  if(!rules.length){tb.innerHTML='<tr><td colspan="5" style="color:#5b7186">还没有规则。用上面的积木搭一条吧!</td></tr>';}
+  else{
+    tb.innerHTML=rules.map(rl=>{
+      const parts=rl.text.split(',就 ');
+      const valid=ruleValid(rl);
+      return `<tr><td>#${rl.id}</td><td style="text-align:left">${parts[0]}</td><td style="text-align:left">${parts[1]||''}</td>
+        <td>${valid?'✅ 可用':'⚠️ 设备已移走'}</td>
+        <td><button class="btn red small" onclick="delRule(${rl.id})">删除</button></td></tr>`;
+    }).join('');
+  }
+  const n=rules.filter(ruleValid).length;
+  $('bgRule').textContent=Math.min(n,3);
+  if(n>=3&&!progress.rules){progress.rules=true;setBadge(2);}
+}
+function delRule(id){
+  rules=rules.filter(r=>r.id!==id);
+  renderRules(); refreshOutStats();
+  fb('fb2','info','规则已删除。规则表实时更新,模拟测试只会执行表里"✅ 可用"的规则。');
+}
+function ruleHint(){
+  ruleHintLv=Math.min(ruleHintLv+1,3);
+  const hs=[
+    '提示①:一条规则=「当(传感器条件)就(执行器动作)」。先想清楚:你想让家自动做什么事?',
+    '提示②:安全类:当厨房燃气泄漏→响铃报警;省电类:当客厅30分钟没人→关灯;舒适类:当天黑了→开灯、拉上窗帘。',
+    '提示③:推荐必搭 3 条:❶燃气泄漏→报警器响铃 ❷天黑了→开灯 ❸30分钟没人→关灯。下拉框是空的?说明设备还没放,先回「①」!'
+  ];
+  fb('fb2','info','💡 '+hs[ruleHintLv-1]);
+}
+
+/* ============================================================
+   模块三:场景模拟引擎(1 tick = 15 分钟,06:00 → 24:00 共 72 tick)
+============================================================ */
+const dsim={running:false,tick:0,timer:null,speedMs:500,
+  kwh:0,fired:0,incidents:0,wasteL:0,wasteA:0,
+  gasLeft:0,gasHandled:false,forceDark:false,
+  ev:{rooms:null,until:-1},idle:{},dark:false,doneDay:false};
+let actSt={};   // 执行器id -> 开/关
+function hourNow(){return 6+dsim.tick*0.25;}
+function hhmm(){
+  const h=hourNow(),H=Math.floor(h),M=Math.round((h-H)*60);
+  return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0');
+}
+function schedOcc(h){
+  if(h<7.5)return ['bed'];
+  if(h<8.5)return ['kitchen','living'];
+  if(h<17.5)return [];
+  if(h<19)return ['kitchen','living'];
+  if(h<22)return ['living'];
+  return ['bed'];
+}
+function occRooms(){
+  if(dsim.ev.rooms!==null&&dsim.tick<dsim.ev.until)return dsim.ev.rooms;
+  return schedOcc(hourNow());
+}
+function outdoorTemp(){
+  const h=hourNow(),maxT=+$('maxT').value;
+  return Math.round((24+(maxT-24)*Math.exp(-Math.pow(h-14,2)/18))*10)/10;
+}
+function roomTemp(room){
+  const acOn=placed.some(p=>p.k==='ac'&&p.room===room&&actSt[p.id]);
+  return acOn?26:Math.round(outdoorTemp()-2);
+}
+function isDark(){
+  const h=hourNow();
+  return dsim.forceDark||h<6.5||h>=+$('darkH').value;
+}
+function simLog(msg,cls){
+  const box=$('simLog');
+  if(box.firstChild&&box.firstChild.style&&box.firstChild.style.color)box.innerHTML='';
+  const d=document.createElement('div');
+  if(cls)d.className=cls;
+  d.textContent='['+hhmm()+'] '+msg;
+  box.insertBefore(d,box.firstChild);
+  while(box.children.length>120)box.removeChild(box.lastChild);
+}
+function setSimWhy(t){$('simWhy').innerHTML='💬 '+t;}
+function flashCell(p,cls){
+  const cell=$('p2_'+p.r+'_'+p.c); if(!cell)return;
+  cell.classList.add(cls); setTimeout(()=>cell.classList.remove(cls),650);
+}
+function updateSimPlan(){
+  placed.forEach(p=>{
+    const cell=$('p2_'+p.r+'_'+p.c); if(!cell)return;
+    const d=DEV(p.k), on=!!actSt[p.id];
+    cell.classList.toggle('on',d.cat==='act'&&on&&p.k!=='alarm');
+    cell.classList.toggle('lit',p.k==='lamp'&&on);
+    cell.classList.toggle('ring',p.k==='alarm'&&on);
+  });
+  const occ=occRooms();
+  Object.keys(ROOMS).forEach(rm=>{
+    const m=$('occ2_'+rm); if(m)m.textContent=occ.includes(rm)?' 🧍':'';
+  });
+  $('plan2').classList.toggle('night',dsim.dark);
+}
+function renderSimPanel(){
+  $('sTime').textContent=hhmm();
+  $('sSky').textContent=dsim.dark?'🌙 天黑':'☀️ 白天';
+  $('sTemp').textContent=outdoorTemp()+'℃';
+  const occ=occRooms();
+  $('sWho').textContent=occ.length?occ.map(r=>ROOMS[r].name).join('、'):'没人在家';
+  $('sGas').textContent=dsim.gasLeft>0?'⚠️ 燃气泄漏中!':'燃气:正常';
+  $('sGas').style.color=dsim.gasLeft>0?'#e5484d':'';
+  $('sKwh').textContent=dsim.kwh.toFixed(2);
+  $('sCost').textContent=(dsim.kwh*(+$('price').value)).toFixed(2);
+  $('sFired').textContent=dsim.fired;
+  $('sInc').textContent=dsim.incidents;
+}
+function evalCond(s,condK){
+  switch(condK){
+    case 'occ':return occRooms().includes(s.room);
+    case 'idle':return (dsim.idle[s.room]||0)>=2;
+    case 'hot':return roomTemp(s.room)>28;
+    case 'cold':return roomTemp(s.room)<20;
+    case 'leak':return dsim.gasLeft>0&&s.room==='kitchen';
+    case 'dark':return dsim.dark;
+    case 'bright':return !dsim.dark;
+    case 'open':return dsim.doors&&dsim.doors.has(s.room);
+  }
+  return false;
+}
+function simTick(){
+  if(dsim.tick>=72){endDay();return;}
+  dsim.tick++;
+  const h=hourNow();
+  dsim.dark=isDark();
+  // 门事件(出门/回家时,玄关入户门被打开)
+  dsim.doors=new Set();
+  if(h===8.5||h===17.5){dsim.doors.add('hall');simLog('🚪 玄关的入户门被打开('+(h===8.5?'全家出门上班上学':'家人回来啦')+')','l-ev');}
+  if(dsim.evDoor){dsim.doors.add('hall');dsim.evDoor=false;}
+  // 无人计时
+  const occ=occRooms();
+  Object.keys(ROOMS).forEach(rm=>{dsim.idle[rm]=occ.includes(rm)?0:(dsim.idle[rm]||0)+1;});
+  // 燃气泄漏进程
+  if(dsim.gasLeft>0){
+    dsim.gasLeft--;
+    const alarmOn=placed.some(p=>p.k==='alarm'&&actSt[p.id]);
+    if(alarmOn&&!dsim.gasHandled){
+      dsim.gasHandled=true; dsim.gasLeft=Math.min(dsim.gasLeft,1);
+      simLog('🧑‍🔧 家人听到报警声,立刻关闭了燃气阀!泄漏即将解除','l-ok');
+      setSimWhy('报警器响了,危险被及时处理——这就是「传感器感知 → 规则判断 → 执行器动作」的安全闭环!');
+    }
+    if(dsim.gasLeft===0){
+      if(dsim.gasHandled){
+        simLog('✅ 燃气泄漏解除,报警器自动停止','l-ok');
+        placed.filter(p=>p.k==='alarm').forEach(p=>actSt[p.id]=false);
+      }else{
+        dsim.incidents++;
+        simLog('⚠️ 燃气泄漏持续了1小时都没人发现,好危险!','l-bad');
+        setSimWhy('泄漏没被处理!是不是没放燃气传感器,或者没搭「泄漏→报警」的规则?回「①」「②」补上再测。');
+      }
+    }
+  }
+  // 规则判定(条件从"不满足"变"满足"时触发一次)
+  rules.forEach(rl=>{
+    const s=placed.find(p=>p.id===rl.sensorId);
+    if(!s||!ruleValid(rl)){rl.prev=false;return;}
+    const cond=evalCond(s,rl.condK);
+    if(cond&&!rl.prev){
+      dsim.fired++;
+      flashCell(s,'pulse');
+      rl.acts.forEach(a=>{
+        const d=placed.find(p=>p.id===a.devId); if(!d)return;
+        actSt[d.id]=(a.actK==='on'||a.actK==='open');
+        flashCell(d,'pulse');
+      });
+      simLog('⚡ 规则#'+rl.id+' 触发:'+rl.text,'l-ok');
+      setSimWhy('规则#'+rl.id+' 被触发:'+ROOMS[s.room].name+'的'+DEV(s.k).name+'感知到「'+condText(s.k,rl.condK)+'」,自动执行了动作。');
+    }
+    rl.prev=cond;
+  });
+  // 能耗与浪费统计
+  placed.forEach(p=>{
+    const d=DEV(p.k);
+    if(d.cat!=='act'||!actSt[p.id])return;
+    dsim.kwh+=(d.watt||0)*0.25/1000;
+    if(p.k==='lamp'&&(!dsim.dark||!occ.includes(p.room)))dsim.wasteL++;
+    if(p.k==='ac'&&!occ.includes(p.room))dsim.wasteA++;
+  });
+  updateSimPlan(); renderSimPanel();
+  if(dsim.tick>=72)endDay();
+}
+function endDay(){
+  if(dsim.running)toggleRun();
+  if(dsim.doneDay)return;
+  dsim.doneDay=true;
+  lastDay={kwh:+dsim.kwh.toFixed(2),cost:+(dsim.kwh*(+$('price').value)).toFixed(2),
+    fired:dsim.fired,incidents:dsim.incidents,wasteL:dsim.wasteL,wasteA:dsim.wasteA};
+  simLog('🌃 一天模拟结束!用电 '+lastDay.kwh+' 度,电费 '+lastDay.cost+' 元,规则触发 '+lastDay.fired+' 次','l-ev');
+  if(dsim.fired>0){
+    if(!progress.sim){progress.sim=true;setBadge(3);}
+    fb('fb3','ok','🎉 一天模拟完成!你的规则触发了 <b>'+dsim.fired+'</b> 次,用电 <b>'+lastDay.kwh+'</b> 度、电费 <b>'+lastDay.cost+'</b> 元'
+      +(dsim.wasteL>4?',不过灯有约 '+(dsim.wasteL*0.25).toFixed(1)+' 小时在浪费电(白天亮着或没人也亮着)':'')
+      +'。去「④ 能耗与安全评分」看看得分和改进建议!');
+  }else{
+    fb('fb3','warn','⏰ 一天结束了,但一条规则都没触发。想一想:是不是还没搭规则?或者规则里的传感器根本感知不到变化?回「②」检查后再模拟一次!');
+  }
+}
+function startDay(){
+  resetSim();
+  if(!rules.filter(ruleValid).length){
+    fb('fb3','warn','⚠️ 现在还没有可用的规则,模拟里设备不会自己动哦。建议先去「②」搭规则,或点「①」里的「载入示例设计」。当然,你也可以先空跑一天观察家人的作息。');
+  }else fb('fb3','info','🌞 新的一天开始!观察:早上家人在卧室→厨房吃早饭→8:30出门→17:30回家→晚上客厅→22:00睡觉。天黑时刻等参数都可以调。');
+  if(!dsim.running)toggleRun();
+}
+function toggleRun(){
+  dsim.running=!dsim.running;
+  $('btnRun').textContent=dsim.running?'⏸ 暂停':'▶ 运行';
+  $('btnRun').className='btn small '+(dsim.running?'orange':'green');
+  clearInterval(dsim.timer);
+  if(dsim.running)dsim.timer=setInterval(simTick,dsim.speedMs);
+}
+function stepOnce(){if(dsim.running)toggleRun();simTick();}
+function resetSim(){
+  if(dsim.running)toggleRun();
+  Object.assign(dsim,{tick:0,kwh:0,fired:0,incidents:0,wasteL:0,wasteA:0,
+    gasLeft:0,gasHandled:false,forceDark:false,ev:{rooms:null,until:-1},idle:{},doneDay:false,evDoor:false});
+  dsim.dark=isDark();
+  actSt={}; rules.forEach(r=>r.prev=false);
+  $('simLog').innerHTML='<div style="color:#5b7186">暂无记录</div>';
+  setSimWhy('已重置到早晨 06:00。点「🌞 模拟一天」或「⏭ 单步」开始。');
+  updateSimPlan(); renderSimPanel();
+}
+function ensureRun(){if(!dsim.running&&dsim.tick<72)toggleRun();}
+function evHome(){
+  dsim.ev={rooms:['hall','living'],until:dsim.tick+4}; dsim.evDoor=true;
+  ensureRun();
+  simLog('🏃 事件:有人回家了!入户门打开,人先到玄关和客厅','l-ev');
+  setSimWhy('「有人回家」事件:门磁会感知到开门,人体感应会感知到有人——看看你的规则有没有反应!');
+}
+function evGas(){
+  dsim.gasLeft=4; dsim.gasHandled=false;
+  ensureRun();
+  simLog('💨 事件:厨房燃气泄漏了!(将持续1小时)','l-bad');
+  setSimWhy('「燃气泄漏」事件:如果厨房有燃气传感器 + 「泄漏→报警」规则,报警器会马上响,家人就能来处理;否则要提心吊胆1小时!');
+}
+function evDark(){
+  dsim.forceDark=true; dsim.dark=true;
+  ensureRun(); updateSimPlan();
+  simLog('🌙 事件:天忽然黑下来了(乌云/提前入夜)','l-ev');
+  setSimWhy('「天黑」事件:光照传感器会感知到变暗。搭了「天黑→开灯」的话,灯会自动亮起,整屋变暗时发光的格子就是亮着的灯。');
+}
+function evLeave(){
+  dsim.ev={rooms:[],until:dsim.tick+8}; dsim.evDoor=true;
+  ensureRun();
+  simLog('🚶 事件:全家外出,家里没人了(约2小时)','l-ev');
+  setSimWhy('「全家外出」事件:30分钟后"无人"条件会满足。搭了「没人→关灯/关空调」的规则就能自动省电,这也是能耗分的关键!');
+}
+/* ---- 参数调节 ---- */
+function setSpeed(){
+  const v=+$('spd').value;
+  $('spdOut').textContent={1:'慢',2:'中',3:'快'}[v];
+  dsim.speedMs={1:900,2:500,3:220}[v];
+  if(dsim.running){clearInterval(dsim.timer);dsim.timer=setInterval(simTick,dsim.speedMs);}
+  $('paramWhy').innerHTML='💬 模拟速度改为「'+$('spdOut').textContent+'」:只是让时间走得'+(v>=3?'更快,方便快速看完一天':'更慢,方便仔细观察每一步')+',不影响用电量等结果。';
+}
+function priceChanged(){
+  const v=(+$('price').value).toFixed(1);
+  $('priceOut').textContent=v+' 元';
+  renderSimPanel();
+  $('paramWhy').innerHTML='💬 电价改为 '+v+' 元/度:同样的用电量,电费立刻跟着变了(电费=用电量×电价)。电价越贵,省电规则就越值钱!';
+}
+function darkChanged(){
+  const v=+$('darkH').value;
+  $('darkOut').textContent=String(Math.floor(v)).padStart(2,'0')+':'+(v%1?'30':'00');
+  dsim.dark=isDark(); updateSimPlan(); renderSimPanel();
+  $('paramWhy').innerHTML='💬 天黑时刻改为 '+$('darkOut').textContent+':天黑得越早,「天黑→开灯」触发得越早,灯亮的时间越长,用电也会变多——季节不同,智能家居也要适应哦。';
+}
+function maxTChanged(){
+  const v=+$('maxT').value;
+  $('maxTOut').textContent=v+'℃';
+  renderSimPanel();
+  $('paramWhy').innerHTML='💬 白天最高气温改为 '+v+'℃:'+(v>28?'中午室温会超过28℃,「温度高于28℃→开空调」这类规则就会触发,空调很耗电!':'天气凉快,温度规则可能一整天都不触发,空调也就不用开,省电!');
+}
+
+/* ============================================================
+   模块四:能耗与安全评分
+============================================================ */
+function computeScores(){
+  const tips=[];
+  const kinds=k=>placed.filter(p=>p.k===k);
+  const valid=rules.filter(ruleValid);
+  const hasRule=(sk,ck,ak,aon)=>valid.some(rl=>{
+    const s=placed.find(p=>p.id===rl.sensorId);
+    if(!s||s.k!==sk||rl.condK!==ck)return false;
+    return rl.acts.some(a=>{
+      const d=placed.find(p=>p.id===a.devId);
+      return d&&d.k===ak&&(aon===undefined||((a.actK==='on'||a.actK==='open')===aon));
+    });
+  });
+  let safety=0;
+  if(kinds('gas').some(p=>p.room==='kitchen'))safety+=20;
+  else tips.push('🔥 厨房还没有燃气传感器,泄漏了没人知道——快装一个!(+20 安全分)');
+  if(hasRule('gas','leak','alarm',true))safety+=20;
+  else tips.push('🚨 添加规则「当燃气泄漏就响铃报警」,危险第一时间通知全家。(+20 安全分)');
+  if(kinds('door').length)safety+=10;
+  else tips.push('🚪 玄关或阳台装个门磁,开门关门都能感知。(+10 安全分)');
+  if(hasRule('door','open','alarm',true)||hasRule('door','open','cam',true))safety+=10;
+  else tips.push('📷 添加规则「当门被打开就报警或录像」,防盗更安心。(+10 安全分)');
+  if(kinds('cam').length)safety+=10;
+  else tips.push('📷 门口或阳台装个摄像头,看家护院(记住:卧室卫生间不能装)。(+10 安全分)');
+  if(kinds('alarm').length)safety+=15;
+  else tips.push('🚨 家里还没有报警器,危险发生时谁来喊人?装一个吧。(+15 安全分)');
+  const rms=new Set(placed.map(p=>p.room)).size;
+  if(rms>=4)safety+=15;
+  else tips.push('🏠 设备目前只覆盖 '+rms+' 个区域,覆盖 4 个以上更周全。(+15 安全分)');
+  let energy=60;
+  if(hasRule('motion','idle','lamp',false))energy+=15;
+  else tips.push('💡 加装「人走灯灭」规则(当30分钟没人就关灯)可以省不少电。(+15 能耗分)');
+  if(hasRule('light_s','dark','lamp',true))energy+=5;
+  else tips.push('🌙 「天黑自动开灯」既方便又避免灯白天一直亮着。(+5 能耗分)');
+  if(hasRule('light_s','bright','lamp',false)||hasRule('light_s','bright','curtain',true))energy+=10;
+  else tips.push('☀️ 「天亮就关灯或拉开窗帘」,白天多用免费的自然光。(+10 能耗分)');
+  if(kinds('ac').length){
+    if(hasRule('motion','idle','ac',false)||hasRule('door','open','ac',false))energy+=10;
+    else tips.push('❄️ 空调是耗电大王!加一条「没人就关空调」的规则。(+10 能耗分)');
+  }else energy+=10;
+  if(kinds('ac').length>2){energy-=10;tips.push('❄️ 空调装了 '+kinds('ac').length+' 台,太多啦,每台都很耗电。(−10 能耗分)');}
+  if(kinds('lamp').length>6){energy-=5;tips.push('💡 灯装了 '+kinds('lamp').length+' 盏,太多也费电哦。(−5 能耗分)');}
+  energy=Math.max(0,Math.min(100,energy));
+  safety=Math.max(0,Math.min(100,safety));
+  return {energy,safety,tips};
+}
+function doScore(){
+  if(!placed.length){fb('fb4','bad','🙅 沙盘上还没有设备,没法评分。先去「①」布置你的智能家居吧!');return;}
+  const r=computeScores();
+  scoreHist.push({e:r.energy,s:r.safety,total:r.energy+r.safety});
+  $('scE').textContent=r.energy; $('scS').textContent=r.safety;
+  $('scEBar').style.width=r.energy+'%';
+  $('scEBar').style.background=r.energy>=80?'#2eb872':(r.energy>=60?'#f59e0b':'#e5484d');
+  $('scSBar').style.width=r.safety+'%';
+  $('scSBar').style.background=r.safety>=80?'#2b7de9':(r.safety>=60?'#f59e0b':'#e5484d');
+  $('tipList').innerHTML=r.tips.length?r.tips.map(t=>'<li>'+t+'</li>').join(''):'<li>🌟 没有可挑剔的了,你的设计既省电又安全,真正的小小家居设计师!</li>';
+  const n=scoreHist.length;
+  let cmp='';
+  if(n>=2){
+    const prev=scoreHist[n-2],cur=scoreHist[n-1],d=cur.total-prev.total;
+    cmp=d>0?'比上一次总分<b>提高了 '+d+' 分</b>(能耗 '+(cur.e-prev.e>=0?'+':'')+(cur.e-prev.e)+',安全 '+(cur.s-prev.s>=0?'+':'')+(cur.s-prev.s)+')——优化有效!🎉'
+      :(d===0?'和上一次总分一样。按建议再改改?':'比上一次低了 '+(-d)+' 分——别灰心,看看改进建议,把刚才删掉的关键设备或规则补回来。');
+  }
+  const good=r.energy>=80&&r.safety>=80;
+  if((n>=2&&scoreHist[n-1].total>scoreHist[n-2].total)||good){
+    if(!progress.score){progress.score=true;setBadge(4);}
+  }
+  fb('fb4',good?'ok':'info',(good?'🏆 双优!能耗分和安全分都在 80 分以上!':'📊 第 '+n+' 次评分完成:能耗 '+r.energy+' 分、安全 '+r.safety+' 分。')+' '+cmp+(r.tips.length?' 下面的改进建议是提分的钥匙,回「①」「②」优化后再评一次!':''));
+  if(lastDay){
+    $('simRef').innerHTML='📎 模拟参考(最近一整天):用电 <b>'+lastDay.kwh+'</b> 度 · 电费 <b>'+lastDay.cost+'</b> 元 · 规则触发 <b>'+lastDay.fired+'</b> 次 · 安全隐患 <b>'+lastDay.incidents+'</b> 次'
+      +(lastDay.wasteL>4?' · 💡 灯浪费了约 '+(lastDay.wasteL*0.25).toFixed(1)+' 小时电':'')
+      +(lastDay.wasteA>4?' · ❄️ 空调空转了约 '+(lastDay.wasteA*0.25).toFixed(1)+' 小时':'');
+  }
+  drawScoreChart(); refreshOutStats();
+}
+function drawScoreChart(){
+  const cv=$('scoreCv'),ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.font='13px sans-serif'; ctx.fillStyle='#5b7186';
+  if(!scoreHist.length){ctx.fillText('还没有评分记录。每评一次分,这里就会多一组柱子,方便对比优化前后的变化。',20,120);return;}
+  const hist=scoreHist.slice(-6);
+  const baseY=200,maxH=160,gw=cv.width/hist.length;
+  // 刻度线
+  [0,50,100].forEach(v=>{
+    const y=baseY-v/100*maxH;
+    ctx.strokeStyle='#e3ecf6'; ctx.beginPath(); ctx.moveTo(30,y); ctx.lineTo(cv.width-10,y); ctx.stroke();
+    ctx.fillStyle='#8aa0b5'; ctx.fillText(v,8,y+4);
+  });
+  hist.forEach((h,i)=>{
+    const x0=40+i*gw*0.92;
+    ctx.fillStyle='#2eb872'; ctx.fillRect(x0,baseY-h.e/100*maxH,26,h.e/100*maxH);
+    ctx.fillStyle='#2b7de9'; ctx.fillRect(x0+32,baseY-h.s/100*maxH,26,h.s/100*maxH);
+    ctx.fillStyle='#20344b';
+    ctx.fillText(h.e,x0+4,baseY-h.e/100*maxH-4);
+    ctx.fillText(h.s,x0+36,baseY-h.s/100*maxH-4);
+    ctx.fillStyle='#5b7186';
+    ctx.fillText('第'+(scoreHist.length-hist.length+i+1)+'次',x0+8,baseY+18);
+  });
+  ctx.fillStyle='#2eb872'; ctx.fillRect(cv.width-150,12,12,12);
+  ctx.fillStyle='#20344b'; ctx.fillText('能耗分',cv.width-132,22);
+  ctx.fillStyle='#2b7de9'; ctx.fillRect(cv.width-80,12,12,12);
+  ctx.fillStyle='#20344b'; ctx.fillText('安全分',cv.width-62,22);
+}
+
+/* ============================================================
+   模块五:设计方案输出 / 本机数据
+============================================================ */
+function refreshOutStats(){
+  $('oDev').textContent=placed.length;
+  $('oRule').textContent=rules.filter(ruleValid).length;
+  const last=scoreHist[scoreHist.length-1];
+  $('oScore').textContent=last?last.e+' / '+last.s:'—';
+}
+function planTableHTML(){
+  let h='<table style="border-collapse:collapse;margin:8px 0">';
+  for(let r=0;r<7;r++){h+='<tr>';
+    for(let c=0;c<10;c++){
+      const room=roomOf(r,c);
+      const p=placed.find(x=>x.r===r&&x.c===c);
+      h+='<td style="width:30px;height:30px;background:'+ROOMS[room].color+';border:1px solid #fff;text-align:center;font-size:15px">'+(p?DEV(p.k).ico:'')+'</td>';
+    }h+='</tr>';}
+  h+='</table><p style="font-size:12px;color:#5b7186">图例:';
+  Object.keys(ROOMS).forEach(k=>{h+='<span style="background:'+ROOMS[k].color+';padding:1px 8px;border-radius:6px;margin-right:6px">'+ROOMS[k].name+'</span>';});
+  return h+'</p>';
+}
+function planHTML(){
+  const f=id=>{const v=$(id).value.trim();return v?v.replace(/</g,'&lt;'):'(还没有填写)';};
+  const last=scoreHist[scoreHist.length-1];
+  const devRows=placed.length?placed.map(p=>'<tr><td>'+DEV(p.k).ico+' '+DEV(p.k).name+'</td><td>'+(DEV(p.k).cat==='sensor'?'传感器':'执行器')+'</td><td>'+ROOMS[p.room].name+'</td></tr>').join('')
+    :'<tr><td colspan="3">(还没有放置设备)</td></tr>';
+  const ruleRows=rules.length?rules.map(rl=>'<tr><td>#'+rl.id+'</td><td style="text-align:left">'+rl.text+'</td><td>'+(ruleValid(rl)?'可用':'设备已移走')+'</td></tr>').join('')
+    :'<tr><td colspan="3">(还没有搭建规则)</td></tr>';
+  const td='border:1px solid #d9e4f0;padding:6px 8px;text-align:center';
+  return '<div style="font-family:sans-serif;max-width:760px;margin:auto">'
+    +'<h1 style="color:#1a5cb8">🏠 我的智能家居设计方案</h1>'
+    +'<p>课程:清华版《信息科技》五年级下册 第3单元第3课 | 生成时间:'+new Date().toLocaleString()+'</p>'
+    +'<h2>一、项目创意</h2><p><b>项目创意名称:</b>'+f('o1')+'</p><p><b>项目概述:</b>'+f('o2')+'</p>'
+    +'<h2>二、我的家居设计平面图</h2>'+planTableHTML()
+    +'<h2>三、设备清单(材料清单)</h2><table style="border-collapse:collapse;width:100%"><tr><th style="'+td+'">设备</th><th style="'+td+'">类型</th><th style="'+td+'">安装位置</th></tr>'
+    +devRows.replace(/<td>/g,'<td style="'+td+'">')+'</table>'
+    +'<h2>四、自动化规则表</h2><table style="border-collapse:collapse;width:100%"><tr><th style="'+td+'">编号</th><th style="'+td+'">规则</th><th style="'+td+'">状态</th></tr>'
+    +ruleRows.replace(/<td /g,'<td style="'+td+'" ').replace(/<td>/g,'<td style="'+td+'">')+'</table>'
+    +'<h2>五、评分与模拟结果</h2><ul>'
+    +'<li>最新评分:'+(last?'能耗 '+last.e+' 分 / 安全 '+last.s+' 分(共评分 '+scoreHist.length+' 次)':'还没有评分')+'</li>'
+    +'<li>模拟一天:'+(lastDay?'用电 '+lastDay.kwh+' 度,电费 '+lastDay.cost+' 元,规则触发 '+lastDay.fired+' 次,安全隐患 '+lastDay.incidents+' 次':'还没有完成过一整天模拟')+'</li></ul>'
+    +'<h2>六、项目日志</h2><p><b>问题与反思:</b>'+f('o3')+'</p><p><b>改进的方法:</b>'+f('o4')+'</p>'
+    +'<p style="color:#5b7186;font-size:13px">本方案由"智能家居设计沙盘"生成 · 全部为虚拟设备与本地示例数据</p></div>';
+}
+function genPlan(){
+  const empty=['o1','o2','o3','o4'].filter(id=>!$(id).value.trim());
+  if(empty.length){
+    fb('fb5','bad','还有 '+empty.length+' 个空没填完呢!项目创意和项目日志是计划书里最重要的部分,把你的想法和测试中发现的问题写进去。');
+  }else{
+    if(!progress.plan){progress.plan=true;setBadge(5);}
+    fb('fb5','ok','✅ 设计方案已生成!检查预览没问题,就点「导出设计方案」保存到电脑,交给老师或和同学交流吧。');
+  }
+  $('planPreview').innerHTML='<div class="card" style="margin-top:12px">'+planHTML()+'</div>';
+  refreshOutStats();
+}
+function exportPlan(){
+  downloadFile('我的智能家居设计方案.html','<!DOCTYPE html><html><head><meta charset="utf-8"><title>智能家居设计方案</title></head><body>'+planHTML()+'</body></html>','text/html');
+}
+/* ---- 本机数据 ---- */
+const LS_KEY='u3l3_designer_lab';
+function projectData(){
+  return {ver:1,placed,rules:rules.map(r=>({id:r.id,sensorId:r.sensorId,condK:r.condK,acts:r.acts,text:r.text})),
+    devSeq,ruleSeq,scoreHist,lastDay,progress,
+    fields:{o1:$('o1').value,o2:$('o2').value,o3:$('o3').value,o4:$('o4').value},
+    params:{price:$('price').value,darkH:$('darkH').value,maxT:$('maxT').value,spd:$('spd').value}};
+}
+function applyProject(d){
+  try{
+    if(Array.isArray(d.placed))placed=d.placed;
+    if(Array.isArray(d.rules))rules=d.rules.map(r=>Object.assign({prev:false},r));
+    devSeq=d.devSeq||placed.reduce((m,p)=>Math.max(m,p.id),0);
+    ruleSeq=d.ruleSeq||rules.reduce((m,r)=>Math.max(m,r.id),0);
+    if(Array.isArray(d.scoreHist))scoreHist=d.scoreHist;
+    if(d.lastDay)lastDay=d.lastDay;
+    if(d.fields)['o1','o2','o3','o4'].forEach(k=>$(k).value=d.fields[k]||'');
+    if(d.params){$('price').value=d.params.price;$('darkH').value=d.params.darkH;$('maxT').value=d.params.maxT;$('spd').value=d.params.spd;
+      $('priceOut').textContent=(+$('price').value).toFixed(1)+' 元';
+      const dv=+$('darkH').value;
+      $('darkOut').textContent=String(Math.floor(dv)).padStart(2,'0')+':'+(dv%1?'30':'00');
+      $('maxTOut').textContent=$('maxT').value+'℃';
+      $('spdOut').textContent={1:'慢',2:'中',3:'快'}[+$('spd').value];
+      dsim.speedMs={1:900,2:500,3:220}[+$('spd').value];}
+    if(d.progress){Object.assign(progress,d.progress);
+      if(progress.layout)setBadge(1);if(progress.rules)setBadge(2);if(progress.sim)setBadge(3);
+      if(progress.score)setBadge(4);if(progress.plan)setBadge(5);}
+    renderAll(); drawScoreChart();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复你的设计。');
+}
+function exportProject(){downloadFile('智能家居设计数据.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 设计数据导入成功!平面图、规则表和评分记录都恢复啦。':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的设计数据文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'), raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  if(!confirm('确定清除本机保存的设计数据吗?页面上的内容不受影响。'))return;
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的设计还在,可以重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderAll();
+  dsim.dark=isDark();
+  setSpeed(); $('paramWhy').innerHTML='💬 试着调整参数,这里会解释它带来的变化。';
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  updateSimPlan(); renderSimPanel(); drawScoreChart();
+})();
+</script>
+</body>
+</html>

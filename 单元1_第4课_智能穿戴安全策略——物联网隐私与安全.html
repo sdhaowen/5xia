@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能设备隐私安全检查器 · 单元1第4课 智能穿戴安全策略——物联网隐私与安全</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6; --purple-d:#6d3fd4;
+    --bg:#f1f0fb; --card:#ffffff; --ink:#24304b; --ink-2:#5c6b86;
+    --line:#dcdcf0; --soft:#f5f4fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#6d3fd4,#2b7de9); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(70,40,150,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--purple-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--purple);}
+  nav button.on{background:var(--purple); border-color:var(--purple); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(60,40,120,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .warnbox{background:#fdeaea; border:2px solid var(--red); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px; font-weight:700; color:#b3262b;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--purple-d); border:2px solid var(--purple);}
+  .btn.gray{background:#8a93b5;}
+  .btn:disabled{background:#c7cbe0; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#efeafd; border:1px solid var(--purple); color:var(--purple-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .why{background:#f2edff; border-left:4px solid var(--purple); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+  /* ---------- 模块一:数据分类 ---------- */
+  .pool{display:flex; flex-wrap:wrap; gap:10px; padding:12px; background:var(--soft); border-radius:12px; min-height:74px;}
+  .comp{border:2px solid var(--line); background:#fff; border-radius:12px; padding:10px 14px; font-size:15px; font-weight:700; cursor:pointer; user-select:none; transition:.15s; text-align:center;}
+  .comp .ico{font-size:26px; display:block;}
+  .comp:hover{border-color:var(--purple); transform:translateY(-2px);}
+  .comp.sel{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 3px #fde9c2;}
+  .drawers{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0;}
+  @media(max-width:800px){.drawers{grid-template-columns:1fr;}}
+  .drawer{border:2.5px dashed #b3a8e0; border-radius:14px; background:var(--soft); min-height:110px; padding:10px; cursor:pointer; transition:.15s;}
+  .drawer:hover{border-color:var(--purple); background:#f2edff;}
+  .drawer .dhead{font-weight:700; font-size:15.5px; margin-bottom:6px;}
+  .drawer .dtip{font-size:12.5px; color:var(--ink-2);}
+  .dbody{display:flex; flex-wrap:wrap; gap:6px;}
+  .chip{background:#fff; border:2px solid var(--line); border-radius:16px; padding:4px 10px; font-size:13.5px; font-weight:700; cursor:pointer;}
+  .chip:hover{border-color:var(--red);}
+  .chip.right{border-color:var(--green); background:#e7f9ef;}
+  .chip.wrong{border-color:var(--red); background:#fdeaea; animation:shake .3s;}
+  @keyframes shake{25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+  /* ---------- 模块二:强密码实验室 ---------- */
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--purple-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--purple); height:26px;}
+  .switch{display:flex; align-items:center; gap:8px; margin-top:8px; font-weight:700; font-size:15px;}
+  .switch input{width:22px; height:22px; accent-color:var(--green); cursor:pointer;}
+  .pwbar-wrap{margin-top:10px;}
+  .pwbar{height:26px; background:#e7e5f5; border-radius:13px; overflow:hidden;}
+  .pwbar i{display:block; height:100%; border-radius:13px; transition:width .5s, background .5s; width:0;}
+  .pwlevel{font-size:20px; font-weight:800; margin-top:8px;}
+  .pwfacts{background:var(--soft); border-radius:10px; padding:10px 12px; margin-top:8px; font-size:14.5px;}
+  .pwfacts b{color:var(--purple-d);}
+  .cmp-row{display:flex; align-items:center; gap:10px; margin:8px 0;}
+  .cmp-row code{background:#24304b; color:#ffe08a; border-radius:8px; padding:4px 10px; font-size:15px; white-space:nowrap;}
+  .cmp-row .pwbar{flex:1;}
+  input[type=text]{width:100%; border:2px solid var(--line); border-radius:10px; padding:10px 12px; font-size:16px; font-family:inherit;}
+  input[type=text]:focus{outline:none; border-color:var(--purple);}
+  .cipherbox{background:#24304b; color:#9fe3bd; border-radius:10px; padding:10px 12px; margin-top:8px; font-size:15px; min-height:44px; word-break:break-all;}
+  /* ---------- 模块三:权限管理 ---------- */
+  .case-tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+  .case-tabs button{border:2px solid var(--line); background:#fff; border-radius:10px; padding:8px 14px; font-size:14.5px; font-weight:700; cursor:pointer;}
+  .case-tabs button.on{background:var(--purple); border-color:var(--purple); color:#fff;}
+  .case-tabs button.solved::after{content:" ✅";}
+  .appdesc{background:var(--soft); border-radius:10px; padding:10px 14px; font-size:15px; margin-bottom:8px;}
+  .permrow{display:flex; align-items:flex-start; gap:10px; border:2px solid var(--line); border-radius:12px; padding:10px 12px; margin:8px 0; flex-wrap:wrap;}
+  .permrow .pico{font-size:26px;}
+  .permrow .pinfo{flex:1; min-width:180px;}
+  .permrow .pinfo b{font-size:15.5px;}
+  .permrow .pwhy{font-size:13.5px; color:var(--ink-2); margin-top:3px;}
+  .permrow .pres{font-weight:800; margin-left:6px;}
+  .pbtns{display:flex; gap:6px;}
+  .pbtn{border:2px solid var(--line); background:#fff; border-radius:10px; padding:8px 16px; font-size:14.5px; font-weight:700; cursor:pointer; transition:.15s;}
+  .pbtn.on-allow{background:var(--green); border-color:var(--green); color:#fff;}
+  .pbtn.on-deny{background:var(--red); border-color:var(--red); color:#fff;}
+  /* ---------- 模块四:情境判断 ---------- */
+  .opt{display:block; width:100%; text-align:left; border:2px solid var(--line); background:#fff; border-radius:10px; padding:10px 14px; margin:6px 0; font-size:15px; cursor:pointer; transition:.15s;}
+  .opt:hover{border-color:var(--purple);}
+  .opt.right{border-color:var(--green); background:#e7f9ef;}
+  .opt.wrong{border-color:var(--red); background:#fdeaea;}
+  .scen{border:2px solid var(--line); border-radius:14px; padding:12px 14px; margin:10px 0;}
+  .scen.solved{border-color:var(--green);}
+  .scen h4{font-size:16px; margin-bottom:4px;}
+  .scen .stext{font-size:14.5px; color:var(--ink-2);}
+  .scen .swhy{display:none; background:#e7f9ef; border-radius:8px; padding:8px 10px; font-size:14px; margin-top:6px; color:var(--green-d);}
+  .scen.solved .swhy{display:block;}
+  .matrix{display:grid; grid-template-columns:92px repeat(3,1fr); gap:4px; margin-top:10px;}
+  .mcell{border-radius:8px; min-height:64px; padding:6px; font-size:13px; display:flex; flex-wrap:wrap; gap:4px; align-items:flex-start; align-content:flex-start;}
+  .mhead{background:var(--soft); font-weight:700; display:flex; align-items:center; justify-content:center; min-height:36px; border-radius:8px; font-size:13.5px; text-align:center;}
+  .mchip{background:#fff; border:1.5px solid var(--ink-2); border-radius:12px; padding:2px 8px; font-size:12.5px; font-weight:700;}
+  /* ---------- 模块五:设备数据管理 ---------- */
+  .devwrap{display:grid; grid-template-columns:280px 1fr; gap:14px;}
+  @media(max-width:900px){.devwrap{grid-template-columns:1fr;}}
+  .watch{width:190px; margin:8px auto;}
+  .watch .wband{height:26px; background:#3d4668; border-radius:10px 10px 0 0; margin:0 46px;}
+  .watch .wband.b2{border-radius:0 0 10px 10px;}
+  .wscreen{border:8px solid #3d4668; border-radius:32px; background:#101830; color:#cfe3ff; min-height:170px; padding:14px 10px; text-align:center; font-size:14px; display:flex; flex-direction:column; justify-content:center; gap:6px;}
+  .wscreen .wico{font-size:38px;}
+  .meter{margin:8px 0;}
+  .meter label{font-size:14px; color:var(--ink-2); display:flex; justify-content:space-between;}
+  .bar{height:18px; background:#e7e5f5; border-radius:9px; overflow:hidden; margin-top:3px;}
+  .bar i{display:block; height:100%; border-radius:9px; transition:width .4s, background .4s;}
+  .stepchips{display:flex; gap:6px; flex-wrap:wrap; margin:8px 0;}
+  .stepchip{background:var(--soft); border:2px solid var(--line); border-radius:16px; padding:4px 12px; font-size:13.5px; font-weight:700; color:var(--ink-2);}
+  .stepchip.done{background:#e7f9ef; border-color:var(--green); color:var(--green-d);}
+  .ditem{display:flex; align-items:center; gap:10px; border:2px solid var(--line); border-radius:12px; padding:8px 12px; margin:6px 0; cursor:pointer; background:#fff;}
+  .ditem input{width:20px; height:20px; accent-color:var(--purple);}
+  .ditem .dico{font-size:22px;}
+  .ditem .dname{flex:1; font-weight:700; font-size:14.5px;}
+  .ditem .dname small{display:block; font-weight:400; color:var(--ink-2);}
+  .dtag{font-size:12.5px; font-weight:700; border-radius:10px; padding:2px 9px;}
+  .dtag.junk{background:#fff4dd; color:#b45309;}
+  .dtag.keep{background:#e7f9ef; color:var(--green-d);}
+  .dtag.sys{background:#e8eefc; color:var(--blue-d);}
+  /* ---------- 模块六:安全协议 ---------- */
+  .pact-item{display:flex; align-items:flex-start; gap:10px; background:var(--soft); border:2px solid var(--line); border-radius:12px; padding:10px 12px; margin:6px 0; cursor:pointer; font-size:15px;}
+  .pact-item input{width:22px; height:22px; accent-color:var(--green); flex-shrink:0; margin-top:2px;}
+  .pact-item.on{border-color:var(--green); background:#e7f9ef;}
+  textarea{width:100%; min-height:74px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  textarea:focus{outline:none; border-color:var(--purple);}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:22px; color:var(--purple-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{border:1px solid var(--line); padding:6px 8px; text-align:center;}
+  th{background:var(--soft);}
+  .logwrap{max-height:260px; overflow:auto; border-radius:10px; border:1px solid var(--line); margin-top:8px;}
+  pre.saved{background:#24304b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔐 智能设备隐私安全检查器</h1>
+  <p>清华版《信息科技》五年级下册 · 第1单元 第4课 智能穿戴安全策略——物联网隐私与安全(教材 P28—38)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 数据分类</span>
+    <span class="badge" id="bg2">② 强密码达成</span>
+    <span class="badge" id="bg3">③ 权限管理 <span id="bgPerm">0</span>/2</span>
+    <span class="badge" id="bg4">④ 情境判断 <span id="bgShare">0</span>/6</span>
+    <span class="badge" id="bg5">⑤ 数据管理演练</span>
+    <span class="badge" id="bg6">⑥ 安全协议</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">🗂 ① 数据分类整理台</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">🔐 ② 强密码实验室</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">🛂 ③ 权限管理模拟</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">⚖️ ④ 情境判断与风险矩阵</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">⌚ ⑤ 设备数据管理演练</button>
+  <button data-tab="t6" onclick="showTab('t6',this)">📜 ⑥ 我的安全协议</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:数据分类整理台 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>📖 先认识一下:智能穿戴设备的安全问题在哪儿?</h2>
+    <p>智能穿戴设备连着互联网和物联网,方便的同时也带来了安全隐患,主要在四个方面:<b>设备安全</b>(蓝牙、无线信号可能被"嗅探")、<b>网络安全</b>(恶意程序、不安全的公共无线热点、云服务被攻击)、<b>数据安全</b>(个人隐私泄露、核心数据被窃取)、<b>应用安全</b>(藏着恶意代码的软件)。要保护好自己,第一步就是弄清楚:<b>设备里到底有哪些数据?哪些最需要保护?</b></p>
+    <p style="margin-top:6px"><span class="pill">🔧 设备安全</span><span class="pill">🌐 网络安全</span><span class="pill">🗄 数据安全</span><span class="pill">📲 应用安全</span></p>
+  </div>
+  <div class="card">
+    <h2>🗂 任务一:帮乐乐整理手表里的数据</h2>
+    <div class="task"><b>任务:</b>虚构小朋友<b>乐乐</b>的智能手表里存着 12 张数据卡片。请<b>先点击下方卡片选中它</b>,再<b>点击上方对应的抽屉</b>放进去。放错了?点一下抽屉里的小标签就能取回来。全部放完后点「检查分类」。</div>
+    <div class="drawers">
+      <div class="drawer" onclick="drawerClick('loc')">
+        <div class="dhead">📍 位置数据抽屉</div>
+        <div class="dtip">和"乐乐在哪里、去过哪里"有关的数据</div>
+        <div class="dbody" id="dw_loc"></div>
+      </div>
+      <div class="drawer" onclick="drawerClick('health')">
+        <div class="dhead">🏃 运动健康数据抽屉</div>
+        <div class="dtip">和"乐乐的身体"有关的数据</div>
+        <div class="dbody" id="dw_health"></div>
+      </div>
+      <div class="drawer" onclick="drawerClick('acc')">
+        <div class="dhead">🔑 账号数据抽屉</div>
+        <div class="dtip">和"乐乐的账号、联系人"有关的数据</div>
+        <div class="dbody" id="dw_acc"></div>
+      </div>
+      <div class="drawer" onclick="drawerClick('dev')">
+        <div class="dhead">⌚ 设备数据抽屉</div>
+        <div class="dtip">和"手表这台机器本身"有关的数据</div>
+        <div class="dbody" id="dw_dev"></div>
+      </div>
+    </div>
+    <h3>数据卡片仓库(剩余 <span id="poolCount">12</span> 张)</h3>
+    <div class="pool" id="pool"></div>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="checkSort()">✅ 检查分类</button>
+      <button class="btn ghost" onclick="sortHint()">💡 分层提示</button>
+      <button class="btn gray" onclick="resetSort()">🔄 重新整理</button>
+    </div>
+    <div class="feedback" id="fb1"></div>
+    <div class="card" id="sortReveal" style="display:none; margin-top:12px; border-color:var(--green)">
+      <h3>⭐ 敏感度大揭秘</h3>
+      <p>分对啦!再看看每类数据的<b>敏感程度</b>:</p>
+      <p style="margin-top:6px">
+        <span class="pill" style="border-color:var(--red);color:#b3262b">🔴 高敏感:实时位置、上学路线、账号密码、绑定的家长手机号</span><br>
+        <span class="pill" style="border-color:var(--orange);color:#b45309">🟡 中敏感:常去的公园、心率记录、睡眠时长、好友列表</span><br>
+        <span class="pill" style="border-color:var(--green);color:var(--green-d)">🟢 低敏感:运动步数、设备编号、电池电量、系统版本</span>
+      </p>
+      <p style="margin-top:8px">💬 <b>位置数据</b>和<b>账号数据</b>最需要保护:位置泄露可能带来人身危险,账号密码泄露则会让所有数据都不再安全。教材里马拉松比赛上有人用蓝牙嗅探设备,轻易获得了佩戴者的设备名称和健康信息——这就是数据落入坏人之手的例子!</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 模块二:强密码实验室 ================= -->
+<section class="tab" id="t2">
+  <div class="warnbox">⚠️ 特别提醒:这里的密码全部是<u>编造出来做实验用的虚构密码</u>!千万不要输入你真正使用的密码,也不要把真实密码告诉任何人。</div>
+  <div class="grid2">
+    <div class="card ctl">
+      <h2>🧪 密码拼装台(原理模拟)</h2>
+      <div class="task"><b>任务:</b>调整下面 3 个参数,观察"破解难度条"怎样变化。<b>挑战:把难度拼到「🛡 坚固堡垒」级!</b></div>
+      <label><span>密码长度</span><output id="lenOut">6 位</output></label>
+      <input type="range" id="pwLen" min="4" max="18" value="6" oninput="updatePw('长度')">
+      <h3>密码里包含哪些字符?</h3>
+      <div class="switch"><input type="checkbox" id="ckLow" checked onchange="updatePw('字符种类')"><span>小写字母(26 种)</span></div>
+      <div class="switch"><input type="checkbox" id="ckUp" onchange="updatePw('字符种类')"><span>大写字母(26 种)</span></div>
+      <div class="switch"><input type="checkbox" id="ckDig" checked onchange="updatePw('字符种类')"><span>数字(10 种)</span></div>
+      <div class="switch"><input type="checkbox" id="ckSym" onchange="updatePw('字符种类')"><span>符号(16 种,如 !@#%)</span></div>
+      <label><span>坏人的猜测机器</span><output id="rateOut">普通电脑</output></label>
+      <input type="range" id="pwRate" min="0" max="3" value="1" oninput="updatePw('猜测速度')">
+      <div class="pwbar-wrap">
+        <div class="pwbar"><i id="pwBarI"></i></div>
+        <div class="pwlevel" id="pwLevel">🙂 一般般</div>
+      </div>
+      <div class="pwfacts" id="pwFacts"></div>
+      <div class="why" id="whyPw">💬 拖一拖滑块、勾一勾选项,这里会解释变化的原因。</div>
+      <div style="margin-top:10px">
+        <button class="btn orange small" onclick="loadWeakExample()">📖 看看"123456"有多脆弱</button>
+      </div>
+      <div class="feedback" id="fbPw"></div>
+    </div>
+    <div class="card">
+      <h2>🩺 密码体检台</h2>
+      <div class="task"><b>任务:</b>编一个<b>虚构密码</b>(比如把"最喜欢的动物+编造的数字+符号"混在一起),输入后点「体检」,看看它能得到什么评级,再按建议改进重试。</div>
+      <input type="text" id="pwInput" maxlength="24" placeholder="在这里输入编造的虚构密码(不要用真密码!)">
+      <div style="margin-top:8px">
+        <button class="btn green" onclick="analyzePw()">🩺 开始体检</button>
+        <button class="btn gray small" onclick="clearPwInput()">🧹 清空重试</button>
+      </div>
+      <div class="feedback" id="fbCheck"></div>
+      <h3 style="margin-top:14px">⚖️ 对比实验:教材里的两个密码</h3>
+      <p style="font-size:14px; color:var(--ink-2)">"123456"和"Ll@2015#xye"都只是例子,差距却是天壤之别。点按钮用当前选择的猜测机器算一算!</p>
+      <button class="btn purple" onclick="comparePw()">⚖️ 一键对比</button>
+      <div id="cmpBox"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🔏 加密小实验:数据加密是首要措施</h2>
+    <div class="task"><b>任务:</b>教材说,应对数据丢失、信息被窃取,<b>数据加密是首要措施</b>。在下面输入一句虚构的消息,点「加密」看看它变成什么样,再点「解密」把它还原。</div>
+    <input type="text" id="encIn" maxlength="40" value="乐乐今天走了8000步">
+    <div style="margin-top:8px">
+      <button class="btn purple" onclick="encMsg()">🔒 加密</button>
+      <button class="btn green" onclick="decMsg()">🔓 解密</button>
+    </div>
+    <div class="cipherbox" id="encOut">(加密结果会显示在这里)</div>
+    <div class="why" id="whyEnc">💬 想一想:如果乐乐的手表在公共免费无线网络(Wi-Fi)里传的是<b>加密后的乱码</b>,偷看的人能得到什么?——什么也得不到!只有拿着"钥匙"的人才能解开。</div>
+  </div>
+</section>
+
+<!-- ================= 模块三:权限管理模拟 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>🛂 任务三:当一次"权限守门员"</h2>
+    <div class="task"><b>任务:</b>乐乐的手表要安装 2 款虚构应用,每款都申请了 5 项权限。请逐项判断<b>允许</b>还是<b>拒绝</b>,标准只有一条:<b>完成核心功能是否必需?</b>(这叫"数据最小化原则")全部选完后点「提交评分」。</div>
+    <div class="case-tabs" id="appTabs"></div>
+    <div class="appdesc" id="appDesc"></div>
+    <div id="permList"></div>
+    <div style="margin-top:10px">
+      <button class="btn green" onclick="scorePerm()">✅ 提交评分</button>
+      <button class="btn ghost" onclick="permHint()">💡 分层提示</button>
+      <button class="btn gray" onclick="resetPerm()">🔄 重新选择</button>
+    </div>
+    <div class="feedback" id="fbPerm"></div>
+  </div>
+</section>
+
+<!-- ================= 模块四:情境判断与风险矩阵 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>⚖️ 任务四:数据能不能分享?6 个情境考考你</h2>
+    <div class="task"><b>任务:</b>下面是乐乐遇到的 6 个情境(全部虚构)。每个情境请选择:<b>✅ 可以分享</b>、<b>👨‍👩‍👧 要先问家长</b>,还是 <b>⛔ 坚决拒绝</b>。答对一个,它就会自动落到下方的"风险矩阵"里。</div>
+    <div id="scenList"></div>
+    <div class="feedback" id="fbScen"></div>
+  </div>
+  <div class="card">
+    <h2>🗺 风险矩阵:可能性 × 危害程度</h2>
+    <p style="font-size:14px;color:var(--ink-2)">答对的情境会出现在矩阵里。<b>越靠右上角(可能性高 + 危害大)越危险</b>,遇到就要坚决拒绝并告诉家长!</p>
+    <div class="matrix" id="matrix"></div>
+    <div class="why" id="whyMatrix">💬 先去上面完成情境判断,矩阵会一格一格亮起来。</div>
+  </div>
+</section>
+
+<!-- ================= 模块五:设备数据管理演练 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>⌚ 任务五:给乐乐的旧手表做一次"数据大扫除"</h2>
+    <div class="task"><b>背景:</b>乐乐的手表要送给表弟用了。送出去之前,要按 4 步完成数据管理演练:<b>①开机查看数据 → ②清理不需要的数据 → ③加密备份重要数据 → ④恢复出厂设置</b>。每一步都要按顺序来哦!(全部是虚构的演练数据)</div>
+    <div class="stepchips">
+      <span class="stepchip" id="stp1">1️⃣ 查看数据</span>
+      <span class="stepchip" id="stp2">2️⃣ 清理数据</span>
+      <span class="stepchip" id="stp3">3️⃣ 加密备份</span>
+      <span class="stepchip" id="stp4">4️⃣ 恢复出厂</span>
+    </div>
+    <div class="devwrap">
+      <div class="card" style="margin:0">
+        <h3>乐乐的虚拟手表</h3>
+        <div class="watch">
+          <div class="wband"></div>
+          <div class="wscreen" id="wScreen"><div class="wico">⌚</div><div>乐乐的手表</div><div style="font-size:12.5px;opacity:.75">点右边「开机查看数据」开始</div></div>
+          <div class="wband b2"></div>
+        </div>
+        <div class="meter"><label><span>存储空间已用</span><span id="stoVal">438兆 / 512兆</span></label>
+          <div class="bar"><i id="stoBar" style="width:86%; background:#f59e0b"></i></div></div>
+        <div class="why" id="whyDev">💬 手表的每一步状态变化都会显示在屏幕上。</div>
+      </div>
+      <div class="card" style="margin:0">
+        <h3>操作台</h3>
+        <div>
+          <button class="btn" onclick="devView()">🔍 开机查看数据</button>
+          <button class="btn orange" onclick="devDelete()">🗑 删除勾选的数据</button>
+          <button class="btn purple" onclick="devBackup()">💾 加密备份重要数据</button>
+          <button class="btn red" onclick="devReset()">⚠️ 恢复出厂设置</button>
+          <button class="btn gray small" onclick="devRestart()">🔄 重新演练</button>
+        </div>
+        <div id="devList" style="margin-top:8px"><p style="color:var(--ink-2);font-size:14px">(还没开机,先点「🔍 开机查看数据」)</p></div>
+        <div class="feedback" id="fbDev"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 模块六:我的安全协议 ================= -->
+<section class="tab" id="t6">
+  <div class="card">
+    <h2>📜 任务六:生成「我的智能设备安全协议」</h2>
+    <div class="task"><b>任务:</b>教材说,应对安全问题有三大策略:<b>加强数据加密</b>、<b>优化设备系统及应用</b>、<b>增强用户信息安全意识</b>。作为设备的使用者,请勾选你愿意做到的安全承诺(至少 5 条),再补充一条你自己想到的,最后生成并导出你的专属安全协议!</div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="st_mod">0/6</b><span>完成的互动模块</span></div>
+      <div class="stat"><b id="st_pw">—</b><span>我拼出的最强密码等级</span></div>
+      <div class="stat"><b id="st_scen">0/6</b><span>答对的情境判断</span></div>
+    </div>
+    <h3>✍️ 我的安全承诺(点击勾选)</h3>
+    <div id="pactList"></div>
+    <h3>➕ 我补充的安全好点子</h3>
+    <textarea id="pactExtra" placeholder="例:我会和家长约定,手表只加认识的同学为好友;发现奇怪的弹窗马上告诉老师。"></textarea>
+    <h3>🧸 我的昵称(可以用编造的名字,不要写真实姓名)</h3>
+    <input type="text" id="nickname" maxlength="12" placeholder="例:小小安全员">
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genPact()">📄 生成协议预览</button>
+      <button class="btn" onclick="exportPact()">📥 导出协议(网页文件)</button>
+    </div>
+    <div class="feedback" id="fbPact"></div>
+    <div id="pactPreview"></div>
+  </div>
+  <div class="card">
+    <h2>📋 实验记录</h2>
+    <p style="font-size:14px;color:var(--ink-2)">检查器自动记录了你在各个模块里的操作,只保存在你自己的电脑上。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="renderLog()">🔄 刷新记录</button>
+      <button class="btn green small" onclick="exportLog()">📥 导出实验记录(表格文件)</button>
+      <button class="btn red small" onclick="clearLog()">🗑 清空记录</button>
+      <span class="pill">共 <b id="logCount">0</b> 条记录</span>
+    </div>
+    <div class="logwrap">
+      <table>
+        <thead><tr><th>时间</th><th>模块</th><th>操作</th><th>结果</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="4" style="color:#5c6b86">暂无记录,去各个模块做实验吧!</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出项目(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入项目</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>智能设备隐私安全检查器 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态
+============================================================ */
+const $=id=>document.getElementById(id);
+const progress={sort:false,pwd:false,device:false,pact:false};
+const stats={bestLg:0};
+let logRows=[];   // {time,mod,action,result}
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t6'){renderLog();refreshStats6();}
+}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function fb(id,cls,html){const e=$(id);e.className='feedback '+cls;e.innerHTML=html;}
+function nowStr(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');}
+function addLog(mod,action,result){
+  logRows.push({time:nowStr(),mod,action,result});
+  if(logRows.length>300)logRows.shift();
+}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+function fmtNum(x){return x>=100?Math.round(x).toLocaleString('zh-CN'):(Math.round(x*10)/10);}
+
+/* ============================================================
+   模块一:数据分类整理台(点击选择 → 点击放置)
+============================================================ */
+const CARDS=[
+  {k:'c1', ico:'📍', name:'实时位置', cat:'loc'},
+  {k:'c2', ico:'🗺️', name:'上学路线', cat:'loc'},
+  {k:'c3', ico:'🏞️', name:'常去的公园', cat:'loc'},
+  {k:'c4', ico:'👟', name:'运动步数', cat:'health'},
+  {k:'c5', ico:'❤️', name:'心率记录', cat:'health'},
+  {k:'c6', ico:'😴', name:'睡眠时长', cat:'health'},
+  {k:'c7', ico:'🔑', name:'账号密码', cat:'acc'},
+  {k:'c8', ico:'👥', name:'好友列表', cat:'acc'},
+  {k:'c9', ico:'📞', name:'绑定的家长手机号', cat:'acc'},
+  {k:'c10',ico:'🔢', name:'设备编号', cat:'dev'},
+  {k:'c11',ico:'🔋', name:'电池电量', cat:'dev'},
+  {k:'c12',ico:'⚙️', name:'系统版本', cat:'dev'},
+];
+const CAT_NAMES={loc:'位置数据',health:'运动健康数据',acc:'账号数据',dev:'设备数据'};
+let placed={};        // 卡片k -> 抽屉cat
+let selCard=null, sortHintLv=0;
+
+function renderSort(){
+  const pool=$('pool'); pool.innerHTML='';
+  const free=CARDS.filter(c=>!placed[c.k]);
+  $('poolCount').textContent=free.length;
+  free.forEach(c=>{
+    const d=document.createElement('div'); d.className='comp'+(selCard===c.k?' sel':'');
+    d.innerHTML=`<span class="ico">${c.ico}</span>${c.name}`;
+    d.onclick=()=>{selCard=(selCard===c.k?null:c.k);renderSort();};
+    pool.appendChild(d);
+  });
+  ['loc','health','acc','dev'].forEach(cat=>{
+    const box=$('dw_'+cat); box.innerHTML='';
+    CARDS.filter(c=>placed[c.k]===cat).forEach(c=>{
+      const s=document.createElement('span'); s.className='chip'; s.dataset.k=c.k;
+      s.textContent=c.ico+' '+c.name+' ✕';
+      s.title='点击取回这张卡片';
+      s.onclick=ev=>{ev.stopPropagation();delete placed[c.k];renderSort();};
+      box.appendChild(s);
+    });
+  });
+}
+function drawerClick(cat){
+  if(!selCard){fb('fb1','info','💡 先在下方"数据卡片仓库"里点击选中一张卡片,再点击抽屉放进去。');return;}
+  placed[selCard]=cat; selCard=null; renderSort();
+}
+function checkSort(){
+  const n=Object.keys(placed).length;
+  if(n<CARDS.length){fb('fb1','bad',`🌱 还有 ${CARDS.length-n} 张卡片没放进抽屉呢!放完再检查。`);return;}
+  const wrong=[];
+  CARDS.forEach(c=>{
+    const el=document.querySelector('.chip[data-k="'+c.k+'"]');
+    const ok=placed[c.k]===c.cat;
+    if(el)el.classList.add(ok?'right':'wrong');
+    if(!ok)wrong.push(c.name);
+  });
+  if(wrong.length===0){
+    fb('fb1','ok','🎉 太棒了!12 张数据卡片全部分类正确!往下看看"敏感度大揭秘"。');
+    $('sortReveal').style.display='block';
+    if(!progress.sort){progress.sort=true;setBadge(1);}
+    addLog('①数据分类','检查分类','全部正确 ✅');
+  }else{
+    fb('fb1','bad',`🤔 有 ${wrong.length} 张卡片放错抽屉了(红色标签):${wrong.join('、')}。点错的标签取回来重放,或点「💡 分层提示」。`);
+    addLog('①数据分类','检查分类','放错 '+wrong.length+' 张');
+  }
+}
+function sortHint(){
+  sortHintLv=Math.min(sortHintLv+1,3);
+  const hints=[
+    '提示①:拿到一张卡片先问自己:它说的是"乐乐在哪里"、"乐乐的身体"、"乐乐的账号和联系人",还是"手表这台机器本身"?',
+    '提示②:「上学路线」「常去的公园」都和地点有关;「好友列表」「绑定的家长手机号」都是跟着账号走的;「电池电量」「系统版本」说的是机器自己。',
+    '提示③:位置数据=实时位置、上学路线、常去的公园;运动健康=运动步数、心率记录、睡眠时长;账号数据=账号密码、好友列表、家长手机号;设备数据=设备编号、电池电量、系统版本。'
+  ];
+  fb('fb1','info','💡 '+hints[sortHintLv-1]);
+}
+function resetSort(){
+  placed={}; selCard=null; sortHintLv=0; renderSort();
+  $('sortReveal').style.display='none';
+  fb('fb1','info','已重置,重新整理吧!');
+}
+
+/* ============================================================
+   模块二:强密码实验室
+============================================================ */
+const RATES=[
+  {name:'老旧电脑', desc:'每秒猜 1 千次', lg:3},
+  {name:'普通电脑', desc:'每秒猜 100 万次', lg:6},
+  {name:'高性能显卡', desc:'每秒猜 10 亿次', lg:9},
+  {name:'超级计算机', desc:'每秒猜 100 万亿次', lg:14},
+];
+function pwFlags(){return{low:$('ckLow').checked,up:$('ckUp').checked,dig:$('ckDig').checked,sym:$('ckSym').checked};}
+function charsetSize(f){return (f.low?26:0)+(f.up?26:0)+(f.dig?10:0)+(f.sym?16:0);}
+function pwLevel(lg){
+  if(lg<6)return{i:0,t:'🥚 一碰就碎',c:'#e5484d'};
+  if(lg<9)return{i:1,t:'😟 很不安全',c:'#f97316'};
+  if(lg<12)return{i:2,t:'🙂 一般般',c:'#f59e0b'};
+  if(lg<15)return{i:3,t:'💪 比较坚固',c:'#84cc16'};
+  return{i:4,t:'🛡 坚固堡垒',c:'#2eb872'};
+}
+function guessText(lg){
+  if(lg<=0)return '0 次';
+  if(lg<4)return '约 '+Math.round(Math.pow(10,lg)).toLocaleString('zh-CN')+' 次';
+  const units=[['亿亿',16],['万亿',12],['亿',8],['万',4]];
+  if(lg<20){
+    for(const[u,e]of units){if(lg>=e)return '约 '+fmtNum(Math.pow(10,lg-e))+' '+u+'次';}
+  }
+  return '天文数字:1 后面跟着 '+Math.round(lg)+' 个 0';
+}
+function crackTimeText(lg,rateLg){
+  if(lg<=0)return '—';
+  const s=lg-rateLg;
+  if(s<0)return '不到 1 秒 ⚡';
+  if(s>19)return '超过一万亿年(比宇宙的年龄还长得多)';
+  const sec=Math.pow(10,s);
+  if(sec<60)return '约 '+fmtNum(sec)+' 秒';
+  if(sec<3600)return '约 '+fmtNum(sec/60)+' 分钟';
+  if(sec<86400)return '约 '+fmtNum(sec/3600)+' 小时';
+  const day=sec/86400;
+  if(day<365)return '约 '+fmtNum(day)+' 天';
+  const yr=day/365;
+  if(yr<1e4)return '约 '+fmtNum(yr)+' 年';
+  if(yr<1e8)return '约 '+fmtNum(yr/1e4)+' 万年';
+  return '约 '+fmtNum(yr/1e8)+' 亿年';
+}
+function updatePw(changed){
+  const len=+$('pwLen').value, f=pwFlags(), cs=charsetSize(f);
+  const rate=RATES[+$('pwRate').value];
+  $('lenOut').textContent=len+' 位';
+  $('rateOut').textContent=rate.name+'('+rate.desc+')';
+  if(cs===0){
+    $('pwBarI').style.width='0%';
+    $('pwLevel').textContent='❓ 一种字符都没选';
+    $('pwLevel').style.color='#e5484d';
+    $('pwFacts').innerHTML='字符种类:<b>0 种</b> —— 没有字符,连密码都拼不出来!';
+    $('whyPw').innerHTML='💬 至少要勾选一种字符,密码才存在哦。';
+    return;
+  }
+  const lg=len*Math.log10(cs);
+  const lv=pwLevel(lg);
+  $('pwBarI').style.width=Math.min(100,lg/18*100)+'%';
+  $('pwBarI').style.background=lv.c;
+  $('pwLevel').textContent=lv.t;
+  $('pwLevel').style.color=lv.c;
+  $('pwFacts').innerHTML=`字符种类:<b>${cs} 种</b> | 坏人最多要猜:<b>${guessText(lg)}</b><br>用「${rate.name}」破解需要:<b>${crackTimeText(lg,rate.lg)}</b>`;
+  const whyMap={
+    '长度':`现在密码有 <b>${len} 位</b>。每加长 1 位,要猜的次数就乘上 ${cs} 倍(字符种类数)——<b>长度是密码最厉害的护甲</b>!`,
+    '字符种类':`现在可用字符共 <b>${cs} 种</b>。种类越多,每一位的可能性越多,猜测次数按"${cs} 的 ${len} 次方"猛涨。`,
+    '猜测速度':`换成了「${rate.name}」(${rate.desc})。机器越快破解越快,所以密码要留足"安全余量",别指望坏人的电脑很慢。`,
+  };
+  $('whyPw').innerHTML='💬 '+(whyMap[changed]||whyMap['长度']);
+  if(lg>stats.bestLg)stats.bestLg=lg;
+  if(lg>=15&&!progress.pwd){
+    progress.pwd=true; setBadge(2);
+    fb('fbPw','ok','🎉 你拼出了「🛡 坚固堡垒」级密码!记住配方:<b>够长(10 位以上)+ 大小写、数字、符号混着用</b>。');
+    addLog('②强密码','拼出坚固堡垒级密码','长度'+len+'位/'+cs+'种字符');
+  }
+}
+function loadWeakExample(){
+  $('pwLen').value=6; $('ckLow').checked=false; $('ckUp').checked=false;
+  $('ckDig').checked=true; $('ckSym').checked=false;
+  updatePw('字符种类');
+  fb('fbPw','bad','📖 这就是"123456"的配置:6 位、只有数字。更糟的是,它还是<b>最常见密码</b>——坏人第 1 个就试它,连 1 秒都撑不住!现在把长度和字符种类加上去,看看变化。');
+  addLog('②强密码','查看弱密码示例','123456 配置');
+}
+function measurePw(pw){
+  const f={low:/[a-z]/.test(pw),up:/[A-Z]/.test(pw),dig:/\d/.test(pw),sym:/[^a-zA-Z0-9]/.test(pw)};
+  const cs=charsetSize(f);
+  return{len:pw.length,cs,lg:cs?pw.length*Math.log10(cs):0,kinds:(f.low?1:0)+(f.up?1:0)+(f.dig?1:0)+(f.sym?1:0),f};
+}
+const COMMON_PW=['123456','12345678','123456789','111111','000000','123123','654321','abc123','password','qwerty','88888888','666666','a123456','woaini','iloveyou','1234567'];
+function analyzePw(){
+  const pw=$('pwInput').value.trim();
+  if(!pw){fb('fbCheck','info','💡 先在上面输入一个<b>编造的</b>虚构密码,再点「体检」。');return;}
+  if(COMMON_PW.includes(pw.toLowerCase())){
+    fb('fbCheck','bad','🚨 体检结果:<b>极弱!</b>这是坏人手里"常见密码字典"的头几名,试都不用猜就中了。换一个别人想不到的组合吧!');
+    addLog('②强密码','密码体检','常见密码,极弱');
+    return;
+  }
+  const m=measurePw(pw), lv=pwLevel(m.lg), rate=RATES[+$('pwRate').value];
+  const tips=[];
+  if(m.len<10)tips.push('再加长一些(10 位以上更好)');
+  if(!m.f.up)tips.push('混入大写字母');
+  if(!m.f.low)tips.push('混入小写字母');
+  if(!m.f.dig)tips.push('混入数字');
+  if(!m.f.sym)tips.push('混入符号(如 !@#%)');
+  if(/(19|20)\d\d/.test(pw))tips.push('里面有像年份的数字,生日很容易被熟人猜到,换成无关的数字');
+  const head=`体检结果:<b style="color:${lv.c}">${lv.t}</b> | 长度 ${m.len} 位、${m.kinds} 类字符,用「${rate.name}」破解需要 <b>${crackTimeText(m.lg,rate.lg)}</b>。`;
+  if(lv.i>=3){
+    fb('fbCheck','ok','✅ '+head+(tips.length?'<br>还能更强:'+tips.join(';')+'。':' 非常棒的配方!'));
+    if(m.lg>stats.bestLg)stats.bestLg=m.lg;
+    if(m.lg>=15&&!progress.pwd){progress.pwd=true;setBadge(2);}
+  }else{
+    fb('fbCheck','bad','🤔 '+head+'<br>💡 改进建议:'+tips.join(';')+'。改完再来体检一次!');
+  }
+  addLog('②强密码','密码体检',lv.t+'(长度'+m.len+')');
+}
+function clearPwInput(){$('pwInput').value='';fb('fbCheck','info','已清空,编一个新的虚构密码试试吧!');}
+function comparePw(){
+  const rate=RATES[+$('pwRate').value];
+  const rows=['123456','Ll@2015#xye'].map(pw=>{
+    const m=measurePw(pw), lv=pwLevel(m.lg);
+    return `<div class="cmp-row"><code>${pw}</code>
+      <div class="pwbar"><i style="width:${Math.min(100,m.lg/18*100)}%;background:${lv.c}"></i></div>
+      <span style="font-weight:700;color:${lv.c};white-space:nowrap">${lv.t}</span></div>
+      <p style="font-size:13.5px;color:var(--ink-2);margin:0 0 8px">长度 ${m.len} 位、${m.kinds} 类字符 → 最多要猜 ${guessText(m.lg)},用「${rate.name}」破解需要 <b>${crackTimeText(m.lg,rate.lg)}</b></p>`;
+  }).join('');
+  $('cmpBox').innerHTML=`<div style="margin-top:10px">${rows}</div>
+    <div class="why">💬 同样是密码,"Ll@2015#xye"因为<b>更长(11 位)、混了 4 类字符</b>,破解难度是"123456"的天文数字倍。这就是教材提醒我们设置强密码的原因!(这两个都是教材示例,不要真的拿去用哦)</div>`;
+  addLog('②强密码','对比教材密码','123456 对比 Ll@2015#xye');
+}
+/* 加密小实验 */
+let lastPlain='', lastCipher='';
+function encMsg(){
+  const v=$('encIn').value.trim()||'乐乐今天走了8000步';
+  lastPlain=v;
+  lastCipher=[...v].map(ch=>String.fromCharCode(ch.charCodeAt(0)+7)).join('');
+  $('encOut').textContent='🔒 密文:'+lastCipher;
+  $('whyEnc').innerHTML='💬 加密后,消息变成了别人看不懂的"乱码"。就算在不安全的公共无线网络里被偷看,坏人拿到的也只是废纸一张。教材说:<b>数据加密是从源头应对安全风险的首要措施</b>。';
+  addLog('②强密码','加密消息','消息已变成密文');
+}
+function decMsg(){
+  if(!lastCipher){fb('fbCheck','info','💡 先点「🔒 加密」生成密文,再来解密。');return;}
+  $('encOut').textContent='🔓 解密还原:'+lastPlain;
+  $('whyEnc').innerHTML='💬 只有拿着"钥匙"(密钥)的人才能把密文还原成原文。教材"拓展阅读"里还介绍了更神奇的<b>同态加密</b>:不用解开数据,就能对它进行加工处理,特别适合物联网的云计算!';
+  addLog('②强密码','解密消息','密文已还原');
+}
+
+/* ============================================================
+   模块三:权限管理模拟(数据最小化原则)
+============================================================ */
+const APPS=[
+  {name:'跳跳计步', ico:'👟',
+   desc:'核心功能:记录乐乐每天的步数,画出一周步数柱状图。',
+   perms:[
+     {ico:'👟',name:'运动传感器(读取步数)',need:true, why:'不读步数就没法计步,这是完成核心功能必需的。'},
+     {ico:'❤️',name:'心率数据',need:false,why:'只是记步数、画图表,不需要知道乐乐的心跳。'},
+     {ico:'📍',name:'实时位置',need:false,why:'在家里走和在公园走,步数都一样——计步不需要位置。'},
+     {ico:'👥',name:'通讯录 / 好友列表',need:false,why:'柱状图自己看就行,不需要读乐乐的好友。'},
+     {ico:'📷',name:'相机',need:false,why:'计步和拍照没有关系。'},
+   ]},
+  {name:'家人守护', ico:'🧭',
+   desc:'核心功能:让家长在手机上看到乐乐的位置,并支持一键语音呼叫家长。(由家长安装)',
+   perms:[
+     {ico:'📍',name:'实时位置',need:true, why:'家长要能看到乐乐在哪里,这正是它的核心功能。'},
+     {ico:'📞',name:'亲情号码(家长电话)',need:true, why:'一键呼叫家长,必须知道打给谁。'},
+     {ico:'🎤',name:'麦克风',need:true, why:'语音通话要用麦克风,也是核心功能的一部分。'},
+     {ico:'❤️',name:'心率数据',need:false,why:'定位和呼叫都用不到心率。'},
+     {ico:'📷',name:'相机',need:false,why:'这款应用没有拍照功能,不需要相机。'},
+   ]},
+];
+let curApp=0;
+let permChoices=APPS.map(a=>a.perms.map(()=>null)); // null|'allow'|'deny'
+let permScored=[false,false];
+let permDone=[false,false];
+let permHintLv=0;
+
+function renderAppTabs(){
+  $('appTabs').innerHTML=APPS.map((a,i)=>
+    `<button class="${i===curApp?'on':''} ${permDone[i]?'solved':''}" onclick="openApp(${i})">${a.ico} ${a.name}</button>`).join('');
+}
+function openApp(i){curApp=i;renderAppTabs();renderPermList();fb('fbPerm','info',`已切换到「${APPS[i].name}」。先读核心功能,再逐项判断。`);}
+function renderPermList(){
+  const a=APPS[curApp];
+  $('appDesc').innerHTML=`<b>${a.ico} ${a.name}</b> 申请安装 —— ${a.desc}`;
+  $('permList').innerHTML=a.perms.map((p,i)=>{
+    const ch=permChoices[curApp][i];
+    let res='';
+    if(permScored[curApp]&&ch){
+      const ok=(ch==='allow')===p.need;
+      res=`<span class="pres" style="color:${ok?'var(--green-d)':'var(--red)'}">${ok?'✓ 判断正确':'✗ 再想想'}</span><div class="pwhy">💬 ${p.why}</div>`;
+    }
+    return `<div class="permrow">
+      <div class="pico">${p.ico}</div>
+      <div class="pinfo"><b>申请权限:${p.name}</b>${res}</div>
+      <div class="pbtns">
+        <button class="pbtn ${ch==='allow'?'on-allow':''}" onclick="pickPerm(${curApp},${i},'allow')">✅ 允许</button>
+        <button class="pbtn ${ch==='deny'?'on-deny':''}" onclick="pickPerm(${curApp},${i},'deny')">⛔ 拒绝</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function pickPerm(a,i,v){
+  permChoices[a][i]=v;
+  permScored[a]=false;
+  if(a===curApp)renderPermList();
+}
+function scorePerm(){
+  const a=APPS[curApp], chs=permChoices[curApp];
+  const blank=chs.filter(c=>!c).length;
+  if(blank){fb('fbPerm','bad',`还有 ${blank} 项权限没做选择呢,每一项都要当好守门员!`);return;}
+  let ok=0;
+  a.perms.forEach((p,i)=>{if((chs[i]==='allow')===p.need)ok++;});
+  permScored[curApp]=true; renderPermList();
+  addLog('③权限管理',a.name+' 提交评分',ok+'/5');
+  if(ok===a.perms.length){
+    if(!permDone[curApp])permDone[curApp]=true;
+    updateBadges(); renderAppTabs();
+    const both=permDone[0]&&permDone[1];
+    fb('fbPerm','ok',`🎉 ${a.name}:5/5 全对!你守住了<b>数据最小化原则</b>——只给完成功能必需的权限。`+
+      (both?'<br>🏆 两款应用都通过啦!注意到了吗:「实时位置」在计步应用里该拒绝,在家人守护里却是必需的——<b>该不该授权,要看功能是否需要,而不是看权限本身</b>。'
+      :'<br>再去另一款应用试试,你会发现同一个权限的答案可能不一样哦!'));
+  }else{
+    fb('fbPerm','bad',`🤔 判对了 ${ok}/5 项。看看标着 ✗ 的那几行下面的解释,想一想:<b>不给这个权限,核心功能还能完成吗?</b>调整后再提交。`);
+  }
+}
+function permHint(){
+  permHintLv=Math.min(permHintLv+1,3);
+  const hints=[
+    '提示①:先把应用的"核心功能"读两遍,再对每个权限问自己:不给它,核心功能还能完成吗?',
+    '提示②:能完成 → 这个权限就是多要的,应该拒绝;不能完成 → 才允许。这就是"数据最小化原则"。',
+    '提示③:「跳跳计步」只需要运动传感器这 1 项;「家人守护」需要实时位置、亲情号码、麦克风这 3 项,其余都该拒绝。'
+  ];
+  fb('fbPerm','info','💡 '+hints[permHintLv-1]);
+}
+function resetPerm(){
+  permChoices[curApp]=APPS[curApp].perms.map(()=>null);
+  permScored[curApp]=false;
+  renderPermList();
+  fb('fbPerm','info','已清空本应用的选择,重新判断一遍吧!');
+}
+
+/* ============================================================
+   模块四:情境判断 + 风险矩阵
+============================================================ */
+const SCEN=[
+  {ico:'🎁',title:'情境1:皮肤大礼包',text:'一个陌生网站弹出广告:"把你手表里的运动数据和好友列表上传给我们,就送你稀有游戏皮肤!"',
+   ans:2, like:2, harm:2,
+   why:'陌生网站用小恩小惠换数据,拿到后可能拿去售卖或做坏事。天上不会掉馅饼,坚决拒绝并关闭页面!'},
+  {ico:'🏥',title:'情境2:医生想看心率',text:'乐乐去医院体检,医生说:"把手表里这一个月的心率记录给我看看,能帮我判断你的身体情况。"',
+   ans:1, like:0, harm:0,
+   why:'医生是为了帮乐乐检查身体,但健康数据属于隐私,分享前应该先告诉家长,由家长陪着一起提供。'},
+  {ico:'🏫',title:'情境3:运动会统计步数',text:'班主任在班会上说:"大家把这周的步数报给体育委员,评选班级运动之星。"只要步数,不要其他数据。',
+   ans:0, like:0, harm:0,
+   why:'老师是可以信任的人,而且只要"步数"这一项低敏感数据——正符合数据最小化原则,可以分享。'},
+  {ico:'🕵️',title:'情境4:网友打听上学路线',text:'一个只在网上聊过、从没见过面的"网友"问乐乐:"你每天几点出门?走哪条路上学呀?"',
+   ans:2, like:2, harm:2,
+   why:'位置和行程是高敏感隐私,告诉陌生网友可能带来人身危险。必须坚决拒绝,并马上告诉家长!'},
+  {ico:'📲',title:'情境5:应用要家长手机号',text:'手表里一款应用更新后提示:"请填写家长手机号完成验证,才能继续使用。"',
+   ans:1, like:1, harm:1,
+   why:'家长手机号是家长的信息,填不填应该由家长自己决定。把手表拿给家长看看再说。'},
+  {ico:'🤝',title:'情境6:同学借账号密码',text:'好朋友说:"把你手表账号的密码告诉我呗,我登录进去看看你的新表盘!"',
+   ans:2, like:1, harm:2,
+   why:'密码就像家门钥匙,再好的朋友也不能给。账号被别人登录,里面所有数据都不再安全。可以当面把表盘展示给他看呀!'},
+];
+const SCEN_OPTS=['✅ 可以分享','👨‍👩‍👧 要先问家长','⛔ 坚决拒绝'];
+const LEVELS=['低','中','高'];
+let scenSolved=SCEN.map(()=>false);
+let scenWrong=SCEN.map(()=>0);
+
+function renderScen(){
+  $('scenList').innerHTML=SCEN.map((s,i)=>`
+    <div class="scen ${scenSolved[i]?'solved':''}" id="scen${i}">
+      <h4>${s.ico} ${s.title} ${scenSolved[i]?'✅':''}</h4>
+      <p class="stext">${s.text}</p>
+      ${SCEN_OPTS.map((o,j)=>`<button class="opt ${scenSolved[i]&&j===s.ans?'right':''}" id="sc${i}o${j}" onclick="pickScen(${i},${j})">${o}</button>`).join('')}
+      <div class="swhy">💬 ${s.why}</div>
+    </div>`).join('');
+}
+function pickScen(i,j){
+  const s=SCEN[i];
+  if(scenSolved[i]){fb('fbScen','info','这一题已经答对啦!💬 '+s.why);return;}
+  for(let k=0;k<3;k++){const b=$('sc'+i+'o'+k);if(b)b.classList.remove('right','wrong');}
+  if(j===s.ans){
+    scenSolved[i]=true;
+    const b=$('sc'+i+'o'+j);if(b)b.classList.add('right');
+    const el=$('scen'+i);if(el)el.classList.add('solved');
+    renderScen(); renderMatrix(); updateBadges();
+    const n=scenSolved.filter(Boolean).length;
+    fb('fbScen','ok',`🎉 答对了!${s.why}<br>它已落进风险矩阵(可能性:${LEVELS[s.like]},危害:${LEVELS[s.harm]})。已完成 ${n}/6。`+(n>=6?'<br>🏆 六个情境全部通过!快去下面看看完整的风险矩阵。':''));
+    addLog('④情境判断',s.title,'答对 ✅');
+  }else{
+    scenWrong[i]++;
+    const b=$('sc'+i+'o'+j);if(b)b.classList.add('wrong');
+    const hint=scenWrong[i]<2
+      ?'提示①:先想想<b>对方是谁</b>——认识吗?可以信任吗?'
+      :'提示②:再想想<b>这条数据敏感吗</b>?给出去最坏会发生什么?拿不准的事情,问家长永远不会错。';
+    fb('fbScen','bad','🤔 再想一想。'+hint);
+    addLog('④情境判断',s.title,'答错,提示第'+Math.min(scenWrong[i],2)+'层');
+  }
+}
+function renderMatrix(){
+  const cellBg=r=>r<=1?'#e7f9ef':(r===2?'#fff4dd':'#fdeaea');
+  let html='<div class="mhead">危害↓ 可能性→</div>'+[0,1,2].map(c=>`<div class="mhead">可能性 ${LEVELS[c]}</div>`).join('');
+  for(let h=2;h>=0;h--){
+    html+=`<div class="mhead">危害 ${LEVELS[h]}</div>`;
+    for(let c=0;c<3;c++){
+      const chips=SCEN.map((s,i)=>scenSolved[i]&&s.like===c&&s.harm===h?`<span class="mchip">${s.ico} 情境${i+1}</span>`:'').join('');
+      html+=`<div class="mcell" style="background:${cellBg(c+h)}">${chips}</div>`;
+    }
+  }
+  $('matrix').innerHTML=html;
+  const n=scenSolved.filter(Boolean).length;
+  $('whyMatrix').innerHTML=n===0
+    ?'💬 先去上面完成情境判断,矩阵会一格一格亮起来。'
+    :(n<6
+      ?`💬 已放入 ${n}/6 个情境。红色格子(右上方)=高风险,遇到要坚决拒绝;绿色格子=低风险,但也要遵守数据最小化原则。`
+      :'💬 完整结论:<b>换皮肤、网友打听路线</b>落在红色高风险区——坚决拒绝;<b>借密码</b>危害大也要拒绝;<b>要家长手机号</b>在中间——先问家长;<b>医生、老师</b>的合理请求风险低,但敏感数据仍要家长陪同、只给必需的部分。');
+}
+
+/* ============================================================
+   模块五:设备数据管理演练
+============================================================ */
+const DEV_ITEMS=[
+  {id:'d1',ico:'👟',name:'本周运动记录',size:12, tag:'keep',note:'最近还要看,建议保留'},
+  {id:'d2',ico:'📦',name:'三个月前的旧运动记录',size:64, tag:'junk',note:'早就用不到了'},
+  {id:'d3',ico:'🎙️',name:'语音留言缓存(30 条)',size:85, tag:'junk',note:'都听过了'},
+  {id:'d4',ico:'🎮',name:'不玩了的小游戏「测手速」',size:96, tag:'junk',note:'三个月没打开过'},
+  {id:'d5',ico:'📞',name:'亲情号码(家长电话)',size:1,  tag:'keep',note:'联系家长要用'},
+  {id:'d6',ico:'⚙️',name:'系统程序',size:180,tag:'sys', note:'手表运行必需'},
+];
+const DEV_CAP=512;
+let devAlive={}; DEV_ITEMS.forEach(it=>devAlive[it.id]=true);
+let devStage={viewed:false,cleaned:false,backed:false,reset:false};
+
+function devUsed(){return DEV_ITEMS.filter(it=>devAlive[it.id]).reduce((s,it)=>s+it.size,0);}
+function setScreen(ico,line1,line2){
+  $('wScreen').innerHTML=`<div class="wico">${ico}</div><div>${line1}</div>`+(line2?`<div style="font-size:12.5px;opacity:.75">${line2}</div>`:'');
+}
+function renderDevice(){
+  const used=devStage.reset?0:devUsed();
+  $('stoVal').textContent=used+'兆 / '+DEV_CAP+'兆';
+  const pct=Math.round(used/DEV_CAP*100);
+  $('stoBar').style.width=pct+'%';
+  $('stoBar').style.background=pct>80?'#e5484d':(pct>50?'#f59e0b':'#2eb872');
+  ['1','2','3','4'].forEach((n,i)=>{
+    const done=[devStage.viewed,devStage.cleaned,devStage.backed,devStage.reset][i];
+    $('stp'+n).classList.toggle('done',done);
+  });
+  if(!devStage.viewed){
+    $('devList').innerHTML='<p style="color:var(--ink-2);font-size:14px">(还没开机,先点「🔍 开机查看数据」)</p>';
+    return;
+  }
+  if(devStage.reset){
+    $('devList').innerHTML='<p style="color:var(--green-d);font-weight:700;font-size:14.5px">✨ 设备已恢复出厂,所有数据已清除。点「🔄 重新演练」可以再来一遍。</p>';
+    return;
+  }
+  const tagName={junk:'建议清理',keep:'建议保留',sys:'系统必需'};
+  $('devList').innerHTML=DEV_ITEMS.filter(it=>devAlive[it.id]).map(it=>`
+    <label class="ditem"><input type="checkbox" id="sel_${it.id}">
+      <span class="dico">${it.ico}</span>
+      <span class="dname">${it.name}<small>${it.size}兆 · ${it.note}</small></span>
+      <span class="dtag ${it.tag}">${tagName[it.tag]}</span>
+    </label>`).join('');
+}
+function devView(){
+  if(devStage.reset){fb('fbDev','info','设备已经恢复出厂,里面空空如也。点「🔄 重新演练」再来一遍。');return;}
+  devStage.viewed=true; renderDevice();
+  setScreen('📂','数据清单已打开','右边列出了手表里保存的全部数据');
+  $('whyDev').innerHTML='💬 第 1 步完成!<b>知道设备里存了什么,是管理数据的起点。</b>看看清单:有的建议清理,有的要保留,系统程序不能动。';
+  fb('fbDev','ok','✅ 开机成功!数据清单在右边。下一步:勾选<b>建议清理</b>的数据,点「🗑 删除勾选的数据」。');
+  addLog('⑤数据管理','开机查看数据','列出 '+DEV_ITEMS.filter(it=>devAlive[it.id]).length+' 项');
+}
+function devDelete(){
+  if(!devStage.viewed){fb('fbDev','bad','要先点「🔍 开机查看数据」,看清楚有什么,才能决定删什么。');return;}
+  if(devStage.reset){fb('fbDev','info','设备已恢复出厂,没有数据可删啦。');return;}
+  const sel=DEV_ITEMS.filter(it=>devAlive[it.id]&&$('sel_'+it.id)&&$('sel_'+it.id).checked);
+  if(sel.length===0){fb('fbDev','info','💡 先在清单里<b>勾选</b>要删除的数据,再点这个按钮。提示:标着"建议清理"的最适合删。');return;}
+  const msgs=[]; let freed=0;
+  sel.forEach(it=>{
+    if(it.tag==='sys'){msgs.push(`⛔ 「${it.name}」是系统必需程序,不能删除,不然手表就变"砖头"啦!`);return;}
+    devAlive[it.id]=false; freed+=it.size;
+    if(it.tag==='keep')msgs.push(`⚠️ 「${it.name}」本来建议保留哦(演练里没关系,点「🔄 重新演练」能找回来)。`);
+    else msgs.push(`✅ 已删除「${it.name}」,腾出 ${it.size}兆。`);
+  });
+  const junkLeft=DEV_ITEMS.filter(it=>devAlive[it.id]&&it.tag==='junk').length;
+  if(junkLeft===0&&!devStage.cleaned){
+    devStage.cleaned=true;
+    msgs.push('🎉 <b>第 2 步完成!</b>不需要的数据全部清理干净。数据越少,泄露的风险就越小。下一步:点「💾 加密备份重要数据」。');
+  }else if(junkLeft>0){
+    msgs.push(`还有 ${junkLeft} 项"建议清理"的数据没删,继续加油!`);
+  }
+  renderDevice();
+  setScreen('🗑','已释放 '+freed+'兆 空间','存储条变短了,快看左边');
+  $('whyDev').innerHTML='💬 <b>定期删除不需要的数据</b>,既省空间,又减少隐私暴露面——存得越少,丢得越少。';
+  fb('fbDev',junkLeft===0?'ok':'info',msgs.join('<br>'));
+  addLog('⑤数据管理','删除数据','释放 '+freed+'兆');
+}
+function devBackup(){
+  if(!devStage.viewed){fb('fbDev','bad','要先点「🔍 开机查看数据」,知道有什么重要数据,才谈得上备份。');return;}
+  if(devStage.reset){fb('fbDev','info','设备已恢复出厂。点「🔄 重新演练」再练一遍完整流程。');return;}
+  devStage.backed=true; renderDevice();
+  setScreen('🔒','加密备份完成','重要数据已加密存到家里的电脑');
+  $('whyDev').innerHTML='💬 <b>第 3 步完成!</b>教材提醒:对重要数据要<b>备份并加密处理</b>。备份防止"删错了哭都来不及",加密防止备份文件本身被偷看。';
+  fb('fbDev','ok','✅ 「本周运动记录」「亲情号码」已<b>加密备份</b>。现在可以放心进行最后一步:点「⚠️ 恢复出厂设置」。');
+  addLog('⑤数据管理','加密备份','重要数据已备份');
+}
+function devReset(){
+  if(!devStage.viewed){fb('fbDev','bad','别急!先按顺序来:第 1 步是「🔍 开机查看数据」。');return;}
+  if(devStage.reset){fb('fbDev','info','已经是出厂状态啦。点「🔄 重新演练」再来一遍。');return;}
+  if(!devStage.backed){fb('fbDev','bad','🚨 等一下!还没做第 3 步<b>加密备份</b>。直接恢复出厂,重要数据就永远消失了!先点「💾 加密备份重要数据」。');return;}
+  if(!confirm('确定要恢复出厂设置吗?手表里的所有数据都会被清除(这只是演练,可以重来)。'))return;
+  devStage.reset=true;
+  DEV_ITEMS.forEach(it=>devAlive[it.id]=false);
+  renderDevice();
+  setScreen('✨','全新设备','所有数据已清除,可以放心送人');
+  $('whyDev').innerHTML='💬 <b>第 4 步完成!</b>设备送人、转卖或送修之前恢复出厂,能防止你的数据被下一个使用者读到。这就是一次完整的<b>设备数据安全管理</b>!';
+  if(!progress.device){progress.device=true;setBadge(5);}
+  fb('fbDev','ok','🏆 四步全部完成:查看 → 清理 → 加密备份 → 恢复出厂。你已经学会管理设备数据啦!可以点「🔄 重新演练」巩固一遍。');
+  addLog('⑤数据管理','恢复出厂设置','演练完成 ✅');
+}
+function devRestart(){
+  DEV_ITEMS.forEach(it=>devAlive[it.id]=true);
+  devStage={viewed:false,cleaned:false,backed:false,reset:false};
+  renderDevice();
+  setScreen('⌚','乐乐的手表','点「开机查看数据」开始');
+  $('whyDev').innerHTML='💬 演练已重置,数据全部恢复。再走一遍:查看 → 清理 → 备份 → 恢复出厂。';
+  fb('fbDev','info','🔄 已重新开始,试试不看提示独立完成四步!');
+  addLog('⑤数据管理','重新演练','数据已恢复');
+}
+
+/* ============================================================
+   模块六:安全协议 + 实验记录 + 本机数据
+============================================================ */
+const PACTS=[
+  '我会给设备和账号设置又长又混合的强密码,不用"123456"、生日和电话号码。',
+  '不同账号尽量不用同一个密码;密码不告诉同学和网友,包括最好的朋友。',
+  '我不用来路不明的免费公共无线网络传输重要信息。',
+  '我只从正规应用商店安装应用,不乱点陌生链接和弹窗广告。',
+  '给应用授权时,只允许完成功能必需的权限(数据最小化原则)。',
+  '陌生人或陌生网站索要我的数据时,我坚决拒绝,并告诉家长或老师。',
+  '我会定期查看、清理设备里不需要的数据。',
+  '删除数据或恢复出厂前,先把重要数据加密备份;拿不准的事情先问家长或老师。',
+];
+function renderPact(){
+  $('pactList').innerHTML=PACTS.map((p,i)=>`
+    <label class="pact-item" id="pi${i}"><input type="checkbox" id="pk${i}" onchange="pactChanged(${i})"><span>${p}</span></label>`).join('');
+}
+function pactChanged(i){
+  const el=$('pi'+i);if(el)el.classList.toggle('on',$('pk'+i).checked);
+}
+function pactCheckedCount(){let n=0;for(let i=0;i<PACTS.length;i++){if($('pk'+i)&&$('pk'+i).checked)n++;}return n;}
+function pactHTML(){
+  const nick=($('nickname').value.trim()||'小小安全员');
+  const items=PACTS.filter((_,i)=>$('pk'+i)&&$('pk'+i).checked).map(p=>`<li>${p}</li>`).join('');
+  const extra=$('pactExtra').value.trim();
+  const d=new Date();
+  return `<div style="font-family:sans-serif;max-width:720px;margin:auto;border:4px double #6d3fd4;border-radius:16px;padding:28px">
+  <h1 style="color:#6d3fd4;text-align:center">🔐 我的智能设备安全协议</h1>
+  <p style="text-align:center;color:#5c6b86">清华版《信息科技》五年级下册 · 第1单元 第4课 | 签署日期:${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日</p>
+  <p>我,<b>${nick}</b>,在完成"智能设备隐私安全检查器"的全部实验后,郑重承诺:</p>
+  <ol>${items||'<li>(还没有勾选承诺)</li>'}</ol>
+  ${extra?`<h3>我补充的安全好点子</h3><p>${extra.replace(/\n/g,'<br>')}</p>`:''}
+  <h3>我学到的三大应对策略</h3>
+  <p>① 加强数据加密技术;② 优化设备自身系统及应用;③ 增强用户信息安全意识。</p>
+  <p style="text-align:right;margin-top:24px">签名:<b>${nick}</b> ✍️</p></div>`;
+}
+function genPact(){
+  const n=pactCheckedCount();
+  if(n<5){
+    fb('fbPact','bad',`目前勾选了 ${n} 条承诺,再选几条吧(至少 5 条)——每一条都是保护自己的盾牌!`);
+  }else{
+    fb('fbPact','ok','✅ 协议已生成!检查一下预览,满意就点「导出协议」保存到电脑,还可以打印出来贴在书桌前。');
+    if(!progress.pact){progress.pact=true;setBadge(6);}
+  }
+  $('pactPreview').innerHTML='<div class="card" style="margin-top:12px">'+pactHTML()+'</div>';
+  refreshStats6();
+  addLog('⑥安全协议','生成协议预览','勾选 '+n+' 条承诺');
+}
+function exportPact(){
+  downloadFile('我的智能设备安全协议.html',
+    '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>我的智能设备安全协议</title></head><body>'+pactHTML()+'</body></html>','text/html');
+  addLog('⑥安全协议','导出协议','已下载网页文件');
+}
+function renderLog(){
+  $('logCount').textContent=logRows.length;
+  $('logBody').innerHTML=logRows.length?logRows.slice().reverse().map(r=>
+    `<tr><td>${r.time}</td><td>${r.mod}</td><td style="text-align:left">${r.action}</td><td>${r.result}</td></tr>`).join('')
+    :'<tr><td colspan="4" style="color:#5c6b86">暂无记录</td></tr>';
+}
+function exportLog(){
+  const head='时间,模块,操作,结果\n';
+  const body=logRows.map(r=>[r.time,r.mod,r.action,r.result].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  downloadFile('智能设备安全实验记录.csv','\ufeff'+head+body,'text/csv');
+}
+function clearLog(){logRows=[];renderLog();}
+function refreshStats6(){
+  const done=(progress.sort?1:0)+(progress.pwd?1:0)+((permDone[0]&&permDone[1])?1:0)
+    +(scenSolved.filter(Boolean).length>=6?1:0)+(progress.device?1:0)+(progress.pact?1:0);
+  $('st_mod').textContent=done+'/6';
+  $('st_pw').textContent=stats.bestLg>0?pwLevel(stats.bestLg).t:'—';
+  $('st_scen').textContent=scenSolved.filter(Boolean).length+'/6';
+}
+function updateBadges(){
+  if(progress.sort)setBadge(1);
+  if(progress.pwd)setBadge(2);
+  $('bgPerm').textContent=permDone.filter(Boolean).length;
+  if(permDone[0]&&permDone[1])setBadge(3);
+  const n=scenSolved.filter(Boolean).length;
+  $('bgShare').textContent=n;
+  if(n>=6)setBadge(4);
+  if(progress.device)setBadge(5);
+  if(progress.pact)setBadge(6);
+}
+
+/* ---- 本机数据管理 ---- */
+const LS_KEY='u1l4_privacy_lab';
+function projectData(){
+  return {ver:1,
+    placed, permChoices, permDone, scenSolved,
+    pact:PACTS.map((_,i)=>!!($('pk'+i)&&$('pk'+i).checked)),
+    nickname:$('nickname').value, extra:$('pactExtra').value,
+    params:{len:$('pwLen').value,low:$('ckLow').checked,up:$('ckUp').checked,dig:$('ckDig').checked,sym:$('ckSym').checked,rate:$('pwRate').value},
+    progress, stats, log:logRows.slice(-150)};
+}
+function applyProject(d){
+  try{
+    if(d.placed)placed=d.placed;
+    if(Array.isArray(d.permChoices))permChoices=d.permChoices;
+    if(Array.isArray(d.permDone))permDone=d.permDone;
+    if(Array.isArray(d.scenSolved))scenSolved=d.scenSolved;
+    if(Array.isArray(d.pact))d.pact.forEach((v,i)=>{if($('pk'+i)){$('pk'+i).checked=!!v;pactChanged(i);}});
+    if(typeof d.nickname==='string')$('nickname').value=d.nickname;
+    if(typeof d.extra==='string')$('pactExtra').value=d.extra;
+    if(d.params){
+      $('pwLen').value=d.params.len; $('pwRate').value=d.params.rate;
+      $('ckLow').checked=!!d.params.low; $('ckUp').checked=!!d.params.up;
+      $('ckDig').checked=!!d.params.dig; $('ckSym').checked=!!d.params.sym;
+    }
+    if(d.progress)Object.assign(progress,d.progress);
+    if(d.stats)Object.assign(stats,d.stats);
+    if(Array.isArray(d.log))logRows=d.log;
+    renderSort(); renderAppTabs(); renderPermList(); renderScen(); renderMatrix();
+    updatePw('长度'); updateBadges(); refreshStats6(); renderLog();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('隐私安全检查器项目进度.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 项目导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的项目文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'), raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderSort(); renderAppTabs(); renderPermList(); renderScen(); renderMatrix();
+  renderDevice(); renderPact();
+  updatePw('长度');
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  updateBadges(); refreshStats6();
+})();
+</script>
+</body>
+</html>

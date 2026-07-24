@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能农场观察站 · 单元2第1课 认识智能种植——都市耕种新梦想</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6;
+    --bg:#eef8f0; --card:#ffffff; --ink:#20344b; --ink-2:#5b7186;
+    --line:#d5e6d9; --soft:#f1faf3;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#1e8f56,#2b7de9); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(20,100,60,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--green-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--green);}
+  nav button.on{background:var(--green); border-color:var(--green); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(30,110,60,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--green-d); border:2px solid var(--green);}
+  .btn.gray{background:#8aa0b5;}
+  .btn:disabled{background:#c4d2df; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#e8f1fd; border:1px solid var(--blue); color:var(--blue-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  /* ---------- 模块一:虚拟植物养成 ---------- */
+  .lab{display:grid; grid-template-columns:300px 1fr 300px; gap:14px;}
+  @media(max-width:1100px){.lab{grid-template-columns:1fr;}}
+  .pot-box{text-align:center;}
+  .sky{background:linear-gradient(#dff0ff,#f4fbff); border-radius:12px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center; font-size:15px; margin-bottom:4px;}
+  .sky #sunIco{font-size:34px; transition:.3s;}
+  .plant{font-size:66px; transition:.3s; display:block; margin:4px auto;}
+  .pot{width:132px; height:66px; margin:0 auto; background:linear-gradient(#b5651d,#8b4513); border-radius:0 0 34px 34px; border-top:8px solid #7a3c10; position:relative; overflow:hidden;}
+  .pot .wet{position:absolute; bottom:0; left:0; right:0; background:rgba(38,99,235,.5); transition:height .4s;}
+  .drops{height:26px; font-size:20px; color:var(--blue); visibility:hidden;}
+  .drops.on{visibility:visible; animation:drip .7s infinite;}
+  @keyframes drip{0%{transform:translateY(-6px); opacity:0;}50%{opacity:1;}100%{transform:translateY(8px); opacity:0;}}
+  .meter{margin:8px 0;}
+  .meter label{font-size:14px; color:var(--ink-2); display:flex; justify-content:space-between;}
+  .bar{height:18px; background:#e5f0e8; border-radius:9px; overflow:hidden; margin-top:3px;}
+  .bar i{display:block; height:100%; border-radius:9px; transition:width .4s, background .4s;}
+  .statebox{background:var(--soft); border-radius:10px; padding:8px 12px; margin-top:8px; font-size:14px; text-align:left;}
+  .statebox b{color:var(--green-d);}
+  .clock{font-size:15px; background:#20344b; color:#9fe3bd; font-weight:700; border-radius:10px; padding:6px 12px; display:inline-block; margin-bottom:6px; font-family:monospace;}
+  .why{background:#eef7ff; border-left:4px solid var(--blue); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  .evlist{max-height:170px; overflow:auto; font-size:13.5px; background:var(--soft); border-radius:10px; padding:8px 10px; margin-top:10px;}
+  .evlist div{padding:2px 0; border-bottom:1px dashed var(--line);}
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--blue-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--green); height:26px;}
+  .runbar{display:flex; flex-wrap:wrap; gap:4px; margin-top:12px;}
+  .range-tip{font-size:12.5px; color:var(--ink-2); margin-top:2px;}
+  /* ---------- 模块二:对照实验 ---------- */
+  .pick-row{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0;}
+  .pickbtn{border:2px solid var(--line); background:#fff; border-radius:12px; padding:10px 16px; font-size:15px; font-weight:700; cursor:pointer; transition:.15s;}
+  .pickbtn:hover{border-color:var(--blue);}
+  .pickbtn.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  .cpots{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px;}
+  @media(max-width:800px){.cpots{grid-template-columns:1fr;}}
+  .cpot{border:2px solid var(--line); border-radius:14px; padding:12px; text-align:center; background:var(--soft);}
+  .cpot h4{font-size:16px; margin-bottom:4px;}
+  .cpot .plant{font-size:54px;}
+  .cpot .pot{width:110px; height:56px;}
+  .envline{font-size:13.5px; color:var(--ink-2); margin:4px 0;}
+  .conclude{background:#f3ecff; border-left:4px solid var(--purple); padding:10px 12px; font-size:14.5px; margin-top:12px; border-radius:0 8px 8px 0; display:none;}
+  .conclude.show{display:block;}
+  /* ---------- 模块三:系统拼装 ---------- */
+  .pool{display:flex; flex-wrap:wrap; gap:10px; padding:12px; background:var(--soft); border-radius:12px; min-height:74px;}
+  .comp{border:2px solid var(--line); background:#fff; border-radius:12px; padding:10px 14px; font-size:15px; font-weight:700; cursor:pointer; user-select:none; transition:.15s; text-align:center;}
+  .comp .ico{font-size:26px; display:block;}
+  .comp:hover{border-color:var(--blue); transform:translateY(-2px);}
+  .comp.sel{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 3px #fde9c2;}
+  .house{border:3px solid #9dc8ab; border-radius:18px 18px 12px 12px; background:linear-gradient(#f5fdf7,#eef8f0); padding:12px; margin:10px 0;}
+  .house .roof{text-align:center; font-weight:700; color:var(--green-d); font-size:15px; margin-bottom:8px;}
+  .slotgrp{margin:8px 0;}
+  .slotgrp .gtitle{font-size:14px; font-weight:700; color:var(--ink-2); margin-bottom:4px;}
+  .slotrow{display:flex; gap:10px; flex-wrap:wrap;}
+  .slot{width:150px; min-height:84px; border:2.5px dashed #9db8d4; border-radius:12px; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; padding:6px; text-align:center; transition:.15s;}
+  .slot .hint{color:var(--ink-2); font-size:13px;}
+  .slot.filled{border-style:solid; border-color:var(--blue);}
+  .slot.right{border-color:var(--green); background:#e7f9ef;}
+  .slot.wrong{border-color:var(--red); background:#fdeaea; animation:shake .3s;}
+  @keyframes shake{25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+  .chainrow{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px;}
+  .arrow{font-size:22px; color:var(--blue); font-weight:900;}
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{border:1px solid var(--line); padding:6px 8px; text-align:center;}
+  th{background:var(--soft);}
+  /* ---------- 模块四:需求匹配 ---------- */
+  .needrow{border:2px solid var(--line); border-radius:14px; padding:12px; margin:10px 0; background:#fff;}
+  .needrow.done{border-color:var(--green); background:#f2fcf6;}
+  .needhead{font-size:15.5px; margin-bottom:6px;}
+  .chipline{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:5px 0; font-size:14px; color:var(--ink-2);}
+  .chip{border:2px solid var(--line); background:#fff; border-radius:20px; padding:6px 14px; font-size:14px; font-weight:700; cursor:pointer; transition:.15s;}
+  .chip:hover{border-color:var(--blue);}
+  .chip.sel{background:var(--blue); border-color:var(--blue); color:#fff;}
+  .rowres{border-radius:8px; padding:6px 10px; font-size:14px; margin-top:6px; display:none;}
+  .rowres.ok{display:block; background:#e7f9ef; color:var(--green-d);}
+  .rowres.bad{display:block; background:#fdeaea; color:#b3262b;}
+  /* ---------- 模块五:记录与报告 ---------- */
+  .logwrap{max-height:300px; overflow:auto; border-radius:10px; border:1px solid var(--line);}
+  textarea{width:100%; min-height:74px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  textarea:focus{outline:none; border-color:var(--green);}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:24px; color:var(--green-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  pre.saved{background:#20344b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌻 智能农场观察站</h1>
+  <p>清华版《信息科技》五年级下册 · 第2单元 第1课 认识智能种植——都市耕种新梦想(教材 P42—48)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 种出一朵花</span>
+    <span class="badge" id="bg2">② 对照实验</span>
+    <span class="badge" id="bg3">③ 大棚拼装</span>
+    <span class="badge" id="bg4">④ 需求匹配 <span id="bgMatch">0</span>/4</span>
+    <span class="badge" id="bg5">⑤ 种植报告</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">🌱 ① 植物养成实验</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">🔬 ② 对照实验台</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">🏗️ ③ 智能大棚拼装</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">🧩 ④ 需求配设备</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">📑 ⑤ 记录与报告</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:虚拟植物养成 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>🌱 任务一:当一回虚拟农场主</h2>
+    <div class="task"><b>任务A:</b>点「▶ 运行」让日子一天天过去,观察植物的变化。<br><b>任务B:</b>调节右边的 <b>光照、浇水量、温度</b> 三个环境条件,让小苗在 <b>20 天内开出向日葵</b>🌻!<br><b>任务C:</b>大胆"搞破坏":把水浇到最满、把光调到最暗,看看植物会发生什么,想想为什么。</div>
+    <div class="lab">
+      <!-- 左:虚拟花盆 -->
+      <div class="card pot-box" style="margin:0">
+        <h3>虚拟花盆</h3>
+        <div class="sky"><span id="sunIco">☀️</span><span id="tempIco">🌡️ 24℃</span></div>
+        <div class="drops" id="drops">💦 💦 💦</div>
+        <span class="plant" id="plant">🌱</span>
+        <div class="pot"><div class="wet" id="potWet" style="height:50%"></div></div>
+        <div class="meter"><label><span>土壤水分</span><span id="soilVal">50%</span></label>
+          <div class="bar"><i id="soilBar" style="width:50%; background:#2eb872"></i></div></div>
+        <div class="meter"><label><span>健康度</span><span id="hpVal">100</span></label>
+          <div class="bar"><i id="hpBar" style="width:100%; background:#2eb872"></i></div></div>
+        <div class="meter"><label><span>成长值(100 开花)</span><span id="growVal">0</span></label>
+          <div class="bar"><i id="growBar" style="width:0%; background:#2b7de9"></i></div></div>
+        <div class="statebox" id="plantState">植物状态:🌱 刚发芽的小苗</div>
+      </div>
+      <!-- 中:观察窗 -->
+      <div class="card" style="margin:0">
+        <h3>观察窗(看得见的生长过程)</h3>
+        <div class="clock" id="clock">第 1 天</div>
+        <div class="statebox" id="condBox">当前条件:—</div>
+        <div class="why" id="why">💬 点「▶ 运行」开始种植。植物每天都会根据 光照、水分、温度 三个条件决定长得好不好。</div>
+        <h3 style="margin-top:10px">生长小事件</h3>
+        <div class="evlist" id="evlist"><div style="color:#5b7186">暂无事件</div></div>
+      </div>
+      <!-- 右:环境控制台 -->
+      <div class="card ctl" style="margin:0">
+        <h3>🎮 环境控制台</h3>
+        <div class="runbar">
+          <button class="btn green small" id="btnRun" onclick="toggleRun()">▶ 运行</button>
+          <button class="btn orange small" onclick="stepOnce()">⏭ 快进一天</button>
+          <button class="btn gray small" onclick="resetSim()">🔄 重新种一棵</button>
+          <button class="btn ghost small" onclick="loadExample()">📖 恢复教材示例</button>
+        </div>
+        <label><span>模拟速度</span><output id="spdOut">中</output></label>
+        <input type="range" id="spd" min="1" max="3" value="2" oninput="setSpeed()">
+        <hr style="border:none; border-top:1px dashed var(--line); margin:12px 0">
+        <label><span>☀️ 光照强度</span><output id="lightOut">75%</output></label>
+        <input type="range" id="pLight" min="0" max="100" step="5" value="75" oninput="paramChanged('light')">
+        <div class="range-tip">适宜区间:55%~90%(向日葵是喜欢阳光的阳生植物)</div>
+        <label><span>💧 每天浇水量</span><output id="waterOut">45毫升</output></label>
+        <input type="range" id="pWater" min="0" max="100" step="5" value="45" oninput="paramChanged('water')">
+        <div class="range-tip">让土壤水分保持在 35%~75% 最合适</div>
+        <label><span>🌡️ 温度</span><output id="tempOut">24℃</output></label>
+        <input type="range" id="pTemp" min="0" max="40" step="1" value="24" oninput="paramChanged('temp')">
+        <div class="range-tip">适宜区间:16℃~30℃</div>
+        <div class="why" id="paramWhy" style="min-height:34px">💬 试着拖动滑块,这里会解释每个条件对植物的影响。</div>
+      </div>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+  <div class="card">
+    <h2>📖 为什么要盯着这三个条件?</h2>
+    <p>教材告诉我们:植物的生长受环境中<b>温度、湿度、光照强度、空气成分、土壤水分含量</b>等影响。种植需要人们了解植物的生长规律(比如它是阴生植物还是阳生植物),并对光线强度、温度等进行控制与调节。<b>智能种植</b>就是把物联网远程控制技术和种植结合起来,让智能设备比人工更精准地完成这些调节。</p>
+    <p style="margin-top:6px"><span class="pill">环境监测</span><span class="pill">视频监控</span><span class="pill">远程控制</span><span class="pill">精准调节</span></p>
+  </div>
+</section>
+
+<!-- ================= 模块二:对照实验台 ================= -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>🔬 任务二:做一次科学的对照实验</h2>
+    <div class="task"><b>任务:</b>科学家想知道某个条件重不重要,会准备两盆一样的植物,<b>只改变一个条件</b>,其他条件完全相同——这叫<b>对照实验</b>。请选一个要改变的条件和乙盆的程度,快进 10 天,看看两盆植物的差别,然后换别的条件再试!</div>
+    <h3>第1步:选择两盆植物唯一不同的条件</h3>
+    <div class="pick-row">
+      <button class="pickbtn" id="cv_light" onclick="pickCVar('light',this)">☀️ 光照</button>
+      <button class="pickbtn" id="cv_water" onclick="pickCVar('water',this)">💧 水分</button>
+      <button class="pickbtn" id="cv_temp" onclick="pickCVar('temp',this)">🌡️ 温度</button>
+    </div>
+    <h3>第2步:乙盆的这个条件设成多少?(甲盆永远保持适宜)</h3>
+    <div class="pick-row">
+      <button class="pickbtn" id="cd_low" onclick="pickCDir('low',this)">⬇️ 过低</button>
+      <button class="pickbtn" id="cd_high" onclick="pickCDir('high',this)">⬆️ 过高</button>
+    </div>
+    <div style="margin-top:10px">
+      <button class="btn green" onclick="startContrast()">⏩ 开始对比(快进10天)</button>
+      <button class="btn gray" onclick="resetContrast()">🔄 重置实验台</button>
+    </div>
+    <div class="feedback" id="fbC"></div>
+    <div class="clock" id="cClock" style="margin-top:10px">实验未开始</div>
+    <div class="cpots">
+      <div class="cpot">
+        <h4>🅰️ 甲盆(所有条件适宜)</h4>
+        <span class="plant" id="cAplant">🌱</span>
+        <div class="pot"><div class="wet" id="cAwet" style="height:55%"></div></div>
+        <div class="envline" id="cAenv">条件:—</div>
+        <div class="meter"><label><span>成长值</span><span id="cAgrowV">0</span></label>
+          <div class="bar"><i id="cAgrow" style="width:0%; background:#2b7de9"></i></div></div>
+        <div class="meter"><label><span>健康度</span><span id="cAhpV">100</span></label>
+          <div class="bar"><i id="cAhp" style="width:100%; background:#2eb872"></i></div></div>
+        <div class="envline" id="cAstate">等待开始…</div>
+      </div>
+      <div class="cpot">
+        <h4>🅱️ 乙盆(只有一个条件不同)</h4>
+        <span class="plant" id="cBplant">🌱</span>
+        <div class="pot"><div class="wet" id="cBwet" style="height:55%"></div></div>
+        <div class="envline" id="cBenv">条件:—</div>
+        <div class="meter"><label><span>成长值</span><span id="cBgrowV">0</span></label>
+          <div class="bar"><i id="cBgrow" style="width:0%; background:#2b7de9"></i></div></div>
+        <div class="meter"><label><span>健康度</span><span id="cBhpV">100</span></label>
+          <div class="bar"><i id="cBhp" style="width:100%; background:#2eb872"></i></div></div>
+        <div class="envline" id="cBstate">等待开始…</div>
+      </div>
+    </div>
+    <div class="conclude" id="cConclude"></div>
+  </div>
+  <div class="card">
+    <h2>📖 为什么"只改一个条件"?</h2>
+    <p>如果两盆植物同时改了光照和水分,乙盆长坏了,我们就说不清到底是<b>缺光</b>造成的,还是<b>缺水</b>造成的。只改一个条件,差别才能"怪"到这个条件头上——这就是对照实验的秘密。智能大棚里的每一种传感器,监测的正是这样一个个影响植物生长的条件。</p>
+  </div>
+</section>
+
+<!-- ================= 模块三:智能大棚拼装 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>🏗️ 任务三:拼装一座智能大棚</h2>
+    <div class="task"><b>任务:</b>智能大棚需要"眼睛"(传感器)、"手"(调节设备)和"信息通道"(网络、平台、手机)。请<b>先点击下方零件仓库里的零件选中它</b>,再<b>点击大棚里对应的空位</b>放进去。放错了?再点一下空位就能取回来。注意:有 2 个零件是多余的干扰项!</div>
+    <div class="house">
+      <div class="roof">🏠 智能大棚内部</div>
+      <div class="slotgrp">
+        <div class="gtitle">👀 感知环节——大棚的"眼睛",随时监测环境</div>
+        <div class="slotrow">
+          <div class="slot" data-slot="sLight" onclick="slotClick(this)"><span class="hint">感知光线强弱</span></div>
+          <div class="slot" data-slot="sTemp" onclick="slotClick(this)"><span class="hint">感知空气冷热</span></div>
+          <div class="slot" data-slot="sSoil" onclick="slotClick(this)"><span class="hint">感知土壤干湿</span></div>
+          <div class="slot" data-slot="cam" onclick="slotClick(this)"><span class="hint">拍下植物画面<br>供远程查看</span></div>
+        </div>
+      </div>
+      <div class="slotgrp">
+        <div class="gtitle">🦾 调节环节——大棚的"手",自动改善环境</div>
+        <div class="slotrow">
+          <div class="slot" data-slot="lamp" onclick="slotClick(this)"><span class="hint">光线不足时<br>给植物补光</span></div>
+          <div class="slot" data-slot="fan" onclick="slotClick(this)"><span class="hint">太热时<br>通风降温</span></div>
+          <div class="slot" data-slot="pump" onclick="slotClick(this)"><span class="hint">土壤干了<br>自动浇水</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="slotgrp">
+      <div class="gtitle">📡 信息通道——大棚里的信息传到你手上</div>
+      <div class="chainrow">
+        <span class="pill" style="font-size:14px">大棚里的传感器和摄像头</span>
+        <span class="arrow">→</span>
+        <div class="slot" data-slot="net" onclick="slotClick(this)"><span class="hint">信息的"高速公路"</span></div>
+        <span class="arrow">→</span>
+        <div class="slot" data-slot="cloud" onclick="slotClick(this)"><span class="hint">存储数据、显示画面<br>还能下发指令</span></div>
+        <span class="arrow">→</span>
+        <div class="slot" data-slot="phone" onclick="slotClick(this)"><span class="hint">在千里之外<br>查看与控制</span></div>
+      </div>
+    </div>
+    <h3>零件仓库</h3>
+    <div class="pool" id="pool"></div>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="checkTopo()">✅ 检查拼装</button>
+      <button class="btn ghost" onclick="topoHint()">💡 看提示</button>
+      <button class="btn gray" onclick="resetTopo()">🔄 重新拼装</button>
+    </div>
+    <div class="feedback" id="fbTopo"></div>
+  </div>
+  <div class="card">
+    <h2>⚖️ 传统种植 与 智能种植,差在哪?</h2>
+    <table>
+      <thead><tr><th>要做的事</th><th>🧑‍🌾 传统种植</th><th>🤖 智能种植</th></tr></thead>
+      <tbody>
+        <tr><td>知道土干不干</td><td>用手摸一摸、凭经验猜</td><td>土壤湿度传感器随时精准监测</td></tr>
+        <tr><td>查看植物长势</td><td>人跑到现场看</td><td>摄像头把画面传到云平台,手机随时看(视频监控)</td></tr>
+        <tr><td>浇水、补光、降温</td><td>人提水壶、开灯、开窗</td><td>水泵、补光灯、风扇自动或远程完成(远程控制)</td></tr>
+        <tr><td>环境不合适时</td><td>发现时可能已经晚了</td><td>传感器发出警报或自动执行解决方案(环境监测)</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:8px; font-size:14px; color:var(--ink-2)">教材里的<b>智能温室</b>就是这样调节温、光、水、肥、气的;<b>鱼菜共生开源系统</b>加上物联网技术后,也能实现远程精准控制。</p>
+  </div>
+</section>
+
+<!-- ================= 模块四:需求配设备 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>🧩 任务四:给每种植物配上合适的"智能装备"</h2>
+    <div class="task"><b>任务:</b>4 位"植物客户"提出了自己的种植需求(示例植物均为虚构设定)。请为每一位客户<b>各选 1 个传感器 + 1 个控制设备</b>。选完两个后会自动检查,配错了可以随时改!</div>
+    <div id="needList"></div>
+    <div class="feedback" id="fbMatch"></div>
+  </div>
+  <div class="card">
+    <h2>📖 传感器和控制设备是一对好搭档</h2>
+    <p>传感器负责<b>发现问题</b>(监测环境),控制设备负责<b>解决问题</b>(调节环境)。当环境不适合植物生长时,传感器便会发出警报或让系统执行解决方案,以维持植物生长的最佳环境——这正是教材里说的<b>环境监测</b>功能。配好了搭档,再借助网络,就能实现<b>远程控制</b>啦。</p>
+  </div>
+</section>
+
+<!-- ================= 模块五:记录与报告 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>📋 实验记录表</h2>
+    <div class="task"><b>说明:</b>观察站会自动记录你每一次调参、每一天的植物状态和每一次对照实验。这些记录只保存在你自己的电脑里,可以随时导出或清空。</div>
+    <div style="margin-bottom:10px">
+      <button class="btn small" onclick="renderLog()">🔄 刷新</button>
+      <button class="btn green small" onclick="exportCSV()">📥 导出记录(CSV)</button>
+      <button class="btn red small" onclick="clearLog()">🗑 清空记录</button>
+      <span class="pill">共 <b id="logCount">0</b> 条记录</span>
+    </div>
+    <div class="logwrap">
+      <table>
+        <thead><tr><th>模拟时间</th><th>类型</th><th>内容</th><th>光照</th><th>土壤水分</th><th>温度</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="6" style="color:#5b7186">暂无记录,去①号实验台种植物吧!</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>📑 任务五:生成我的种植报告</h2>
+    <div class="task"><b>任务:</b>下面的数据是观察站自动统计的,请把 4 个空填完整(就像教材"实践"里帮小清设计智能种植方案那样),然后点「生成报告」。</div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="sDays">0</b><span>累计观察天数</span></div>
+      <div class="stat"><b id="sFlower">0</b><span>开花的植物</span></div>
+      <div class="stat"><b id="sWither">0</b><span>枯萎的植物</span></div>
+      <div class="stat"><b id="sContrast">0</b><span>完成的对照实验</span></div>
+      <div class="stat"><b id="sParam">0</b><span>调整参数次数</span></div>
+      <div class="stat"><b id="sMatch">0/4</b><span>配对成功的需求</span></div>
+    </div>
+    <h3>1️⃣ 我的种植发现(光照、水分、温度是怎样影响植物的?)</h3>
+    <textarea id="r1" placeholder="例:我把浇水量调到最大后,土壤水分超过了75%,植物很快烂根了。水不是越多越好,根也要呼吸。"></textarea>
+    <h3>2️⃣ 我设计的智能大棚:需要监测的环境</h3>
+    <textarea id="r2" placeholder="例:光照强度、温度、土壤水分含量。用光照传感器、温度传感器和土壤湿度传感器来监测。"></textarea>
+    <h3>3️⃣ 我设计的智能大棚:调节环境的设备</h3>
+    <textarea id="r3" placeholder="例:光不够时开补光灯;太热时开风扇;土壤太干时用水泵浇水。"></textarea>
+    <h3>4️⃣ 我设计的智能大棚:远程控制的功能</h3>
+    <textarea id="r4" placeholder="例:用手机随时查看摄像头画面和各种数值;设置定时浇水指令;环境不合适时手机收到警报。"></textarea>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genReport()">📄 生成报告预览</button>
+      <button class="btn" onclick="exportReport()">📥 导出报告(HTML文件)</button>
+    </div>
+    <div class="feedback" id="fbReport"></div>
+    <div id="reportPreview"></div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出项目(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入项目</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>智能农场观察站 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态与通用工具
+============================================================ */
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const progress={flower:false,contrast:false,topo:false,match:0,report:false};
+let logRows=[];   // {time,type,content,light,soil,temp}
+let stats={days:0,flowers:0,withered:0,contrasts:0,params:0};
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t5'){renderLog();refreshStats();}
+}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function fb(id,cls,html){const e=$(id);if(!e)return;e.className='feedback '+cls;e.innerHTML=html;}
+function addLog(type,content){
+  logRows.push({time:'第'+sim.day+'天',type,content,
+    light:$('pLight').value+'%',soil:Math.round(sim.soil)+'%',temp:$('pTemp').value+'℃'});
+  if(logRows.length>500)logRows.shift();
+}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ============================================================
+   共用生长规则(模块一与模块二都用它)
+   适宜区间:光照55~90,土壤水分35~75,温度16~30
+============================================================ */
+const ISSUE_TEXT={
+  lowLight:'☁️ 光照不足:光合作用变弱,植物制造的"养料"不够,叶子发黄、长得慢。',
+  highLight:'🔆 光照过强:水分蒸发太快,叶片容易被晒伤。',
+  dry:'🏜️ 土壤太干:根吸不到水,叶子发蔫,再不浇水就要枯萎了。',
+  wet:'🫧 水浇太多:土壤里的空气变少,根部"喘不过气",容易烂根!',
+  cold:'🥶 温度太低:植物"冻得发抖",生长几乎停止,可能被冻伤。',
+  hot:'🥵 温度太高:水分流失加快,植物容易脱水、打蔫。',
+};
+function issuesFor(light,soil,temp){
+  const arr=[];
+  if(light<55)arr.push('lowLight'); else if(light>90)arr.push('highLight');
+  if(soil<35)arr.push('dry'); else if(soil>75)arr.push('wet');
+  if(temp<16)arr.push('cold'); else if(temp>30)arr.push('hot');
+  return arr;
+}
+function severeCount(light,soil,temp){
+  let n=0;
+  if(soil>88||soil<12)n++;
+  if(temp<6||temp>36)n++;
+  if(light<10)n++;
+  return n;
+}
+// 对一盆植物执行"一天"的生长,直接修改 p:{soil,health,growth,flowered,withered}
+function growOneDay(p,light,soil,temp){
+  if(p.withered)return[];
+  const issues=issuesFor(light,soil,temp);
+  const severe=severeCount(light,soil,temp);
+  if(issues.length===0)p.health=clamp(p.health+7,0,100);
+  else p.health=clamp(p.health-6*issues.length-8*severe,0,100);
+  if(issues.length===0&&p.health>50)p.growth=clamp(p.growth+10,0,100);
+  else if(issues.length===1&&p.health>50)p.growth=clamp(p.growth+3,0,100);
+  if(p.growth>=100&&!p.flowered)p.flowered=true;
+  if(p.health<=0)p.withered=true;
+  return issues;
+}
+function plantEmoji(p){
+  if(p.withered)return'🥀';
+  if(p.flowered)return'🌻';
+  if(p.health<40)return'🍂';
+  if(p.growth<25)return'🌱';
+  if(p.growth<55)return'🌿';
+  if(p.growth<85)return'🪴';
+  return'🌾';
+}
+function plantStateText(p,issues){
+  if(p.withered)return['🥀 枯萎了…点「重新种一棵」再来!','#e5484d'];
+  if(p.flowered)return['🌻 开花啦!','#1e8f56'];
+  if(p.health<40)return['🍂 叶子发黄,很不舒服','#e5484d'];
+  if(issues.length)return['😟 有点不舒服,看看观察窗的解释','#f59e0b'];
+  if(p.growth<25)return['🌱 刚发芽的小苗','#2eb872'];
+  if(p.growth<55)return['🌿 茁壮成长中','#2eb872'];
+  if(p.growth<85)return['🪴 越长越结实','#2eb872'];
+  return['🌾 快要开花了,加油!','#2eb872'];
+}
+
+/* ============================================================
+   模块一:虚拟植物养成模拟引擎(1 步 = 1 天)
+============================================================ */
+const sim={running:false,day:1,soil:50,health:100,growth:0,flowered:false,withered:false,timer:null,speedMs:600};
+let evs=[];
+function addEvent(t){
+  evs.push('第'+sim.day+'天:'+t);
+  if(evs.length>40)evs.shift();
+  $('evlist').innerHTML=evs.slice(-8).reverse().map(x=>'<div>'+x+'</div>').join('')||'<div style="color:#5b7186">暂无事件</div>';
+}
+function setSpeed(){
+  const v=+$('spd').value;
+  $('spdOut').textContent={1:'慢',2:'中',3:'快'}[v];
+  sim.speedMs={1:1000,2:600,3:300}[v];
+  if(sim.running){clearInterval(sim.timer);sim.timer=setInterval(tickOnce,sim.speedMs);}
+}
+function toggleRun(){
+  sim.running=!sim.running;
+  $('btnRun').textContent=sim.running?'⏸ 暂停':'▶ 运行';
+  $('btnRun').className='btn small '+(sim.running?'orange':'green');
+  if(sim.running)sim.timer=setInterval(tickOnce,sim.speedMs);
+  else clearInterval(sim.timer);
+}
+function stepOnce(){if(sim.running)toggleRun();tickOnce();}
+function resetSim(){
+  if(sim.running)toggleRun();
+  Object.assign(sim,{day:1,soil:50,health:100,growth:0,flowered:false,withered:false});
+  evs=[]; $('evlist').innerHTML='<div style="color:#5b7186">暂无事件</div>';
+  setWhy('已重新种下一棵小苗。调好三个条件,点「▶ 运行」吧!');
+  addLog('系统','重新种下一棵小苗');
+  render();
+}
+function loadExample(){
+  resetSim();
+  $('pLight').value=75; $('pWater').value=45; $('pTemp').value=24;
+  syncOuts();
+  setWhy('📖 已恢复教材示例:向日葵是阳生植物,喜欢充足光照。当前 光照75%、每天浇水45毫升、温度24℃,都在适宜区间。点「▶ 运行」观察它茁壮成长!');
+  addLog('系统','恢复教材示例参数(光照75% 浇水45 温度24℃)');
+}
+function setWhy(t){$('why').innerHTML='💬 '+t;}
+function syncOuts(){
+  $('lightOut').textContent=$('pLight').value+'%';
+  $('waterOut').textContent=$('pWater').value+'毫升';
+  $('tempOut').textContent=$('pTemp').value+'℃';
+}
+function paramChanged(kind){
+  syncOuts(); stats.params++;
+  const l=+$('pLight').value,w=+$('pWater').value,t=+$('pTemp').value;
+  let msg='';
+  if(kind==='light'){
+    if(l<55)msg=`光照调到 ${l}%,不到适宜区间(55%~90%)。光是植物的"饭"——光合作用需要光,光太弱植物会长得慢、叶子发黄。`;
+    else if(l>90)msg=`光照调到 ${l}%,太强啦!就像人会晒伤一样,叶片可能被灼伤,土壤里的水也蒸发得更快。`;
+    else msg=`光照 ${l}%,正合适!植物可以开开心心地进行光合作用,制造生长需要的养料。`;
+    addLog('调参','光照强度改为 '+l+'%');
+  }
+  if(kind==='water'){
+    if(w<20)msg=`每天只浇 ${w} 毫升,土壤会越来越干。土壤水分低于 35% 时,根吸不到水,叶子就发蔫了。`;
+    else if(w>70)msg=`每天浇 ${w} 毫升,小心!水太多会把土壤里的空气挤走,根"喘不过气"就会烂根。水不是越多越好哦。`;
+    else msg=`每天浇 ${w} 毫升。注意观察土壤水分条:天气越热、光照越强,水分蒸发越快,需要的水也越多。`;
+    addLog('调参','每天浇水量改为 '+w+'毫升');
+  }
+  if(kind==='temp'){
+    if(t<16)msg=`温度调到 ${t}℃,太冷了!低于 16℃ 植物会"冻得发抖",生长几乎停止,严重时会被冻伤。`;
+    else if(t>30)msg=`温度调到 ${t}℃,太热了!水分流失加快,植物容易脱水打蔫,土壤也干得更快。`;
+    else msg=`温度 ${t}℃,正合适!温度还会影响蒸发:越热土壤里的水消耗得越快,浇水量要跟着调整。`;
+    addLog('调参','温度改为 '+t+'℃');
+  }
+  $('paramWhy').innerHTML='💬 '+msg;
+  render();
+}
+function tickOnce(){
+  if(sim.withered||sim.flowered){
+    render();
+    if(sim.withered)setWhy('这棵植物已经枯萎了🥀。点「🔄 重新种一棵」,吸取教训再试一次!');
+    return;
+  }
+  sim.day++; stats.days++;
+  const light=+$('pLight').value, water=+$('pWater').value, temp=+$('pTemp').value;
+  // 浇水补充水分,光照和温度加快蒸发
+  const evap=3+temp*0.18+light*0.06;
+  sim.soil=clamp(sim.soil+water*0.35-evap,0,100);
+  const wasFlowered=sim.flowered;
+  const issues=growOneDay(sim,light,sim.soil,temp);
+  if(sim.flowered&&!wasFlowered){
+    stats.flowers++;
+    if(!progress.flower){progress.flower=true; setBadge(1);}
+    fb('fb1','ok','🎉 恭喜!你的向日葵开花了!你已经体会到:种植需要把光照、水分、温度都控制在适宜范围——这正是智能大棚里传感器和调节设备每天在做的事。去「② 对照实验台」继续探索吧!');
+    addEvent('🌻 开花啦!'); addLog('里程碑','植物成功开花');
+  }
+  if(sim.withered){
+    stats.withered++;
+    const worst=issues[0]?ISSUE_TEXT[issues[0]]:'环境长期不适宜。';
+    setWhy('植物枯萎了…最主要的原因:'+worst+' 点「🔄 重新种一棵」再试!');
+    addEvent('🥀 植物枯萎了'); addLog('里程碑','植物枯萎');
+    fb('fb1','bad','🥀 别灰心!失败也是重要的实验结果。看看观察窗里的解释,想想哪个条件出了问题,调整后重新种一棵。');
+  }else if(issues.length){
+    setWhy(ISSUE_TEXT[issues[0]]+(issues.length>1?' (同时还有 '+(issues.length-1)+' 个条件不合适!)':''));
+    if(sim.day%3===0)addEvent('😟 '+ISSUE_TEXT[issues[0]].slice(0,14)+'…');
+  }else{
+    setWhy('✅ 三个条件都在适宜区间,植物健康度上升、成长值+10。光合作用顺利,养料满满!');
+    if(sim.day%4===0)addEvent('🌿 长势喜人,成长值 '+sim.growth);
+  }
+  if(sim.day%2===0)addLog('观察','植物状态:'+plantStateText(sim,issues)[0]+' 成长'+sim.growth+' 健康'+sim.health);
+  render();
+}
+function render(){
+  $('clock').textContent='第 '+sim.day+' 天';
+  const l=+$('pLight').value,t=+$('pTemp').value,w=+$('pWater').value;
+  const s=Math.round(sim.soil);
+  $('sunIco').textContent=l<15?'🌙':(l<55?'⛅':'☀️');
+  $('sunIco').style.opacity=String(0.45+l/180);
+  $('tempIco').textContent='🌡️ '+t+'℃';
+  $('drops').classList.toggle('on',w>=10&&sim.running);
+  $('soilVal').textContent=s+'%';
+  $('soilBar').style.width=s+'%';
+  $('soilBar').style.background=s<35?'#e5484d':(s<=75?'#2eb872':'#8b5cf6');
+  $('potWet').style.height=s+'%';
+  $('hpVal').textContent=sim.health;
+  $('hpBar').style.width=sim.health+'%';
+  $('hpBar').style.background=sim.health<40?'#e5484d':(sim.health<70?'#f59e0b':'#2eb872');
+  $('growVal').textContent=sim.growth;
+  $('growBar').style.width=sim.growth+'%';
+  $('plant').textContent=plantEmoji(sim);
+  const issues=issuesFor(l,sim.soil,t);
+  const st=plantStateText(sim,issues);
+  $('plantState').innerHTML='植物状态:<b style="color:'+st[1]+'">'+st[0]+'</b>';
+  $('condBox').innerHTML='当前条件:☀️ 光照 <b>'+l+'%</b> | 💧 土壤水分 <b>'+s+'%</b> | 🌡️ 温度 <b>'+t+'℃</b>'
+    +(issues.length?' <span style="color:#e5484d">(有 '+issues.length+' 项不适宜)</span>':' <span style="color:#1e8f56">(全部适宜✅)</span>');
+}
+
+/* ============================================================
+   模块二:对照实验台
+============================================================ */
+const CVARS={
+  light:{name:'光照',ico:'☀️',fit:'75%',low:{v:10,txt:'几乎无光(10%)'},high:{v:100,txt:'强光暴晒(100%)'},
+    lessonLow:'光照不足时,光合作用变弱,植物无法制造足够的养料,长得又慢又黄。',
+    lessonHigh:'光照过强时,水分蒸发太快,叶片容易被晒伤。'},
+  water:{name:'水分',ico:'💧',fit:'55%',low:{v:10,txt:'几乎不浇水(土壤水分10%)'},high:{v:95,txt:'天天泡在水里(土壤水分95%)'},
+    lessonLow:'缺水时根吸不到水,叶子发蔫,很快就枯萎了。',
+    lessonHigh:'水太多会把土壤里的空气挤走,根部呼吸不畅,容易烂根。'},
+  temp:{name:'温度',ico:'🌡️',fit:'24℃',low:{v:5,txt:'寒冷(5℃)'},high:{v:38,txt:'酷热(38℃)'},
+    lessonLow:'温度太低,植物受冻,生长几乎停止。',
+    lessonHigh:'温度太高,植物脱水,容易打蔫枯萎。'},
+};
+const FIT_ENV={light:75,soil:55,temp:24};
+let cSel={v:null,dir:null}, cRun=false, cTimer=null, cDay=0, cPots=null;
+function pickCVar(k,btn){
+  cSel.v=k;
+  ['cv_light','cv_water','cv_temp'].forEach(id=>$(id).classList.remove('on'));
+  btn.classList.add('on');
+  fb('fbC','info','💬 已选择改变【'+CVARS[k].name+'】。两盆植物的其他条件将完全相同,只有'+CVARS[k].name+'不同——这样差别才能"怪"到它头上。');
+}
+function pickCDir(d,btn){
+  cSel.dir=d;
+  ['cd_low','cd_high'].forEach(id=>$(id).classList.remove('on'));
+  btn.classList.add('on');
+  fb('fbC','info','💬 乙盆将设为【'+(d==='low'?'过低':'过高')+'】,甲盆保持适宜。点「⏩ 开始对比」!');
+}
+function newPot(){return{soil:55,health:100,growth:0,flowered:false,withered:false};}
+function potEnv(isB){
+  const env={light:FIT_ENV.light,soil:FIT_ENV.soil,temp:FIT_ENV.temp};
+  if(isB&&cSel.v&&cSel.dir){
+    const v=CVARS[cSel.v][cSel.dir].v;
+    if(cSel.v==='light')env.light=v;
+    if(cSel.v==='water')env.soil=v;
+    if(cSel.v==='temp')env.temp=v;
+  }
+  return env;
+}
+function startContrast(){
+  if(cRun){fb('fbC','info','实验正在进行中,请等它跑完 10 天~');return;}
+  if(!cSel.v||!cSel.dir){fb('fbC','bad','🌱 还差一步:先在第1步选一个要改变的条件,再在第2步选乙盆是"过低"还是"过高"。');return;}
+  cPots={A:newPot(),B:newPot()};
+  const envB=potEnv(true);
+  cPots.B.soil=envB.soil;
+  cDay=0; cRun=true;
+  $('cConclude').className='conclude';
+  fb('fbC','info','⏩ 实验开始!两盆植物同时生长,注意观察它们越来越大的差别…');
+  addLog('对照实验','开始:只改变'+CVARS[cSel.v].name+'('+CVARS[cSel.v][cSel.dir].txt+')');
+  renderContrast();
+  clearInterval(cTimer);
+  cTimer=setInterval(()=>{
+    cDay++;
+    const eA=potEnv(false), eB=potEnv(true);
+    growOneDay(cPots.A,eA.light,cPots.A.soil=eA.soil,eA.temp);
+    growOneDay(cPots.B,eB.light,cPots.B.soil=eB.soil,eB.temp);
+    renderContrast();
+    if(cDay>=10){clearInterval(cTimer);cRun=false;concludeContrast();}
+  },280);
+}
+function resetContrast(){
+  clearInterval(cTimer); cRun=false; cDay=0; cPots=null;
+  cSel={v:null,dir:null};
+  ['cv_light','cv_water','cv_temp','cd_low','cd_high'].forEach(id=>$(id).classList.remove('on'));
+  $('cClock').textContent='实验未开始';
+  $('cConclude').className='conclude';
+  ['A','B'].forEach(k=>{
+    $('c'+k+'plant').textContent='🌱';
+    $('c'+k+'wet').style.height='55%';
+    $('c'+k+'env').textContent='条件:—';
+    $('c'+k+'grow').style.width='0%'; $('c'+k+'growV').textContent='0';
+    $('c'+k+'hp').style.width='100%'; $('c'+k+'hpV').textContent='100';
+    $('c'+k+'state').textContent='等待开始…';
+  });
+  fb('fbC','info','实验台已重置。选择新的条件,再做一组对照实验吧!');
+}
+function envDesc(env){return '☀️'+env.light+'% 💧'+Math.round(env.soil)+'% 🌡️'+env.temp+'℃';}
+function renderContrast(){
+  if(!cPots)return;
+  $('cClock').textContent='对照实验:第 '+cDay+' / 10 天';
+  const list=[['A',cPots.A,potEnv(false)],['B',cPots.B,potEnv(true)]];
+  for(const[k,p,env]of list){
+    $('c'+k+'plant').textContent=plantEmoji(p);
+    $('c'+k+'wet').style.height=Math.round(p.soil)+'%';
+    $('c'+k+'env').textContent='条件:'+envDesc(env);
+    $('c'+k+'grow').style.width=p.growth+'%'; $('c'+k+'growV').textContent=p.growth;
+    $('c'+k+'hp').style.width=p.health+'%'; $('c'+k+'hpV').textContent=p.health;
+    const st=plantStateText(p,issuesFor(env.light,p.soil,env.temp));
+    $('c'+k+'state').textContent=st[0];
+  }
+}
+function potResult(p){
+  if(p.withered)return'枯萎了🥀';
+  if(p.flowered)return'开花了🌻';
+  return'成长值 '+p.growth+'、健康度 '+p.health;
+}
+function concludeContrast(){
+  stats.contrasts++;
+  const V=CVARS[cSel.v];
+  const lesson=cSel.dir==='low'?V.lessonLow:V.lessonHigh;
+  const html='📊 <b>对照实验结论(自动生成):</b>两盆植物只有【'+V.ico+V.name+'】一个条件不同。10 天后——'
+    +'🅰️ 甲盆('+V.name+'适宜 '+V.fit+'):'+potResult(cPots.A)+';'
+    +'🅱️ 乙盆('+V[cSel.dir].txt+'):'+potResult(cPots.B)+'。'
+    +'<br>💡 这说明:'+lesson
+    +'<br>🤖 所以智能大棚要用传感器随时监测'+V.name+',一旦不适宜,就自动用设备把它调回适宜范围。';
+  const box=$('cConclude'); box.innerHTML=html; box.className='conclude show';
+  addLog('对照实验','结束:甲盆'+potResult(cPots.A)+' / 乙盆'+potResult(cPots.B));
+  if(!progress.contrast){
+    progress.contrast=true; setBadge(2);
+    fb('fbC','ok','🎉 你完成了一次真正的对照实验!换一个条件(比如温度)再做一次,把结论都收集齐吧。结论会自动记进「⑤ 记录与报告」。');
+  }else{
+    fb('fbC','ok','✅ 又完成一组对照实验!比较不同条件的结论,你会发现每个条件都不可缺少。');
+  }
+  refreshStats();
+}
+
+/* ============================================================
+   模块三:智能大棚拼装(点击选择→点击放置)
+============================================================ */
+const PARTS=[
+  {k:'sLight',ico:'🔆',name:'光照传感器'},
+  {k:'sTemp',ico:'🌡️',name:'温度传感器'},
+  {k:'sSoil',ico:'💧',name:'土壤湿度传感器'},
+  {k:'cam',ico:'📷',name:'摄像头'},
+  {k:'lamp',ico:'💡',name:'补光灯'},
+  {k:'fan',ico:'🌀',name:'风扇'},
+  {k:'pump',ico:'🚿',name:'水泵'},
+  {k:'net',ico:'🌐',name:'无线网络'},
+  {k:'cloud',ico:'☁️',name:'管理平台(云)'},
+  {k:'phone',ico:'📱',name:'手机'},
+  {k:'printer',ico:'🖨️',name:'打印机'},
+  {k:'game',ico:'🎮',name:'游戏机'},
+];
+let selComp=null, topoHintLv=0;
+function renderPool(){
+  const pool=$('pool'); pool.innerHTML='';
+  const placed=[...document.querySelectorAll('.slot')].map(s=>s.dataset.has).filter(Boolean);
+  PARTS.filter(c=>!placed.includes(c.k)).sort(()=>Math.random()-.5).forEach(c=>{
+    const d=document.createElement('div'); d.className='comp'; d.dataset.k=c.k;
+    d.innerHTML='<span class="ico">'+c.ico+'</span>'+c.name;
+    d.onclick=()=>{document.querySelectorAll('.comp').forEach(x=>x.classList.remove('sel'));
+      if(selComp===c.k){selComp=null;}else{selComp=c.k;d.classList.add('sel');}};
+    pool.appendChild(d);
+  });
+}
+function slotClick(slot){
+  if(slot.dataset.has){ // 取回
+    slot.dataset.has=''; slot.className='slot';
+    slot.innerHTML='<span class="hint">'+slot.dataset.hint+'</span>';
+    renderPool(); return;
+  }
+  if(!selComp){fb('fbTopo','info','💡 先在下方"零件仓库"里点击选中一个零件,再点击空位放入。');return;}
+  const c=PARTS.find(x=>x.k===selComp);
+  if(!slot.dataset.hint)slot.dataset.hint=slot.querySelector('.hint').innerHTML;
+  slot.dataset.has=c.k; slot.classList.add('filled');
+  slot.innerHTML='<span style="font-size:26px">'+c.ico+'</span><b style="font-size:13px">'+c.name+'</b>';
+  selComp=null; renderPool();
+}
+function checkTopo(){
+  let allFilled=true, allRight=true, wrongNames=[];
+  document.querySelectorAll('.slot').forEach(s=>{
+    s.classList.remove('right','wrong');
+    if(!s.dataset.has){allFilled=false;return;}
+    if(s.dataset.has===s.dataset.slot){s.classList.add('right');}
+    else{s.classList.add('wrong');allRight=false;wrongNames.push(PARTS.find(c=>c.k===s.dataset.has).name);}
+  });
+  if(!allFilled){fb('fbTopo','bad','🌱 还有空位没放零件呢!提示:打印机和游戏机是干扰项,智能大棚用不上它们。');return;}
+  if(allRight){
+    fb('fbTopo','ok','🎉 太棒了!智能大棚拼装正确!信息的路线是:<b>传感器和摄像头采集信息 → 无线网络 → 管理平台 → 手机</b>;需要调节时,指令再沿反方向传回大棚,让补光灯、风扇、水泵动起来。下一课我们就要亲手实现其中的"浇花器"啦!');
+    progress.topo=true; setBadge(3);
+    addLog('拼装','智能大棚拼装正确');
+  }else{
+    fb('fbTopo','bad','🤔 有 '+wrongNames.length+' 个零件放错位置了(红色框):'+wrongNames.join('、')+'。想想每个位置的提示语,或点「💡 看提示」。');
+  }
+}
+function topoHint(){
+  topoHintLv=Math.min(topoHintLv+1,3);
+  const hints=[
+    '提示①:先把零件分成三组——"眼睛"(各种传感器和摄像头,负责感知)、"手"(补光灯、风扇、水泵,负责调节)、"信息通道"(网络、平台、手机)。',
+    '提示②:感知光线→🔆光照传感器;感知冷热→🌡️温度传感器;感知干湿→💧土壤湿度传感器;补光→💡补光灯;降温→🌀风扇;浇水→🚿水泵;拍画面→📷摄像头。',
+    '提示③:信息通道的顺序是:🌐无线网络 → ☁️管理平台(云) → 📱手机。🖨️打印机和🎮游戏机不属于智能大棚,留在仓库里!'
+  ];
+  fb('fbTopo','info','💡 '+hints[topoHintLv-1]);
+}
+function resetTopo(){
+  document.querySelectorAll('.slot').forEach(s=>{
+    if(s.dataset.hint){s.innerHTML='<span class="hint">'+s.dataset.hint+'</span>';}
+    s.dataset.has=''; s.className='slot';
+  });
+  selComp=null; topoHintLv=0; renderPool();
+  fb('fbTopo','info','已重置,重新开始拼装吧!');
+}
+
+/* ============================================================
+   模块四:需求—传感器与控制设备匹配
+============================================================ */
+const SENSORS=[
+  {k:'light',n:'光照传感器',ico:'🔆'},
+  {k:'temp',n:'温度传感器',ico:'🌡️'},
+  {k:'soil',n:'土壤湿度传感器',ico:'💧'},
+];
+const DEVICES=[
+  {k:'pump',n:'水泵',ico:'🚿'},
+  {k:'lamp',n:'补光灯',ico:'💡'},
+  {k:'fan',n:'风扇',ico:'🌀'},
+  {k:'heater',n:'暖风机',ico:'🔥'},
+];
+const NEEDS=[
+  {ico:'🪴',plant:'绿萝小姐',need:'我特别怕干,土壤一干叶子就发蔫!',sensor:'soil',device:'pump',
+   why:'土壤湿度传感器随时监测土壤干湿,发现太干,水泵马上自动浇水。'},
+  {ico:'🌻',plant:'向日葵先生',need:'我是阳生植物,需要充足的光照才能开花!',sensor:'light',device:'lamp',
+   why:'光照传感器发现光线不足,自动打开补光灯,保证光合作用顺利进行。'},
+  {ico:'🍅',plant:'小番茄妹妹',need:'我怕冷,温度低于15℃我就会被冻伤!',sensor:'temp',device:'heater',
+   why:'温度传感器监测冷热,太冷时自动打开暖风机升温,给小番茄"盖被子"。'},
+  {ico:'🍄',plant:'蘑菇伯伯',need:'我怕热怕闷,一热我就容易坏掉!',sensor:'temp',device:'fan',
+   why:'温度传感器发现太热,自动打开风扇通风降温。同样是温度传感器,搭配的设备可以不同哦。'},
+];
+const picks=NEEDS.map(()=>({s:null,d:null,ok:false}));
+function renderNeeds(){
+  $('needList').innerHTML=NEEDS.map((n,i)=>
+    '<div class="needrow" id="need'+i+'">'
+    +'<div class="needhead">'+n.ico+' <b>'+n.plant+'</b>:"'+n.need+'"</div>'
+    +'<div class="chipline">选传感器:'+SENSORS.map(s=>'<button class="chip" id="ns'+i+'_'+s.k+'" onclick="pickChip('+i+',\'s\',\''+s.k+'\')">'+s.ico+' '+s.n+'</button>').join('')+'</div>'
+    +'<div class="chipline">选控制设备:'+DEVICES.map(d=>'<button class="chip" id="nd'+i+'_'+d.k+'" onclick="pickChip('+i+',\'d\',\''+d.k+'\')">'+d.ico+' '+d.n+'</button>').join('')+'</div>'
+    +'<div class="rowres" id="nr'+i+'"></div></div>').join('');
+}
+function pickChip(i,kind,k){
+  picks[i][kind==='s'?'s':'d']=k;
+  SENSORS.forEach(s=>$('ns'+i+'_'+s.k).classList.toggle('sel',picks[i].s===s.k));
+  DEVICES.forEach(d=>$('nd'+i+'_'+d.k).classList.toggle('sel',picks[i].d===d.k));
+  if(picks[i].s&&picks[i].d)checkRow(i);
+}
+function checkRow(i){
+  const n=NEEDS[i],p=picks[i],el=$('nr'+i);
+  const ok=p.s===n.sensor&&p.d===n.device;
+  p.ok=ok;
+  $('need'+i).classList.toggle('done',ok);
+  if(ok){
+    el.className='rowres ok';
+    el.innerHTML='✅ 搭配正确!'+n.why;
+    addLog('匹配',n.plant+' 配对成功('+SENSORS.find(s=>s.k===n.sensor).n+'+'+DEVICES.find(d=>d.k===n.device).n+')');
+  }else{
+    el.className='rowres bad';
+    let msg='🤔 还差一点点!';
+    if(p.s!==n.sensor)msg+='先想想:这个需求最需要"感知"什么?是光线、冷热,还是土壤干湿?';
+    if(p.d!==n.device)msg+='再想想:发现问题后,用哪个设备"动手"解决最合适?';
+    el.innerHTML=msg+' 换个选择再试试~';
+  }
+  const done=picks.filter(x=>x.ok).length;
+  progress.match=done;
+  $('bgMatch').textContent=done;
+  if(done>=4){
+    setBadge(4);
+    fb('fbMatch','ok','🏆 四位植物客户全部配好装备!你已经掌握了智能种植的核心思路:<b>需求 → 传感器监测 → 设备调节</b>。别忘了把你的想法写进「⑤ 记录与报告」。');
+  }
+}
+
+/* ============================================================
+   模块五:记录、报告与本机数据
+============================================================ */
+function renderLog(){
+  $('logCount').textContent=logRows.length;
+  $('logBody').innerHTML=logRows.length?logRows.slice().reverse().map(r=>
+    '<tr><td>'+r.time+'</td><td>'+r.type+'</td><td style="text-align:left">'+r.content+'</td><td>'+r.light+'</td><td>'+r.soil+'</td><td>'+r.temp+'</td></tr>').join('')
+    :'<tr><td colspan="6" style="color:#5b7186">暂无记录</td></tr>';
+}
+function exportCSV(){
+  const head='模拟时间,类型,内容,光照,土壤水分,温度\n';
+  const body=logRows.map(r=>[r.time,r.type,r.content,r.light,r.soil,r.temp].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  downloadFile('智能农场实验记录.csv','\ufeff'+head+body,'text/csv');
+}
+function clearLog(){logRows=[];renderLog();}
+function refreshStats(){
+  $('sDays').textContent=stats.days;
+  $('sFlower').textContent=stats.flowers;
+  $('sWither').textContent=stats.withered;
+  $('sContrast').textContent=stats.contrasts;
+  $('sParam').textContent=stats.params;
+  $('sMatch').textContent=progress.match+'/4';
+}
+function reportHTML(){
+  const f=id=>{
+    const v=$(id).value.trim();
+    return v?v.replace(/&/g,'&amp;').replace(/</g,'&lt;'):'(还没有填写)';
+  };
+  return '<div style="font-family:sans-serif;max-width:720px;margin:auto">'
+  +'<h1 style="color:#1e8f56">🌻 智能农场观察报告</h1>'
+  +'<p>课程:清华版《信息科技》五年级下册 第2单元第1课 | 生成时间:'+new Date().toLocaleString()+'</p>'
+  +'<h2>一、实验数据统计</h2>'
+  +'<ul><li>累计观察天数:'+stats.days+'</li><li>开花的植物:'+stats.flowers+'</li>'
+  +'<li>枯萎的植物:'+stats.withered+'</li><li>完成的对照实验:'+stats.contrasts+'</li>'
+  +'<li>调整参数次数:'+stats.params+'</li><li>需求配对成功:'+progress.match+'/4</li>'
+  +'<li>当前参数:光照'+$('pLight').value+'% / 每天浇水'+$('pWater').value+'毫升 / 温度'+$('pTemp').value+'℃</li></ul>'
+  +'<h2>二、我的种植发现</h2><p>'+f('r1')+'</p>'
+  +'<h2>三、我设计的智能大棚:需要监测的环境</h2><p>'+f('r2')+'</p>'
+  +'<h2>四、我设计的智能大棚:调节环境的设备</h2><p>'+f('r3')+'</p>'
+  +'<h2>五、我设计的智能大棚:远程控制的功能</h2><p>'+f('r4')+'</p></div>';
+}
+function genReport(){
+  const empty=['r1','r2','r3','r4'].filter(id=>!$(id).value.trim());
+  if(empty.length){fb('fbReport','bad','还有 '+empty.length+' 个空没填完呢!把你实验中的发现和设计写进去,报告才有价值。');}
+  else{fb('fbReport','ok','✅ 报告已生成!检查一下预览,满意就点「导出报告」保存到电脑。');
+    if(!progress.report){progress.report=true;setBadge(5);}}
+  $('reportPreview').innerHTML='<div class="card" style="margin-top:12px">'+reportHTML()+'</div>';
+  refreshStats();
+}
+function exportReport(){
+  downloadFile('智能种植观察报告.html','<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>智能农场观察报告</title></head><body>'+reportHTML()+'</body></html>','text/html');
+}
+const LS_KEY='u2l1_farm_lab';
+function projectData(){
+  return {ver:1,
+    report:{r1:$('r1').value,r2:$('r2').value,r3:$('r3').value,r4:$('r4').value},
+    params:{light:$('pLight').value,water:$('pWater').value,temp:$('pTemp').value},
+    stats,progress,log:logRows.slice(-100)};
+}
+function applyProject(d){
+  try{
+    if(d.report)['r1','r2','r3','r4'].forEach(k=>$(k).value=d.report[k]||'');
+    if(d.params){$('pLight').value=d.params.light;$('pWater').value=d.params.water;$('pTemp').value=d.params.temp;syncOuts();}
+    if(d.stats)stats=Object.assign(stats,d.stats);
+    if(d.progress){
+      Object.assign(progress,d.progress);
+      if(progress.flower)setBadge(1); if(progress.contrast)setBadge(2);
+      if(progress.topo)setBadge(3); if(progress.match>=4)setBadge(4);
+      if(progress.report)setBadge(5);
+      $('bgMatch').textContent=progress.match||0;
+    }
+    if(Array.isArray(d.log))logRows=d.log;
+    refreshStats();renderLog();render();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('智能农场项目进度.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 项目导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的项目文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'), raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderPool(); renderNeeds(); syncOuts();
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  render(); refreshStats();
+})();
+</script>
+</body>
+</html>
