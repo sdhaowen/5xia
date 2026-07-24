@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能家居项目评估与报告中心 · 单元3第4课 智能家居项目报告书——智能家居的安全与隐私</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6;
+    --bg:#eef4fb; --card:#ffffff; --ink:#20344b; --ink-2:#5b7186;
+    --line:#d9e4f0; --soft:#f2f7fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#1a5cb8,#8b5cf6); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(20,60,120,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--green-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--blue);}
+  nav button.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(30,60,110,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--blue); border:2px solid var(--blue);}
+  .btn.gray{background:#8aa0b5;}
+  .btn:disabled{background:#c4d2df; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#e8f1fd; border:1px solid var(--blue); color:var(--blue-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .why{background:#eef7ff; border-left:4px solid var(--blue); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+  /* ---------- 模块一:七维评价台 ---------- */
+  .dimrow{display:grid; grid-template-columns:96px 1fr 52px; align-items:center; gap:10px; padding:7px 10px; border:2px solid var(--line); border-radius:12px; margin:6px 0; background:#fff; transition:.15s;}
+  .dimrow.touched{border-color:#bfe3cf; background:#fbfffc;}
+  .dimrow .dname{font-weight:700; font-size:15px;}
+  .dimrow input[type=range]{width:100%; accent-color:var(--blue); height:26px;}
+  .dimrow output{font-weight:900; font-size:18px; color:var(--blue-d); text-align:center;}
+  .radarbox{text-align:center;}
+  canvas{max-width:100%;}
+  .scorebig{font-size:15px; background:var(--soft); border-radius:12px; padding:10px 12px; margin-top:8px; text-align:center;}
+  .scorebig b{font-size:26px; color:var(--blue-d);}
+  /* ---------- 模块二:安全体检 ---------- */
+  .checkitem{display:flex; align-items:flex-start; gap:8px; background:var(--soft); border-radius:10px; padding:9px 12px; margin:6px 0; font-size:14.5px; animation:fadeIn .35s;}
+  .checkitem .lv{margin-left:auto; flex-shrink:0;}
+  .lvpill{display:inline-block; border-radius:12px; padding:1px 10px; font-size:12.5px; font-weight:700; color:#fff;}
+  .lv-high{background:var(--red);} .lv-mid{background:var(--orange);} .lv-low{background:#eab308;} .lv-ok{background:var(--green);}
+  .fixcard{border:2px solid var(--line); border-radius:12px; padding:12px; margin:10px 0;}
+  .fixcard.done{border-color:var(--green); background:#f4fdf8;}
+  .opt{display:block; width:100%; text-align:left; border:2px solid var(--line); background:#fff; border-radius:10px; padding:10px 14px; margin:6px 0; font-size:15px; cursor:pointer; transition:.15s;}
+  .opt:hover{border-color:var(--purple);}
+  .opt.right{border-color:var(--green); background:#e7f9ef;}
+  .opt.wrong{border-color:var(--red); background:#fdeaea; animation:shake .3s;}
+  @keyframes shake{25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+  .riskbar{display:flex; align-items:center; gap:8px; margin:5px 0; font-size:14px;}
+  .riskbar .rb{height:20px; border-radius:6px; transition:width .4s; min-width:4px;}
+  table{width:100%; border-collapse:collapse; font-size:14px;}
+  th,td{border:1px solid var(--line); padding:7px 8px; text-align:center;}
+  th{background:var(--soft);}
+  .scanning{font-weight:700; color:var(--blue-d);}
+  .scanning::after{content:"…"; animation:dots 1s infinite;}
+  @keyframes dots{0%{content:"·";}50%{content:"··";}100%{content:"···";}}
+  /* ---------- 模块三:权限演练 ---------- */
+  .permbtn{border:2px solid var(--line); background:#fff; color:var(--ink-2); border-radius:10px; padding:7px 10px; font-size:14px; font-weight:700; cursor:pointer; width:100%; transition:.15s;}
+  .permbtn.yes{border-color:var(--green); background:#e7f9ef; color:var(--green-d);}
+  .permbtn:hover{border-color:var(--blue);}
+  /* ---------- 模块四:三要素 ---------- */
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--blue-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--blue); height:26px;}
+  .switch{display:flex; align-items:center; gap:10px; margin-top:10px; font-weight:700; font-size:15px;}
+  .switch input{width:44px; height:24px; accent-color:var(--green); cursor:pointer;}
+  .bar{height:18px; background:#e3ecf6; border-radius:9px; overflow:hidden; margin-top:3px;}
+  .bar i{display:block; height:100%; border-radius:9px; transition:width .4s, background .4s;}
+  .meter label{font-size:14px; color:var(--ink-2); display:flex; justify-content:space-between; font-weight:700;}
+  /* ---------- 模块五:报告向导 ---------- */
+  .stepper{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;}
+  .stepper button{border:2px solid var(--line); background:#fff; border-radius:10px; padding:8px 14px; font-size:14.5px; font-weight:700; cursor:pointer;}
+  .stepper button.on{background:var(--purple); border-color:var(--purple); color:#fff;}
+  .stepper button.okstep::after{content:" ✅";}
+  .wstep{display:none;}
+  .wstep.on{display:block; animation:fadeIn .25s;}
+  input[type=text]{width:100%; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit;}
+  input[type=text]:focus,textarea:focus,select:focus{outline:none; border-color:var(--blue);}
+  textarea{width:100%; min-height:74px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  select{border:2px solid var(--line); border-radius:10px; padding:9px 12px; font-size:15px; font-family:inherit; background:#fff;}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:24px; color:var(--blue-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  pre.saved{background:#20344b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏠 智能家居项目评估与报告中心</h1>
+  <p>清华版《信息科技》五年级下册 · 第3单元 第4课 智能家居项目报告书——智能家居的安全与隐私(教材 P109—115)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 七维评价</span>
+    <span class="badge" id="bg2">② 安全体检 <span id="bgFix">0</span>/5</span>
+    <span class="badge" id="bg3">③ 权限演练</span>
+    <span class="badge" id="bg4">④ 三要素小测</span>
+    <span class="badge" id="bg5">⑤ 报告书完成</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">⭐ ① 七维评价台</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">🩺 ② 安全隐私体检</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">🔑 ③ 权限分配演练</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">⚖️ ④ 三要素小课堂</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">📑 ⑤ 项目报告书</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:七维项目评价台 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>⭐ 任务一:给智能家居项目做“七维体检评分”</h2>
+    <div class="task"><b>任务:</b>项目做完不等于结束!请从<b>功能、创新、便利、安全、隐私、成本、质量</b>七个维度,拖动滑块给项目逐项打分(0~10分)。每动一个滑块,右边的雷达图会立刻变化,下方💬会解释这个维度的含义。没做过前几课的同学,点「📖 载入示例项目」也能评!</div>
+    <div class="grid2">
+      <div>
+        <h3>被评项目:<span id="projName">(还没有选择项目,可载入示例)</span></h3>
+        <p id="projIntro" style="font-size:14px;color:var(--ink-2);margin-bottom:6px">你可以评价自己前几课设计的智能家居,也可以点下面的按钮载入虚构的示例项目。</p>
+        <div style="margin-bottom:8px">
+          <button class="btn ghost small" onclick="loadExampleProj()">📖 载入示例项目:小明的智能家居</button>
+          <button class="btn gray small" onclick="resetScores()">🔄 重置评分</button>
+        </div>
+        <div id="dimList"></div>
+      </div>
+      <div class="radarbox">
+        <h3>七维雷达图(实时更新)</h3>
+        <canvas id="radar" width="380" height="330"></canvas>
+        <div class="scorebig">总分 <b id="totScore">35</b> / 70 &nbsp;|&nbsp; 换算满意度 <b id="satScore">5</b> / 10 分</div>
+        <div class="why" id="dimWhy">💬 拖动左边任意一个滑块,这里会解释该维度的含义和你打的分数代表什么。</div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <button class="btn green" onclick="finishEval()">✅ 完成七维评价,生成评语</button>
+      <button class="btn ghost" onclick="dimHint()">💡 看提示</button>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+  <div class="card">
+    <h2>📖 为什么要做项目评估?</h2>
+    <p>教材告诉我们:智能家居有<b>便于管理、个性实用、节省能源</b>的优势,但也可能有<b>单向通信、华而不实、数据被盗</b>等隐患。只有<b>辩证、理性</b>地评估自己的作品,找出优点与不足,才能制订针对性的改进方案,让项目越做越好!</p>
+    <p style="margin-top:6px"><span class="pill">功能</span><span class="pill">创新</span><span class="pill">便利</span><span class="pill">安全</span><span class="pill">隐私</span><span class="pill">成本</span><span class="pill">质量</span></p>
+  </div>
+</section>
+
+<!-- ================= 模块二:安全与隐私体检 ================= -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>🩺 任务二:给“小明的智能家居”做安全隐私体检</h2>
+    <div class="task"><b>任务:</b>安全和隐私是智能家居最容易被忽视的隐患!请点「▶ 开始体检」,像医生一样逐项检查这套虚构的智能家居(也可以「⏭ 单步」慢慢看)。发现问题后,在下方给每个问题<b>选出正确的整改措施</b>,把风险清零!</div>
+    <div style="margin-bottom:8px">
+      <button class="btn green" id="btnChk" onclick="startCheck()">▶ 开始体检</button>
+      <button class="btn orange small" onclick="stepCheck()">⏭ 单步检查</button>
+      <button class="btn purple small" onclick="fastCheck()">⚡ 快速完成体检</button>
+      <button class="btn gray small" onclick="resetCheck()">🔄 重新体检</button>
+    </div>
+    <div class="grid2">
+      <div>
+        <h3>体检进度:<span id="chkProg">0 / 6</span></h3>
+        <div id="chkList"><p style="font-size:14px;color:var(--ink-2)">还没有开始体检。体检项目:门锁密码、摄像头位置、数据加密、访客权限、固件更新、Wi-Fi 密码。</p></div>
+        <div class="feedback" id="fbChk"></div>
+      </div>
+      <div>
+        <h3>📊 风险清单(高/中/低分级)</h3>
+        <div id="riskSummary"><p style="font-size:14px;color:var(--ink-2)">完成体检后,这里会生成风险清单和安全得分。</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="fixWrap" style="display:none">
+    <h2>🔧 整改工坊:选出正确的整改措施</h2>
+    <div class="task"><b>任务:</b>每张问题卡片选一个整改措施。选对了风险就解除,选错了看💡分层提示再试!</div>
+    <div id="fixArea"></div>
+  </div>
+</section>
+
+<!-- ================= 模块三:权限分配演练 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>🔑 任务三:按“最小权限原则”给家人分配权限</h2>
+    <div class="task"><b>任务:</b>智能家居 App 可以给不同的人不同的控制权限。请点击表格中的按钮,为 <b>家长、小孩、访客、保姆</b> 分配 <b>门锁、摄像头、灯、空调</b> 的控制权限,然后点「✅ 按最小权限原则评价」。<b>最小权限原则:每个人只拿到他真正需要的权限,一个都不多给!</b></div>
+    <div class="grid2">
+      <div>
+        <div style="overflow-x:auto"><table id="permTable"></table></div>
+        <div style="margin-top:10px">
+          <button class="btn green" onclick="evalPerm()">✅ 按最小权限原则评价</button>
+          <button class="btn ghost small" onclick="permHint()">💡 分层提示</button>
+          <button class="btn orange small" onclick="loadBadPerm()">😈 反面示例:全部放开</button>
+          <button class="btn gray small" onclick="resetPerm()">🔄 清空重来</button>
+        </div>
+        <div class="feedback" id="fb3"></div>
+      </div>
+      <div>
+        <div class="why" id="permWhy">💬 点击表格里的按钮授予或收回权限,这里会提醒你思考:这个人<b>真的需要</b>这个权限吗?</div>
+        <h3 style="margin-top:12px">🧭 思考小贴士</h3>
+        <p style="font-size:14px">· <b>门锁</b>和<b>摄像头</b>是最敏感的权限——一个关系家门安全,一个关系全家隐私。<br>· 教材提醒:智能家居会源源不断收集家庭数据,一旦被“黑”,私密空间就曝光了。权限给得越少,泄露的风险就越小。<br>· 给出去的权限要<b>定期检查</b>,不需要时及时收回。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 模块四:项目管理三要素小课堂 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>⚖️ 任务四:玩转项目管理“铁三角”——时间、成本、质量</h2>
+    <div class="task"><b>任务A:</b>拖动「时间投入」「成本投入」滑块,观察三角形和质量条怎样联动变化;再打开「🔒 保持质量不变」,看看压缩工期时成本会发生什么。<br><b>任务B:</b>完成下面 3 道情境判断题,全对点亮徽章!</div>
+    <div class="grid2">
+      <div class="ctl">
+        <label><span>⏳ 时间投入(工期)</span><output id="triTOut">5</output></label>
+        <input type="range" id="triT" min="1" max="10" value="5" oninput="triChanged('t')">
+        <label><span>💰 成本投入(预算)</span><output id="triCOut">5</output></label>
+        <input type="range" id="triC" min="1" max="10" value="5" oninput="triChanged('c')">
+        <div class="meter" style="margin-top:12px"><label><span>🏆 预计质量(自动联动)</span><span id="triQVal">5 / 10</span></label>
+          <div class="bar"><i id="triQBar" style="width:50%; background:#2eb872"></i></div></div>
+        <div class="switch"><input type="checkbox" id="lockQual" onchange="lockChanged()"><span>🔒 保持质量不变(联动补偿)</span></div>
+        <div class="why" id="triWhy">💬 教材说:项目启动时三要素像一个“等边三角形”,任何一个要素变化都会影响另外两个。拖动滑块试试!</div>
+      </div>
+      <div class="radarbox">
+        <h3>项目管理三角形(实时联动)</h3>
+        <canvas id="triCanvas" width="360" height="300"></canvas>
+        <p style="font-size:13.5px;color:var(--ink-2)">虚线是理想的等边三角形,实线是你当前的项目状态。</p>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🧠 情境判断:三要素会怎样变化?</h2>
+    <div id="triQuiz"></div>
+    <div class="feedback" id="fb4"></div>
+  </div>
+</section>
+
+<!-- ================= 模块五:项目报告书向导 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>📑 任务五:一步一步写出《智能家居项目报告书》</h2>
+    <div class="task"><b>任务:</b>报告书是本课的收官成果!按 5 个步骤填写,每步点「下一步」会检查完整性。前面模块的雷达图、风险清单、权限表会<b>自动装进</b>报告书,最后生成精美预览并导出。</div>
+    <div class="stepper" id="stepper">
+      <button id="stp1" class="on" onclick="stepGo(1)">第1步 项目信息</button>
+      <button id="stp2" onclick="stepGo(2)">第2步 七维评价</button>
+      <button id="stp3" onclick="stepGo(3)">第3步 风险与整改</button>
+      <button id="stp4" onclick="stepGo(4)">第4步 权限表</button>
+      <button id="stp5" onclick="stepGo(5)">第5步 反思与维护</button>
+    </div>
+    <!-- 第1步 -->
+    <div class="wstep on" id="ws1">
+      <h3>1️⃣ 项目名称</h3>
+      <input type="text" id="pName" placeholder="例:小明的智能家居">
+      <h3>👥 小组成员(选填)</h3>
+      <input type="text" id="pMembers" placeholder="例:小明、小红、小刚(虚构示例)">
+      <h3>⚙️ 功能介绍(项目能做什么?)</h3>
+      <textarea id="pIntro" placeholder="例:用小程序远程控制客厅灯和空调;门口装了摄像头,可以查看谁来了;离家模式一键关闭所有电器,节省能源。"></textarea>
+    </div>
+    <!-- 第2步 -->
+    <div class="wstep" id="ws2">
+      <h3>2️⃣ 七维评分雷达图(来自①号评价台,自动装入)</h3>
+      <div class="radarbox"><canvas id="wRadar" width="360" height="320"></canvas></div>
+      <div id="wEvalTip" style="font-size:14px;color:var(--ink-2)"></div>
+      <h3>👍 项目的优点</h3>
+      <textarea id="pGood" placeholder="例:家居控制设置很全面,手机上一个按钮就能开关灯,爷爷奶奶也会用。"></textarea>
+      <h3>🤔 项目的不足</h3>
+      <textarea id="pWeak" placeholder="例:只能单向通信,设备不能把家里的情况反馈给手机,无法进行安全预警。"></textarea>
+    </div>
+    <!-- 第3步 -->
+    <div class="wstep" id="ws3">
+      <h3>3️⃣ 项目风险清单与整改(来自②号安全体检,自动装入)</h3>
+      <div id="wRisk"></div>
+      <h3>🎯 改进目标(教材说:目标要明确、清晰、可量化!)</h3>
+      <textarea id="pGoal" placeholder="例:总目标:两周内把智能家居升级为双向通信。阶段1:一周内给客厅加装温湿度传感器;阶段2:第二周实现手机查看家中温度,完成度100%。"></textarea>
+    </div>
+    <!-- 第4步 -->
+    <div class="wstep" id="ws4">
+      <h3>4️⃣ 权限分配表(来自③号权限演练,自动装入)</h3>
+      <div id="wPerm"></div>
+      <h3>🗒 我的权限设计说明(为什么这样分配?)</h3>
+      <textarea id="pPermNote" placeholder="例:按最小权限原则,门锁和摄像头只给家长;访客只能开关灯;保姆有临时门锁权限,下班自动失效。"></textarea>
+    </div>
+    <!-- 第5步 -->
+    <div class="wstep" id="ws5">
+      <h3>5️⃣ 反思与改进(这次项目我学到了什么?)</h3>
+      <textarea id="pReflect" placeholder="例:一开始只顾功能多,忽略了安全和隐私。体检发现默认密码没改很危险。以后做项目要把安全设计放在最前面。"></textarea>
+      <h3>🔧 项目维护计划</h3>
+      <p style="font-size:14px;color:var(--ink-2)">维护周期:<select id="pCycle">
+        <option value="">请选择…</option><option>每周一次</option><option>每两周一次</option><option>每月一次</option><option>每季度一次</option>
+      </select></p>
+      <textarea id="pPlan" style="margin-top:8px" placeholder="例:每月检查一次设备密码和固件更新;每周确认摄像头位置没有被移动;定期清理不再需要的授权账号。"></textarea>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn gray" onclick="prevStep()">⬅ 上一步</button>
+      <button class="btn" onclick="nextStep()">下一步 ➡</button>
+    </div>
+    <div class="feedback" id="fbStep"></div>
+  </div>
+  <div class="card">
+    <h2>🎁 成果输出:生成与导出</h2>
+    <div class="grid3" style="margin-bottom:12px">
+      <div class="stat"><b id="sEval">未完成</b><span>七维评价</span></div>
+      <div class="stat"><b id="sFixed">0/5</b><span>已整改风险</span></div>
+      <div class="stat"><b id="sPerm">未评价</b><span>权限演练</span></div>
+    </div>
+    <button class="btn green" onclick="genReport()">📄 生成报告书预览</button>
+    <button class="btn" onclick="exportReport()">📥 导出报告书(HTML)</button>
+    <button class="btn purple" onclick="exportShow()">🖼 导出项目展示页(HTML)</button>
+    <div class="feedback" id="fb5"></div>
+    <div id="reportPreview"></div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有评估数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出评估数据(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入评估数据</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>智能家居项目评估与报告中心 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态与小工具
+============================================================ */
+const $=id=>document.getElementById(id);
+const progress={eval:false,fix:0,perm:false,tri:false,report:false};
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t5'){refreshWizard(); refreshStats();}
+}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function fb(id,cls,html){const e=$(id); if(!e)return; e.className='feedback '+cls; e.innerHTML=html;}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ============================================================
+   模块一:七维项目评价台(滑块 + canvas 雷达图)
+============================================================ */
+const DIMS=[
+  {k:'func',name:'⚙️ 功能',meaning:'项目的功能全不全?能不能正常运行?',
+   low:'只有个别功能能用,经常失灵',mid:'主要功能都能用,偶尔出小问题',high:'功能齐全,运行稳定可靠'},
+  {k:'inno',name:'💡 创新',meaning:'有没有自己的新想法、别人没做过的巧妙设计?',
+   low:'基本是照着例子做的',mid:'有1~2处自己的小创意',high:'有独特创意,让人眼前一亮'},
+  {k:'conv',name:'🛋 便利',meaning:'操作简不简单?是不是真的让生活更方便?(教材:便于管理、个性实用)',
+   low:'操作复杂,还不如直接按开关',mid:'比普通开关方便,但偶尔要重新联网',high:'一键搞定,老人小孩都会用'},
+  {k:'safe',name:'🛡 安全',meaning:'会不会被坏人控制?密码、防误触等防护做得好吗?',
+   low:'默认密码没改,谁都能控制',mid:'改了密码,但缺少其他防护',high:'强密码+权限管理+安全上限,很牢固'},
+  {k:'priv',name:'🔒 隐私',meaning:'收集的数据会不会泄露家人的秘密?(教材提醒:小心“数据盗窃”)',
+   low:'摄像头乱装、数据不加密',mid:'注意了位置,但数据保护还不够',high:'只收集必要数据,加密保存,定期清理'},
+  {k:'cost',name:'💰 成本',meaning:'花的钱和材料值不值?分数越高代表成本控制得越好',
+   low:'花了很多钱,很多零件浪费了',mid:'成本适中,个别零件买贵了',high:'精打细算,每个零件都物尽其用'},
+  {k:'qual',name:'🏗 质量',meaning:'做工结不结实?长期使用会不会坏?',
+   low:'接线松散,用两天就散架',mid:'比较结实,个别地方需要加固',high:'做工扎实,反复使用也没问题'},
+];
+const scores={func:5,inno:5,conv:5,safe:5,priv:5,cost:5,qual:5};
+const touched=new Set();
+let dimHintLv=0;
+
+function renderDims(){
+  $('dimList').innerHTML=DIMS.map((d,i)=>
+    `<div class="dimrow" id="dr${i}">
+       <span class="dname">${d.name}</span>
+       <input type="range" min="0" max="10" value="${scores[d.k]}" id="dim${i}" oninput="dimChanged(${i})">
+       <output id="dimOut${i}">${scores[d.k]}</output>
+     </div>`).join('');
+}
+function bandText(d,v){ return v<=3?d.low:(v<=7?d.mid:d.high); }
+function dimChanged(i){
+  const d=DIMS[i], v=+$('dim'+i).value;
+  scores[d.k]=v; touched.add(d.k);
+  $('dimOut'+i).textContent=v;
+  $('dr'+i).classList.add('touched');
+  $('dimWhy').innerHTML=`💬 <b>${d.name}</b>:${d.meaning}<br>你打了 <b>${v} 分</b>,大约相当于:“${bandText(d,v)}”。`;
+  drawRadar($('radar'),DIMS.map(x=>scores[x.k]),true);
+  updateTotal();
+}
+function updateTotal(){
+  const tot=DIMS.reduce((s,d)=>s+scores[d.k],0);
+  $('totScore').textContent=tot;
+  $('satScore').textContent=Math.round(tot/7);
+}
+function drawRadar(cv,vals,withLabel){
+  if(!cv)return;
+  const ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2, cy=H/2+8, R=Math.min(W,H)/2-46, n=DIMS.length;
+  const ang=i=>-Math.PI/2+i*2*Math.PI/n;
+  // 网格环
+  for(let g=1;g<=5;g++){
+    ctx.beginPath();
+    for(let i=0;i<=n;i++){const a=ang(i%n),r=R*g/5;
+      if(i===0)ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+      else ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}
+    ctx.strokeStyle='#d9e4f0'; ctx.lineWidth=1; ctx.stroke();
+  }
+  // 轴线与标签
+  ctx.font='13px "PingFang SC","Microsoft YaHei",sans-serif';
+  for(let i=0;i<n;i++){
+    const a=ang(i);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a));
+    ctx.strokeStyle='#c8d8ea'; ctx.stroke();
+    if(withLabel){
+      const lx=cx+(R+24)*Math.cos(a), ly=cy+(R+22)*Math.sin(a);
+      ctx.fillStyle='#20344b'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(DIMS[i].name.replace(/^\S+\s?/,'')+' '+vals[i],lx,ly);
+    }
+  }
+  // 数据多边形
+  ctx.beginPath();
+  for(let i=0;i<=n;i++){
+    const a=ang(i%n), r=R*vals[i%n]/10;
+    if(i===0)ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+    else ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+  }
+  ctx.fillStyle='rgba(43,125,233,.25)'; ctx.fill();
+  ctx.strokeStyle='#2b7de9'; ctx.lineWidth=2.5; ctx.stroke();
+  for(let i=0;i<n;i++){
+    const a=ang(i), r=R*vals[i]/10;
+    ctx.beginPath(); ctx.arc(cx+r*Math.cos(a),cy+r*Math.sin(a),4,0,7);
+    ctx.fillStyle='#1a5cb8'; ctx.fill();
+  }
+}
+const EXAMPLE={name:'小明的智能家居(虚构示例)',
+  intro:'小明(虚构人物)做了一套智能家居:小程序控制客厅灯和空调,门口有摄像头,还有离家一键关电器。但他的门锁还是默认密码,卧室也装了摄像头……',
+  scores:{func:8,inno:6,conv:9,safe:3,priv:3,cost:7,qual:7}};
+function loadExampleProj(){
+  $('projName').textContent=EXAMPLE.name;
+  $('projIntro').textContent=EXAMPLE.intro;
+  DIMS.forEach((d,i)=>{scores[d.k]=EXAMPLE.scores[d.k]; touched.add(d.k);
+    const s=$('dim'+i); if(s){s.value=scores[d.k]; $('dimOut'+i).textContent=scores[d.k]; $('dr'+i).classList.add('touched');}});
+  if(!$('pName').value)$('pName').value='小明的智能家居';
+  if(!$('pIntro').value)$('pIntro').value='用小程序远程控制客厅灯和空调;门口有摄像头查看访客;离家模式一键关闭电器,节省能源。(虚构示例)';
+  drawRadar($('radar'),DIMS.map(x=>scores[x.k]),true); updateTotal();
+  fb('fb1','info','📖 已载入示例项目。看雷达图:它的<b>便利 9 分</b>很棒,但<b>安全 3 分、隐私 3 分</b>凹了一大块!去「② 安全隐私体检」找找原因吧。你也可以先按自己的想法调整分数。');
+}
+function resetScores(){
+  DIMS.forEach((d,i)=>{scores[d.k]=5; const s=$('dim'+i);
+    if(s){s.value=5; $('dimOut'+i).textContent=5; $('dr'+i).classList.remove('touched');}});
+  touched.clear(); dimHintLv=0;
+  $('projName').textContent='(还没有选择项目,可载入示例)';
+  drawRadar($('radar'),DIMS.map(x=>scores[x.k]),true); updateTotal();
+  fb('fb1','info','已重置。重新逐项打分吧,每个维度都要认真想一想哦!');
+}
+function finishEval(){
+  const missing=DIMS.filter(d=>!touched.has(d.k));
+  if(missing.length){
+    fb('fb1','bad',`🌱 还有 ${missing.length} 个维度没有评分:${missing.map(d=>d.name).join('、')}。每个维度都动一动滑块(哪怕最后仍是5分),说明你认真思考过它!`);
+    return;
+  }
+  const arr=DIMS.map(d=>({name:d.name,v:scores[d.k]})).sort((a,b)=>b.v-a.v);
+  const tot=DIMS.reduce((s,d)=>s+scores[d.k],0);
+  const grade=tot>=56?'⭐⭐⭐ 优秀!这是一个成熟的项目':(tot>=42?'⭐⭐ 良好!再打磨一下会更棒':'⭐ 加油!评估的意义就是找到改进方向');
+  progress.eval=true; setBadge(1);
+  fb('fb1','ok',`🎉 七维评价完成!总分 <b>${tot}/70</b>(满意度 ${Math.round(tot/7)}/10 分)。<br>最强项:<b>${arr[0].name} ${arr[0].v}分</b>、${arr[1].name} ${arr[1].v}分;最需要改进:<b>${arr[6].name} ${arr[6].v}分</b>、${arr[5].name} ${arr[5].v}分。<br>${grade}。评价结果已自动装入「⑤ 项目报告书」第2步!`);
+}
+function dimHint(){
+  dimHintLv=Math.min(dimHintLv+1,3);
+  const hs=[
+    '提示①:打分不是越高越好,而是越“诚实”越好——评估的目的是发现不足。',
+    '提示②:安全和隐私最容易被高估。问问自己:默认密码改了吗?摄像头装哪儿了?数据加密了吗?',
+    '提示③:每个维度都拖一下滑块(动过才算评过),然后点「✅ 完成七维评价」。最弱的两个维度,就写进报告书的“改进目标”里!'
+  ];
+  fb('fb1','info','💡 '+hs[dimHintLv-1]);
+}
+
+/* ============================================================
+   模块二:安全与隐私体检(动态检查 + 整改 + 风险清单)
+============================================================ */
+const CHK=[
+  {name:'Wi-Fi 密码强度',scanText:'正在尝试用常见弱密码连接家庭 Wi-Fi',ok:true,
+   result:'Wi-Fi 密码又长又复杂,弱密码字典攻不破,通过!'},
+  {name:'门锁密码',scanText:'正在检查智能门锁的密码设置',ok:false,risk:'高',
+   found:'门锁还在用出厂默认密码 123456!坏人在网上一查说明书就能打开你家的门。',
+   opts:['把密码写在门口的小贴纸上,方便家人记忆','马上改成又长又复杂的新密码,并且定期更换','拆掉智能门锁,永远不再用了'],a:1,
+   hints:['提示①:默认密码人人都查得到,问题出在“密码”本身,不是要不要用智能门锁。',
+     '提示②:好密码=别人猜不到+定期更换。写在门口贴纸上等于把钥匙挂在门上!',
+     '提示③:正确做法是 B——改成强密码并定期更换,这是最基本的安全习惯。'],
+   fixed:false,why:'默认密码是黑客最先尝试的“万能钥匙”,改成强密码并定期更换,门才真正锁上了。'},
+  {name:'摄像头位置',scanText:'正在检查每个摄像头的安装位置',ok:false,risk:'高',
+   found:'卧室里装了一个摄像头!家人最私密的生活可能被拍下,一旦数据被“黑”,后果不堪设想。',
+   opts:['把摄像头挪到大门口、阳台等需要安防的公共位置,卧室坚决不装','给摄像头贴上漂亮的装饰贴纸,让它不显眼','把摄像头画面分享给全家所有人,大家互相监督'],a:0,
+   hints:['提示①:摄像头本身没错,错在“装在哪儿”。哪些地方是家人的私密空间?',
+     '提示②:贴纸挡不住镜头拍摄;分享给更多人反而让隐私泄露得更快。',
+     '提示③:正确做法是 A——摄像头只装在大门等安防位置,卧室、卫生间绝对不装。'],
+   fixed:false,why:'摄像头应该守护家门,而不是对着家人。私密空间不装摄像头是隐私保护的底线。'},
+  {name:'数据加密',scanText:'正在抓取一段设备发送的数据看看能否读懂',ok:false,risk:'中',
+   found:'设备数据在网络上“裸奔”(明文传输)!温度、开关记录都能被中途偷看,黑客能分析出家里几点没人。',
+   opts:['让设备发送数据的速度更快,让黑客来不及看','减少智能设备的数量,少发点数据','开启加密传输,把数据变成别人看不懂的“密文”再发送'],a:2,
+   hints:['提示①:问题不是数据“多”或“慢”,而是数据能被别人“看懂”。',
+     '提示②:想想写密信——就算信被人截走,看不懂内容就没关系。',
+     '提示③:正确做法是 C——加密后数据变成乱码,只有自家设备能解开。'],
+   fixed:false,why:'加密就像给数据上锁:哪怕被截获,黑客拿到的也只是一堆看不懂的乱码。'},
+  {name:'访客权限',scanText:'正在核对小程序里每个账号拥有的权限',ok:false,risk:'中',
+   found:'控制小程序把门锁权限开放给了所有访客账号!任何来过家里连过 Wi-Fi 的人都能远程开门。',
+   opts:['按最小权限原则重新分配:访客最多能开关灯,门锁权限收回','给每位访客配一把备用金属钥匙,更方便','把门锁设置成白天常开,就不存在权限问题了'],a:0,
+   hints:['提示①:回想“最小权限原则”:每个人只拿到真正需要的权限。访客需要开你家大门吗?',
+     '提示②:发钥匙和门常开,是把风险变得更大,不是整改。',
+     '提示③:正确做法是 A——收回访客的门锁权限,这正是「③ 权限分配演练」练习的内容!'],
+   fixed:false,why:'最小权限原则:权限给得越少,风险越小。门锁这种最敏感的权限,只留给最信任的管理员。'},
+  {name:'固件更新',scanText:'正在查询每台设备的固件(设备内部程序)版本',ok:false,risk:'低',
+   found:'摄像头的固件已经 8 个月没更新了,旧版本里有已经被公开的安全漏洞,可能被人利用。',
+   opts:['继续用旧版本,反正设备还能正常工作','及时安装官方发布的更新,把安全漏洞补上','把摄像头电源拔掉,再也不用了'],a:1,
+   hints:['提示①:固件更新常常就是在“打补丁”——把已发现的漏洞堵上。',
+     '提示②:“还能用”不等于“还安全”;直接不用则丢掉了设备的价值。',
+     '提示③:正确做法是 B——及时安装官方更新,这也是教材里说的“项目维护”!'],
+   fixed:false,why:'定期更新固件=定期修补漏洞,这正是教材强调的项目维护:定期检查、及时优化运行环境。'},
+];
+const chk={idx:0,timer:null,done:false};
+let scanRow=null;
+
+function chkBtnState(){
+  $('btnChk').textContent=chk.timer?'⏸ 暂停体检':'▶ 开始体检';
+  $('btnChk').className='btn '+(chk.timer?'orange':'green');
+}
+function startCheck(){
+  if(chk.timer){clearInterval(chk.timer); chk.timer=null; chkBtnState();
+    fb('fbChk','info','⏸ 体检暂停了,点「▶」继续,或用「⏭ 单步」一项一项看。'); return;}
+  if(chk.done){fb('fbChk','info','体检已经做完啦!去下方「整改工坊」处理问题,或点「🔄 重新体检」再来一遍。'); return;}
+  if(chk.idx===0)$('chkList').innerHTML='';
+  chk.timer=setInterval(()=>{doNextCheck();},1000);
+  chkBtnState();
+  fb('fbChk','info','🩺 体检开始!注意看每一项的检查过程和结果。');
+}
+function stepCheck(){
+  if(chk.timer){clearInterval(chk.timer); chk.timer=null; chkBtnState();}
+  if(chk.done){fb('fbChk','info','体检已完成,去整改问题吧!'); return;}
+  if(chk.idx===0)$('chkList').innerHTML='';
+  doNextCheck();
+}
+function fastCheck(){
+  if(chk.timer){clearInterval(chk.timer); chk.timer=null; chkBtnState();}
+  if(chk.done){fb('fbChk','info','体检已完成。'); return;}
+  if(chk.idx===0)$('chkList').innerHTML='';
+  while(!chk.done)doNextCheck(true);
+}
+function doNextCheck(instant){
+  if(scanRow){scanRow.remove(); scanRow=null;}
+  if(chk.idx>=CHK.length)return;
+  const it=CHK[chk.idx];
+  const list=$('chkList');
+  const row=document.createElement('div'); row.className='checkitem';
+  const lv=it.ok?'<span class="lvpill lv-ok">✅ 通过</span>':
+    (it.risk==='高'?'<span class="lvpill lv-high">⚠️ 高风险</span>':
+     it.risk==='中'?'<span class="lvpill lv-mid">⚠️ 中风险</span>':'<span class="lvpill lv-low">⚠️ 低风险</span>');
+  row.innerHTML=`<span>🔍 <b>${it.name}</b>:${it.ok?it.result:it.found}</span><span class="lv">${lv}</span>`;
+  list.appendChild(row);
+  chk.idx++;
+  $('chkProg').textContent=chk.idx+' / '+CHK.length;
+  if(!instant&&chk.idx<CHK.length){
+    scanRow=document.createElement('div'); scanRow.className='checkitem';
+    scanRow.innerHTML='<span class="scanning">🔎 '+CHK[chk.idx].scanText+'</span>';
+    list.appendChild(scanRow);
+  }
+  if(chk.idx>=CHK.length){
+    chk.done=true;
+    if(chk.timer){clearInterval(chk.timer); chk.timer=null; chkBtnState();}
+    renderFixArea(); renderRisk();
+    fb('fbChk','bad','🩺 体检完成:发现 <b>5 个问题</b>(2 高、2 中、1 低)!右边是风险清单,下方「整改工坊」等你把风险一个个清除。');
+  }
+}
+function resetCheck(){
+  if(chk.timer){clearInterval(chk.timer); chk.timer=null;}
+  chk.idx=0; chk.done=false; scanRow=null;
+  CHK.forEach(it=>{if(!it.ok)it.fixed=false; it.hintLv=0;});
+  progress.fix=0; $('bgFix').textContent=0;
+  $('chkList').innerHTML='<p style="font-size:14px;color:var(--ink-2)">还没有开始体检。点「▶ 开始体检」出发!</p>';
+  $('chkProg').textContent='0 / '+CHK.length;
+  $('fixWrap').style.display='none'; $('fixArea').innerHTML='';
+  $('riskSummary').innerHTML='<p style="font-size:14px;color:var(--ink-2)">完成体检后,这里会生成风险清单和安全得分。</p>';
+  chkBtnState();
+  fb('fbChk','info','已重置,可以重新体检了。');
+}
+function renderFixArea(){
+  $('fixWrap').style.display='block';
+  $('fixArea').innerHTML=CHK.map((it,i)=>{
+    if(it.ok)return '';
+    return `<div class="fixcard ${it.fixed?'done':''}" id="fx${i}">
+      <h3>${it.fixed?'✅':'⚠️'} 问题:${it.name} <span class="lvpill ${it.risk==='高'?'lv-high':it.risk==='中'?'lv-mid':'lv-low'}">${it.risk}风险</span></h3>
+      <p style="font-size:14px;margin:4px 0">${it.found}</p>
+      ${it.opts.map((o,j)=>`<button class="opt" id="fx${i}o${j}" onclick="pickMeasure(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')}
+      <button class="btn ghost small" onclick="fixHint(${i})">💡 分层提示</button>
+      <div class="feedback" id="fbFix${i}"></div>
+    </div>`;
+  }).join('');
+}
+function pickMeasure(i,j){
+  const it=CHK[i]; if(!it||it.ok)return;
+  const card=$('fx'+i); if(!card)return;
+  it.opts.forEach((_,k)=>{const b=$('fx'+i+'o'+k); if(b)b.classList.remove('right','wrong');});
+  const btn=$('fx'+i+'o'+j); if(!btn)return;
+  if(j===it.a){
+    btn.classList.add('right');
+    if(!it.fixed){it.fixed=true; progress.fix++; $('bgFix').textContent=progress.fix;
+      if(progress.fix>=5)setBadge(2);}
+    card.classList.add('done');
+    fb('fbFix'+i,'ok','🎉 整改成功!'+it.why+(progress.fix>=5?' <b>5 个风险全部清除,你是合格的家庭安全官!</b>体检结果已装入报告书第3步。':''));
+    renderRisk();
+  }else{
+    btn.classList.add('wrong');
+    fb('fbFix'+i,'bad','🤔 这个办法解决不了问题,再想想~点「💡 分层提示」可以获得帮助。');
+  }
+}
+function fixHint(i){
+  const it=CHK[i]; if(!it||!it.hints)return;
+  it.hintLv=Math.min((it.hintLv||0)+1,3);
+  fb('fbFix'+i,'info','💡 '+it.hints[it.hintLv-1]);
+}
+function riskWeight(r){return r==='高'?25:(r==='中'?15:10);}
+function renderRisk(){
+  const probs=CHK.filter(it=>!it.ok);
+  const remain=probs.filter(it=>!it.fixed);
+  let score=100; remain.forEach(it=>score-=riskWeight(it.risk));
+  const cnt={高:0,中:0,低:0}; remain.forEach(it=>cnt[it.risk]++);
+  const bar=(lvl,c,cls)=>`<div class="riskbar"><span style="width:64px">${lvl}风险</span>
+    <div class="rb ${''}" style="width:${c*60}px;background:${cls}"></div><b>${c} 项</b></div>`;
+  $('riskSummary').innerHTML=`
+    <div class="scorebig">当前安全得分 <b style="color:${score>=90?'#1e8f56':score>=60?'#b45309':'#b3262b'}">${score}</b> / 100</div>
+    ${bar('高',cnt['高'],'#e5484d')}${bar('中',cnt['中'],'#f59e0b')}${bar('低',cnt['低'],'#eab308')}
+    <table style="margin-top:8px"><thead><tr><th>风险项</th><th>等级</th><th>状态</th></tr></thead><tbody>
+    ${probs.map(it=>`<tr><td style="text-align:left">${it.name}</td>
+      <td><span class="lvpill ${it.risk==='高'?'lv-high':it.risk==='中'?'lv-mid':'lv-low'}">${it.risk}</span></td>
+      <td>${it.fixed?'✅ 已整改':'⚠️ 待整改'}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="why">💬 ${remain.length?('还有 '+remain.length+' 项风险待整改。<b>高风险</b>(门锁、摄像头)最紧急,先处理它们!'):'所有风险已整改完毕,安全得分回到 100!记得把这份清单写进项目报告书。'}</div>`;
+}
+
+/* ============================================================
+   模块三:权限分配演练(最小权限原则)
+============================================================ */
+const MEMBERS=[{k:'parent',name:'👨‍👩‍👧 家长'},{k:'kid',name:'🧒 小孩'},{k:'guest',name:'🙋 访客'},{k:'nanny',name:'🧹 保姆'}];
+const DEVICES=[{k:'lock',name:'🚪 门锁'},{k:'cam',name:'📷 摄像头'},{k:'light',name:'💡 灯'},{k:'ac',name:'❄️ 空调'}];
+const REC={parent:{lock:1,cam:1,light:1,ac:1},kid:{lock:0,cam:0,light:1,ac:1},
+  guest:{lock:0,cam:0,light:1,ac:0},nanny:{lock:1,cam:0,light:1,ac:1}};
+const PERM_TIP={
+  'parent-lock':'家长是家庭管理员,需要门锁权限来管理和应急。',
+  'parent-cam':'摄像头由家长统一管理,才能保护好全家隐私。',
+  'kid-lock':'门锁关系全家安全,小孩容易误操作或被骗,应由家长统一管理。',
+  'kid-cam':'摄像头涉及全家隐私,不适合小孩随意查看。',
+  'kid-light':'开关灯风险很小,小孩可以自己控制自己房间的灯。',
+  'kid-ac':'空调温度调节风险不大,可以给小孩。',
+  'guest-lock':'访客有门锁权限=陌生人随时能进你家的门,风险太大!',
+  'guest-cam':'家里的画面绝不能给访客看,这是隐私底线。',
+  'guest-light':'访客借用一下灯很正常,风险小,可以给。',
+  'guest-ac':'访客只是短暂来访,请主人代为调节空调就好,不必开放权限。',
+  'nanny-lock':'保姆需要进门工作,可以给——最好设置成只在工作时间有效的临时权限。',
+  'nanny-cam':'摄像头会拍到家人生活,保姆不应查看。',
+  'nanny-light':'保姆打扫时需要开关灯,可以给。',
+  'nanny-ac':'保姆工作时调节空调合情合理,可以给。'};
+const perm={}; MEMBERS.forEach(m=>{perm[m.k]={}; DEVICES.forEach(d=>perm[m.k][d.k]=0);});
+let permHintLv=0;
+
+function renderPerm(){
+  $('permTable').innerHTML='<thead><tr><th>成员＼设备</th>'+DEVICES.map(d=>'<th>'+d.name+'</th>').join('')+'</tr></thead><tbody>'+
+    MEMBERS.map(m=>'<tr><th>'+m.name+'</th>'+DEVICES.map(d=>
+      `<td><button class="permbtn ${perm[m.k][d.k]?'yes':''}" id="pm_${m.k}_${d.k}" onclick="togglePerm('${m.k}','${d.k}')">${perm[m.k][d.k]?'✅ 可控制':'✖ 无权限'}</button></td>`).join('')+'</tr>').join('')+'</tbody>';
+}
+function togglePerm(mk,dk){
+  perm[mk][dk]=perm[mk][dk]?0:1;
+  renderPerm();
+  const m=MEMBERS.find(x=>x.k===mk), d=DEVICES.find(x=>x.k===dk);
+  $('permWhy').innerHTML=`💬 你${perm[mk][dk]?'授予了':'收回了'} <b>${m.name}</b> 对 <b>${d.name}</b> 的控制权。想一想:${m.name}<b>真的需要</b>这个权限吗?${dk==='lock'||dk==='cam'?'(这是最敏感的权限,要格外小心!)':''}`;
+}
+function evalPerm(){
+  const over=[], lack=[];
+  MEMBERS.forEach(m=>DEVICES.forEach(d=>{
+    const cur=perm[m.k][d.k], rec=REC[m.k][d.k];
+    if(cur&&!rec)over.push({m,d});
+    if(!cur&&rec)lack.push({m,d});
+  }));
+  if(!over.length&&!lack.length){
+    progress.perm=true; setBadge(3);
+    fb('fb3','ok','🎉 完美的最小权限分配!门锁和摄像头牢牢掌握在该掌握的人手里,每个人又都能方便地用上自己需要的设备。这张权限表已自动装入「⑤ 项目报告书」第4步!<br>💡 小升级:可以把保姆的门锁权限设为“仅工作时间有效”的临时权限,更安全。');
+    refreshWizard();
+    return;
+  }
+  let html='🤔 还差一点点!发现 <b>'+(over.length+lack.length)+'</b> 处需要调整:<br>';
+  if(over.length)html+='· <b>权限给多了(有风险):</b>'+over.map(x=>`${x.m.name}不应控制${x.d.name}——${PERM_TIP[x.m.k+'-'+x.d.k]}`).join('<br>　')+'<br>';
+  if(lack.length)html+='· <b>权限给少了(不方便):</b>'+lack.map(x=>`${x.m.name}需要${x.d.name}权限——${PERM_TIP[x.m.k+'-'+x.d.k]}`).join('<br>　');
+  fb('fb3','bad',html+'<br>调整后再评价一次!');
+}
+function permHint(){
+  permHintLv=Math.min(permHintLv+1,3);
+  const hs=[
+    '提示①:最小权限原则=每个人只拿到他真正需要的权限。先问“需要吗”,再问“方便吗”。',
+    '提示②:门锁和摄像头最敏感:门锁只给家长和(临时的)保姆;摄像头只给家长。灯的风险最小,大家都可以有。',
+    '提示③:推荐方案——家长:全部✅;小孩:灯+空调;访客:只有灯;保姆:门锁+灯+空调(不给摄像头)。想想每一格为什么!'
+  ];
+  fb('fb3','info','💡 '+hs[permHintLv-1]);
+}
+function loadBadPerm(){
+  MEMBERS.forEach(m=>DEVICES.forEach(d=>perm[m.k][d.k]=1));
+  renderPerm();
+  fb('fb3','bad','😈 反面示例:所有人拥有所有权限!访客能开你家门锁、保姆能看你家摄像头……点「✅ 评价」看看系统怎么说,然后把多余的权限一个个收回。');
+}
+function resetPerm(){
+  MEMBERS.forEach(m=>DEVICES.forEach(d=>perm[m.k][d.k]=0));
+  renderPerm(); permHintLv=0;
+  fb('fb3','info','已清空。从零开始分配:先想每个人的“需要”,再想“风险”。');
+}
+
+/* ============================================================
+   模块四:项目管理三要素(时间·成本·质量)
+============================================================ */
+const tri={t:5,c:5};
+function triQual(){return Math.max(1,Math.min(10,Math.round((tri.t+tri.c)/2)));}
+function triChanged(which){
+  const old={t:tri.t,c:tri.c,q:triQual()};
+  const nv=+$(which==='t'?'triT':'triC').value;
+  if($('lockQual').checked){
+    // 联动补偿:质量不变,另一要素反向变化
+    const delta=nv-(which==='t'?tri.t:tri.c);
+    if(which==='t'){tri.t=nv; tri.c=Math.max(1,Math.min(10,tri.c-delta)); $('triC').value=tri.c;}
+    else{tri.c=nv; tri.t=Math.max(1,Math.min(10,tri.t-delta)); $('triT').value=tri.t;}
+  }else{
+    if(which==='t')tri.t=nv; else tri.c=nv;
+  }
+  renderTri();
+  const q=triQual(), name=which==='t'?'时间投入':'成本投入';
+  let msg;
+  if($('lockQual').checked){
+    msg=`🔒 保持质量模式:你把<b>${name}</b>调到 ${nv},系统自动把另一要素${which==='t'?('调到 '+tri.c):('调到 '+tri.t)}来补偿——想压缩工期又不降质量,就得多花钱(反过来也一样)!`;
+    if(tri.t===1||tri.c===1||tri.t===10||tri.c===10)msg+=' ⚠️ 已经补到极限了,再压下去质量一定会受影响!';
+  }else{
+    msg=`你把<b>${name}</b>从 ${which==='t'?old.t:old.c} 调到 ${nv},预计质量从 ${old.q} 变成 <b>${q}</b>。${q<old.q?'投入变少,质量跟着下降——这就是三要素的制衡!':q>old.q?'投入增加,质量提升了!但也要想想值不值。':'质量暂时没变,但三角形的形状已经改变了。'}`;
+  }
+  $('triWhy').innerHTML='💬 '+msg;
+}
+function lockChanged(){
+  $('triWhy').innerHTML='💬 '+($('lockQual').checked?
+    '🔒 已开启“保持质量不变”:现在拖动时间或成本,另一个会自动反向补偿。试试把工期压到最低!':
+    '已关闭联动补偿:时间和成本各自独立,质量=(时间+成本)÷2,自动计算。');
+}
+function renderTri(){
+  const q=triQual();
+  $('triTOut').textContent=tri.t; $('triCOut').textContent=tri.c;
+  $('triQVal').textContent=q+' / 10';
+  $('triQBar').style.width=q*10+'%';
+  $('triQBar').style.background=q<=3?'#e5484d':(q<=6?'#f59e0b':'#2eb872');
+  drawTri();
+}
+function drawTri(){
+  const cv=$('triCanvas'); if(!cv)return;
+  const ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2, cy=H/2+12, R=95;
+  const angs=[-Math.PI/2, -Math.PI/2+2*Math.PI/3, -Math.PI/2+4*Math.PI/3];
+  const vals=[tri.t,tri.c,triQual()];
+  const names=['⏳ 时间 '+tri.t,'💰 成本 '+tri.c,'🏆 质量 '+triQual()];
+  // 参考等边三角形(值=5)
+  ctx.beginPath();
+  angs.forEach((a,i)=>{const r=28+5*9; const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+    if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);});
+  ctx.closePath(); ctx.setLineDash([6,5]); ctx.strokeStyle='#9db8d4'; ctx.lineWidth=1.5; ctx.stroke(); ctx.setLineDash([]);
+  // 当前三角形
+  ctx.beginPath();
+  angs.forEach((a,i)=>{const r=28+vals[i]*9; const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+    if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);});
+  ctx.closePath();
+  ctx.fillStyle='rgba(139,92,246,.22)'; ctx.fill();
+  ctx.strokeStyle='#8b5cf6'; ctx.lineWidth=3; ctx.stroke();
+  // 顶点与标签
+  ctx.font='14px "PingFang SC","Microsoft YaHei",sans-serif';
+  angs.forEach((a,i)=>{
+    const r=28+vals[i]*9, x=cx+r*Math.cos(a), y=cy+r*Math.sin(a);
+    ctx.beginPath(); ctx.arc(x,y,5,0,7); ctx.fillStyle='#6d28d9'; ctx.fill();
+    const lx=cx+(R+42)*Math.cos(a), ly=cy+(R+34)*Math.sin(a);
+    ctx.fillStyle='#20344b'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(names[i],lx,ly);
+  });
+}
+const TRIQ=[
+  {q:'科技节提前,项目工期必须减半,预算不变。最可能发生什么?',
+   opts:['质量可能下降,要么砍掉一些功能','质量自动变得更好','什么都不会变'],a:0,
+   why:'时间被压缩、成本又不加,质量这个角就会被“拉扁”——所以要么加人加钱,要么减少功能保住核心质量。'},
+  {q:'为了省钱,把零件全部换成最便宜的,工期不变。可能带来什么?',
+   opts:['项目一定提前完成','质量风险变大,返工反而更费时间','和原来完全一样'],a:1,
+   why:'成本砍太狠,劣质零件容易坏,返工重做反而拖长时间——三要素牵一发而动全身。'},
+  {q:'想让作品质量更好,又不想多花钱,合理的办法是?',
+   opts:['直接要求质量翻倍','投入更多时间:认真规划、反复测试、细心打磨','把时间和成本都减半'],a:1,
+   why:'不加成本时,时间就是质量的朋友:多花时间规划和测试,同样能把质量的角撑起来。'},
+];
+const triRight=new Set();
+function renderTriQuiz(){
+  $('triQuiz').innerHTML=TRIQ.map((it,i)=>`<h3>${i+1}. ${it.q}</h3>`+
+    it.opts.map((o,j)=>`<button class="opt" id="tq${i}o${j}" onclick="answerTri(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')).join('');
+}
+function answerTri(i,j){
+  const it=TRIQ[i];
+  it.opts.forEach((_,k)=>{const b=$('tq'+i+'o'+k); if(b)b.classList.remove('right','wrong');});
+  const btn=$('tq'+i+'o'+j); if(!btn)return;
+  if(j===it.a){
+    btn.classList.add('right'); triRight.add(i);
+    if(triRight.size>=TRIQ.length&&!progress.tri){progress.tri=true; setBadge(4);}
+    fb('fb4','ok','✅ 答对了!'+it.why+(triRight.size>=TRIQ.length?' <b>三道全对,“铁三角”被你拿捏了!</b>':''));
+  }else{
+    btn.classList.add('wrong');
+    fb('fb4','bad','🤔 再想想:先在上面拖拖滑块,看看一个要素变化时另外两个怎么动,再回来答题。');
+  }
+}
+
+/* ============================================================
+   模块五:报告书向导 + 成果输出
+============================================================ */
+let curStep=1;
+function stepGo(n){
+  curStep=n;
+  for(let i=1;i<=5;i++){
+    const ws=$('ws'+i), sb=$('stp'+i);
+    if(ws)ws.classList.toggle('on',i===n);
+    if(sb)sb.classList.toggle('on',i===n);
+  }
+  refreshWizard();
+}
+function checkStep(n){
+  const miss=[];
+  if(n===1){
+    if(!$('pName').value.trim())miss.push('项目名称');
+    if(!$('pIntro').value.trim())miss.push('功能介绍');
+  }
+  if(n===2){
+    if(!progress.eval)miss.push('先到「① 七维评价台」完成七维评价');
+    if(!$('pGood').value.trim())miss.push('项目的优点');
+    if(!$('pWeak').value.trim())miss.push('项目的不足');
+  }
+  if(n===3){
+    if(!$('pGoal').value.trim())miss.push('改进目标');
+  }
+  if(n===4){
+    if(!$('pPermNote').value.trim())miss.push('权限设计说明');
+  }
+  if(n===5){
+    if(!$('pReflect').value.trim())miss.push('反思与改进');
+    if(!$('pCycle').value)miss.push('维护周期');
+    if(!$('pPlan').value.trim())miss.push('维护计划内容');
+  }
+  return miss;
+}
+function markSteps(){
+  for(let i=1;i<=5;i++){
+    const sb=$('stp'+i); if(sb)sb.classList.toggle('okstep',checkStep(i).length===0);
+  }
+}
+function nextStep(){
+  const miss=checkStep(curStep);
+  if(miss.length){
+    fb('fbStep','bad',`第${curStep}步还差一点:<b>${miss.join('、')}</b>。填好再前进,报告书才完整哦!`);
+    return;
+  }
+  markSteps();
+  if(curStep<5){stepGo(curStep+1);
+    fb('fbStep','ok',`✅ 第${curStep-1}步完成!继续第${curStep}步。`);}
+  else fb('fbStep','ok','✅ 5 步全部填完!到下方「成果输出」点「📄 生成报告书预览」吧!');
+}
+function prevStep(){ if(curStep>1)stepGo(curStep-1); }
+function refreshWizard(){
+  // 第2步:雷达图与评价提示
+  drawRadar($('wRadar'),DIMS.map(d=>scores[d.k]),true);
+  const we=$('wEvalTip');
+  if(we)we.innerHTML=progress.eval?
+    ('✅ 已装入七维评分:总分 '+DIMS.reduce((s,d)=>s+scores[d.k],0)+'/70。'):
+    '⚠️ 你还没有在「① 七维评价台」点「完成七维评价」,雷达图暂时显示当前滑块值。';
+  // 第3步:风险清单
+  const probs=CHK.filter(it=>!it.ok);
+  const wr=$('wRisk');
+  if(wr)wr.innerHTML=chk.done?
+    '<table><thead><tr><th>风险项</th><th>等级</th><th>整改情况</th></tr></thead><tbody>'+
+    probs.map(it=>`<tr><td style="text-align:left">${it.name}:${it.found.slice(0,26)}…</td>
+      <td>${it.risk}</td><td>${it.fixed?'✅ 已整改:'+it.opts[it.a]:'⚠️ 待整改'}</td></tr>`).join('')+'</tbody></table>':
+    '<p style="font-size:14px;color:#b45309">⚠️ 还没有做安全体检。去「② 安全隐私体检」跑一遍,风险清单会自动出现在这里(也会写进报告书)。</p>';
+  // 第4步:权限表
+  const wp=$('wPerm');
+  if(wp)wp.innerHTML=permTableHTML();
+  markSteps();
+}
+function permTableHTML(){
+  return '<table><thead><tr><th>成员＼设备</th>'+DEVICES.map(d=>'<th>'+d.name+'</th>').join('')+'</tr></thead><tbody>'+
+    MEMBERS.map(m=>'<tr><th>'+m.name+'</th>'+DEVICES.map(d=>
+      '<td>'+(perm[m.k][d.k]?'✅':'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
+}
+function refreshStats(){
+  $('sEval').textContent=progress.eval?'✅ 已完成':'未完成';
+  $('sFixed').textContent=progress.fix+'/5';
+  $('sPerm').textContent=progress.perm?'✅ 通过':'未评价';
+}
+function radarDataURL(){
+  const c=document.createElement('canvas'); c.width=360; c.height=320;
+  drawRadar(c,DIMS.map(d=>scores[d.k]),true);
+  return c.toDataURL('image/png');
+}
+function v(id,ph){const e=$(id); const s=e?e.value.trim():''; return s?s.replace(/</g,'&lt;'):(ph||'(还没有填写)');}
+function reportHTML(){
+  const probs=CHK.filter(it=>!it.ok);
+  const tot=DIMS.reduce((s,d)=>s+scores[d.k],0);
+  return `<div style="font-family:'PingFang SC','Microsoft YaHei',sans-serif;max-width:760px;margin:auto;color:#20344b">
+  <div style="background:linear-gradient(120deg,#1a5cb8,#8b5cf6);color:#fff;border-radius:14px;padding:26px;text-align:center">
+    <div style="font-size:40px">🏠</div>
+    <h1 style="margin:6px 0">智能家居项目报告书</h1>
+    <p style="font-size:18px;font-weight:700">${v('pName')}</p>
+    <p>小组成员:${v('pMembers','(未填写)')} · 生成时间:${new Date().toLocaleString()}</p>
+  </div>
+  <h2 style="color:#1a5cb8">📖 目录</h2>
+  <ol><li>项目功能介绍</li><li>七维评价与雷达图</li><li>项目风险清单与整改</li><li>权限分配表</li><li>项目管理三要素</li><li>反思与维护计划</li></ol>
+  <h2 style="color:#1a5cb8">一、项目功能介绍</h2><p>${v('pIntro')}</p>
+  <h2 style="color:#1a5cb8">二、七维评价与雷达图</h2>
+  <p style="text-align:center"><img src="${radarDataURL()}" alt="七维雷达图" style="max-width:360px"></p>
+  <ul>${DIMS.map(d=>'<li>'+d.name+':'+scores[d.k]+' / 10</li>').join('')}</ul>
+  <p>总分 <b>${tot}/70</b>,换算满意度 <b>${Math.round(tot/7)}/10 分</b>。</p>
+  <p><b>优点:</b>${v('pGood')}</p><p><b>不足:</b>${v('pWeak')}</p>
+  <h2 style="color:#1a5cb8">三、项目风险清单与整改</h2>
+  ${chk.done?('<table border="1" cellpadding="6" style="border-collapse:collapse;width:100%"><tr><th>风险项</th><th>等级</th><th>整改情况</th></tr>'+
+    probs.map(it=>'<tr><td>'+it.name+':'+it.found+'</td><td>'+it.risk+'</td><td>'+(it.fixed?'✅ 已整改:'+it.opts[it.a]:'⚠️ 待整改')+'</td></tr>').join('')+'</table>'):'<p>(未进行安全体检)</p>'}
+  <p><b>改进目标:</b>${v('pGoal')}</p>
+  <h2 style="color:#1a5cb8">四、权限分配表(最小权限原则)</h2>
+  <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%"><tr><th>成员＼设备</th>${DEVICES.map(d=>'<th>'+d.name+'</th>').join('')}</tr>
+  ${MEMBERS.map(m=>'<tr><th>'+m.name+'</th>'+DEVICES.map(d=>'<td style="text-align:center">'+(perm[m.k][d.k]?'✅':'—')+'</td>').join('')+'</tr>').join('')}</table>
+  <p><b>权限设计说明:</b>${v('pPermNote')}</p>
+  <h2 style="color:#1a5cb8">五、项目管理三要素</h2>
+  <p>当前设定:时间投入 ${tri.t}/10,成本投入 ${tri.c}/10,预计质量 ${triQual()}/10。三要素互相制衡,像一个三角形,要在合理利用时间和资源的情况下把项目做到最好。</p>
+  <h2 style="color:#1a5cb8">六、反思与维护计划</h2>
+  <p><b>反思与改进:</b>${v('pReflect')}</p>
+  <p><b>维护周期:</b>${v('pCycle','(未选择)')};<b>维护计划:</b>${v('pPlan')}</p>
+  <p style="color:#5b7186;font-size:13px;text-align:center;margin-top:18px">本报告由“智能家居项目评估与报告中心”离线生成 · 全部为虚拟设备与本地示例数据</p></div>`;
+}
+function genReport(){
+  const allMiss=[];
+  for(let i=1;i<=5;i++){const m=checkStep(i); if(m.length)allMiss.push('第'+i+'步:'+m.join('、'));}
+  refreshWizard();
+  if(allMiss.length){
+    fb('fb5','bad','报告书还有内容没填完:<br>'+allMiss.join('<br>')+'<br>可以先看预览,但把它们补齐,报告才完整!');
+  }else{
+    if(!progress.report){progress.report=true; setBadge(5);}
+    fb('fb5','ok','🎉 报告书完整生成!预览满意后点「📥 导出报告书」保存,也可以导出「🖼 项目展示页」向全班展示!');
+  }
+  $('reportPreview').innerHTML='<div class="card" style="margin-top:12px">'+reportHTML()+'</div>';
+  refreshStats();
+}
+function exportReport(){
+  downloadFile('智能家居项目报告书.html',
+    '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>智能家居项目报告书</title></head><body style="background:#eef4fb;padding:20px">'+reportHTML()+'</body></html>','text/html');
+  fb('fb5','ok','📥 报告书已导出为 HTML 文件,可以用浏览器打开、打印或分享给老师。');
+}
+function exportShow(){
+  const tot=DIMS.reduce((s,d)=>s+scores[d.k],0);
+  const best=DIMS.map(d=>({n:d.name,v:scores[d.k]})).sort((a,b)=>b.v-a.v).slice(0,3);
+  const stars='★'.repeat(Math.max(1,Math.round(tot/14)))+'☆'.repeat(5-Math.max(1,Math.round(tot/14)));
+  const html=`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>项目展示页 · ${v('pName')}</title></head>
+<body style="margin:0;font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(135deg,#1a5cb8,#8b5cf6);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px">
+<div style="background:#fff;border-radius:22px;max-width:640px;width:100%;padding:34px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3)">
+  <div style="font-size:56px">🏠</div>
+  <h1 style="color:#1a5cb8;margin:8px 0">${v('pName')}</h1>
+  <p style="color:#5b7186">${v('pMembers','')}</p>
+  <p style="font-size:17px">${v('pIntro')}</p>
+  <p style="text-align:center"><img src="${radarDataURL()}" alt="七维雷达图" style="max-width:340px"></p>
+  <p style="font-size:22px;color:#f59e0b;letter-spacing:4px">${stars}</p>
+  <p><b>综合得分 ${tot}/70</b> · 满意度 ${Math.round(tot/7)}/10 分</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0">
+    ${best.map(b=>'<span style="background:#f2f7fd;border:1px solid #d9e4f0;border-radius:16px;padding:6px 14px;font-weight:700">'+b.n+' '+b.v+'分</span>').join('')}
+  </div>
+  <p style="color:#1e8f56;font-weight:700">已完成安全隐私体检:整改风险 ${progress.fix}/5 项</p>
+  <p style="color:#5b7186;font-size:13px">清华版《信息科技》五年级下册 第3单元项目成果 · 离线生成 · 虚构示例数据</p>
+</div></body></html>`;
+  downloadFile('智能家居项目展示页.html',html,'text/html');
+  fb('fb5','ok','🖼 项目展示页已导出!全屏打开它,就是你的班级汇报封面。');
+}
+
+/* ============================================================
+   本机数据管理(localStorage,键名本课独有)
+============================================================ */
+const LS_KEY='u3l4_report_lab';
+const FIELD_IDS=['pName','pMembers','pIntro','pGood','pWeak','pGoal','pPermNote','pReflect','pPlan'];
+function projectData(){
+  return {ver:1,scores:Object.assign({},scores),touched:[...touched],
+    projName:$('projName').textContent,projIntro:$('projIntro').textContent,
+    chkDone:chk.done,fixed:CHK.map(it=>!!it.fixed),perm:JSON.parse(JSON.stringify(perm)),
+    tri:{t:tri.t,c:tri.c},triRight:[...triRight],
+    fields:FIELD_IDS.reduce((o,id)=>{o[id]=$(id).value;return o;},{}),cycle:$('pCycle').value,
+    progress:Object.assign({},progress)};
+}
+function applyProject(d){
+  try{
+    if(d.scores)DIMS.forEach((dim,i)=>{if(typeof d.scores[dim.k]==='number'){scores[dim.k]=d.scores[dim.k];
+      const s=$('dim'+i); if(s){s.value=scores[dim.k]; $('dimOut'+i).textContent=scores[dim.k];}}});
+    if(Array.isArray(d.touched))d.touched.forEach(k=>{touched.add(k);
+      const i=DIMS.findIndex(x=>x.k===k); const r=$('dr'+i); if(r)r.classList.add('touched');});
+    if(d.projName)$('projName').textContent=d.projName;
+    if(d.projIntro)$('projIntro').textContent=d.projIntro;
+    if(d.chkDone){chk.done=true; chk.idx=CHK.length;
+      if(Array.isArray(d.fixed))CHK.forEach((it,i)=>{if(!it.ok)it.fixed=!!d.fixed[i];});
+      $('chkList').innerHTML='';
+      CHK.forEach(it=>{
+        const row=document.createElement('div'); row.className='checkitem';
+        const lv=it.ok?'<span class="lvpill lv-ok">✅ 通过</span>':
+          (it.risk==='高'?'<span class="lvpill lv-high">⚠️ 高风险</span>':
+           it.risk==='中'?'<span class="lvpill lv-mid">⚠️ 中风险</span>':'<span class="lvpill lv-low">⚠️ 低风险</span>');
+        row.innerHTML=`<span>🔍 <b>${it.name}</b>:${it.ok?it.result:it.found}</span><span class="lv">${lv}</span>`;
+        $('chkList').appendChild(row);
+      });
+      $('chkProg').textContent=CHK.length+' / '+CHK.length;
+      renderFixArea(); renderRisk();
+    }
+    if(d.perm)MEMBERS.forEach(m=>DEVICES.forEach(dev=>{
+      if(d.perm[m.k])perm[m.k][dev.k]=d.perm[m.k][dev.k]?1:0;}));
+    renderPerm();
+    if(d.tri){tri.t=d.tri.t||5; tri.c=d.tri.c||5; $('triT').value=tri.t; $('triC').value=tri.c;}
+    if(Array.isArray(d.triRight))d.triRight.forEach(i=>triRight.add(i));
+    if(d.fields)FIELD_IDS.forEach(id=>{if(typeof d.fields[id]==='string')$(id).value=d.fields[id];});
+    if(d.cycle)$('pCycle').value=d.cycle;
+    if(d.progress){Object.assign(progress,d.progress);
+      progress.fix=CHK.filter(it=>!it.ok&&it.fixed).length;
+      $('bgFix').textContent=progress.fix;
+      if(progress.eval)setBadge(1); if(progress.fix>=5)setBadge(2);
+      if(progress.perm)setBadge(3); if(progress.tri)setBadge(4); if(progress.report)setBadge(5);}
+    drawRadar($('radar'),DIMS.map(x=>scores[x.k]),true); updateTotal(); renderTri();
+    refreshWizard(); refreshStats();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('智能家居项目评估数据.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 评估数据导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的评估数据文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'), raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderDims(); drawRadar($('radar'),DIMS.map(d=>scores[d.k]),true); updateTotal();
+  renderPerm(); renderTri(); renderTriQuiz();
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  refreshWizard(); refreshStats();
+})();
+</script>
+</body>
+</html>
