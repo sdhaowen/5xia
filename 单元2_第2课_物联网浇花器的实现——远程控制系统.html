@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能浇花器数字孪生实验室 · 单元2第2课 物联网浇花器的实现——远程控制系统</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6;
+    --bg:#eef4fb; --card:#ffffff; --ink:#20344b; --ink-2:#5b7186;
+    --line:#d9e4f0; --soft:#f2f7fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#1a5cb8,#2eb872); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(20,60,120,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--green-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--blue);}
+  nav button.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(30,60,110,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--blue); border:2px solid var(--blue);}
+  .btn.gray{background:#8aa0b5;}
+  .btn:disabled{background:#c4d2df; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#e8f1fd; border:1px solid var(--blue); color:var(--blue-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  /* ---------- 模块一:拓扑拼装 ---------- */
+  .pool{display:flex; flex-wrap:wrap; gap:10px; padding:12px; background:var(--soft); border-radius:12px; min-height:74px;}
+  .comp{border:2px solid var(--line); background:#fff; border-radius:12px; padding:10px 14px; font-size:15px; font-weight:700; cursor:pointer; user-select:none; transition:.15s; text-align:center;}
+  .comp .ico{font-size:26px; display:block;}
+  .comp:hover{border-color:var(--blue); transform:translateY(-2px);}
+  .comp.sel{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 3px #fde9c2;}
+  .topo{display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin:14px 0; justify-content:center;}
+  .slot{width:128px; min-height:86px; border:2.5px dashed #9db8d4; border-radius:12px; background:var(--soft); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; padding:6px; text-align:center; transition:.15s;}
+  .slot .hint{color:var(--ink-2); font-size:13px;}
+  .slot.filled{border-style:solid; border-color:var(--blue); background:#fff;}
+  .slot.right{border-color:var(--green); background:#e7f9ef;}
+  .slot.wrong{border-color:var(--red); background:#fdeaea; animation:shake .3s;}
+  @keyframes shake{25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+  .arrow{font-size:22px; color:var(--blue); font-weight:900;}
+  .branch{display:flex; flex-direction:column; gap:8px;}
+  /* ---------- 模块二:实验室 ---------- */
+  .lab{display:grid; grid-template-columns:290px 1fr 300px; gap:14px;}
+  @media(max-width:1100px){.lab{grid-template-columns:1fr;}}
+  .pot-box{text-align:center;}
+  .plant{font-size:64px; transition:.3s; display:block; margin:4px auto;}
+  .pot{width:130px; height:66px; margin:0 auto; background:linear-gradient(#b5651d,#8b4513); border-radius:0 0 34px 34px; border-top:8px solid #7a3c10; position:relative; overflow:hidden;}
+  .pot .wet{position:absolute; bottom:0; left:0; right:0; background:rgba(38,99,235,.5); transition:height .4s;}
+  .drops{height:26px; font-size:20px; color:var(--blue); visibility:hidden;}
+  .drops.on{visibility:visible; animation:drip .7s infinite;}
+  @keyframes drip{0%{transform:translateY(-6px); opacity:0;}50%{opacity:1;}100%{transform:translateY(8px); opacity:0;}}
+  .meter{margin:8px 0;}
+  .meter label{font-size:14px; color:var(--ink-2); display:flex; justify-content:space-between;}
+  .bar{height:18px; background:#e3ecf6; border-radius:9px; overflow:hidden; margin-top:3px;}
+  .bar i{display:block; height:100%; border-radius:9px; transition:width .4s, background .4s;}
+  .statebox{background:var(--soft); border-radius:10px; padding:8px 12px; margin-top:8px; font-size:14px; text-align:left;}
+  .statebox b{color:var(--blue-d);}
+  /* 管道动画 */
+  .pipe-wrap{position:relative; padding:6px 0 2px;}
+  .pipe{display:flex; justify-content:space-between; position:relative; margin:10px 6px 2px;}
+  .pipe::before{content:""; position:absolute; top:34px; left:44px; right:44px; height:6px; background:repeating-linear-gradient(90deg,#bcd4ee 0 14px,#e3eefb 14px 24px); border-radius:3px;}
+  .node{width:88px; text-align:center; position:relative; z-index:2;}
+  .node .nico{width:68px; height:68px; margin:0 auto; background:#fff; border:3px solid var(--line); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:32px; transition:.2s;}
+  .node.active .nico{border-color:var(--green); box-shadow:0 0 0 4px #d8f5e5;}
+  .node.err .nico{border-color:var(--red); background:#fdeaea;}
+  .node small{display:block; font-size:13px; font-weight:700; margin-top:4px;}
+  .node .st{font-size:12px; color:var(--ink-2);}
+  .msg-dot{position:absolute; top:22px; z-index:3; font-size:13px; font-weight:700; background:var(--orange); color:#fff; border-radius:14px; padding:3px 9px; transition:left .55s linear; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .msg-dot.up{background:var(--green); top:52px;}
+  .msg-dot.lost{background:var(--red); text-decoration:line-through; opacity:.6;}
+  .msg-dot.queued{background:#8aa0b5;}
+  .msglist{max-height:150px; overflow:auto; font-size:13.5px; background:var(--soft); border-radius:10px; padding:8px 10px; margin-top:10px;}
+  .msglist div{padding:2px 0; border-bottom:1px dashed var(--line);}
+  .msglist .s-ok{color:var(--green-d);} .msglist .s-bad{color:var(--red);} .msglist .s-wait{color:#b45309;}
+  /* 控制面板 */
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--blue-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--blue); height:26px;}
+  .switch{display:flex; align-items:center; gap:10px; margin-top:10px; font-weight:700; font-size:15px;}
+  .switch input{width:44px; height:24px; accent-color:var(--green); cursor:pointer;}
+  .runbar{display:flex; flex-wrap:wrap; gap:4px; margin-top:12px;}
+  .clock{font-size:15px; background:#20344b; color:#9fe3bd; font-weight:700; border-radius:10px; padding:6px 12px; display:inline-block; margin-bottom:6px; font-family:monospace;}
+  .why{background:#eef7ff; border-left:4px solid var(--blue); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  /* 网络实验 */
+  .netgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  @media(max-width:800px){.netgrid{grid-template-columns:1fr;}}
+  .expcard{border:2px solid var(--line); border-radius:12px; padding:12px;}
+  .expcard h4{font-size:15.5px; margin-bottom:6px;}
+  .expcard p{font-size:13.5px; color:var(--ink-2);}
+  /* 故障排查 */
+  .case-tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+  .case-tabs button{border:2px solid var(--line); background:#fff; border-radius:10px; padding:8px 14px; font-size:14.5px; font-weight:700; cursor:pointer;}
+  .case-tabs button.on{background:var(--purple); border-color:var(--purple); color:#fff;}
+  .case-tabs button.solved::after{content:" ✅";}
+  .checkline{display:flex; align-items:center; gap:8px; background:var(--soft); border-radius:10px; padding:8px 12px; margin:6px 0; font-size:14.5px;}
+  .checkline .res{margin-left:auto; font-weight:700;}
+  .opt{display:block; width:100%; text-align:left; border:2px solid var(--line); background:#fff; border-radius:10px; padding:10px 14px; margin:6px 0; font-size:15px; cursor:pointer; transition:.15s;}
+  .opt:hover{border-color:var(--purple);}
+  .opt.right{border-color:var(--green); background:#e7f9ef;}
+  .opt.wrong{border-color:var(--red); background:#fdeaea;}
+  /* 日志 */
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{border:1px solid var(--line); padding:6px 8px; text-align:center;}
+  th{background:var(--soft);}
+  .logwrap{max-height:320px; overflow:auto; border-radius:10px; border:1px solid var(--line);}
+  /* 报告 */
+  textarea{width:100%; min-height:74px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  textarea:focus{outline:none; border-color:var(--blue);}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:24px; color:var(--blue-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  pre.saved{background:#20344b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>💧 智能浇花器数字孪生实验室</h1>
+  <p>清华版《信息科技》五年级下册 · 第2单元 第2课 物联网浇花器的实现——远程控制系统(教材 P49—61)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 系统拼装</span>
+    <span class="badge" id="bg2">② 远程浇水成功</span>
+    <span class="badge" id="bg3">③ 自动控制实验</span>
+    <span class="badge" id="bg4">④ 网络实验</span>
+    <span class="badge" id="bg5">⑤ 故障排查 <span id="bgFix">0</span>/4</span>
+    <span class="badge" id="bg6">⑥ 项目报告</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">🧩 ① 系统拼装</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">🌱 ② 数字孪生实验室</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">📡 ③ 网络实验</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">🔧 ④ 故障排查诊所</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">📋 ⑤ 实验日志</button>
+  <button data-tab="t6" onclick="showTab('t6',this)">📑 ⑥ 项目报告</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:系统拓扑拼装 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>🧩 任务一:拼装物联网浇花器系统</h2>
+    <div class="task"><b>任务:</b>物联网浇花器由 6 个部分组成。请<b>先点击下方零件卡片选中它</b>,再<b>点击上方对应的空位</b>放进去,拼出完整的远程控制系统。放错了?再点一下空位就能取回来。</div>
+    <div class="topo">
+      <div class="slot" data-slot="phone" onclick="slotClick(this)"><span class="hint">发出指令的一端<br>(用户手里的…)</span></div>
+      <span class="arrow">→</span>
+      <div class="slot" data-slot="net" onclick="slotClick(this)"><span class="hint">信息的“高速公路”</span></div>
+      <span class="arrow">→</span>
+      <div class="slot" data-slot="platform" onclick="slotClick(this)"><span class="hint">整合信息、转发消息的平台</span></div>
+      <span class="arrow">→</span>
+      <div class="slot" data-slot="ctrl" onclick="slotClick(this)"><span class="hint">接收指令的“大脑”</span></div>
+      <span class="arrow">→</span>
+      <div class="branch">
+        <div class="slot" data-slot="sensor" onclick="slotClick(this)"><span class="hint">感知土壤水分</span></div>
+        <div class="slot" data-slot="pump" onclick="slotClick(this)"><span class="hint">执行浇水动作</span></div>
+      </div>
+    </div>
+    <h3>零件仓库(有 2 个零件是多余的干扰项哦!)</h3>
+    <div class="pool" id="pool"></div>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="checkTopo()">✅ 检查拼装</button>
+      <button class="btn ghost" onclick="topoHint()">💡 看提示</button>
+      <button class="btn gray" onclick="resetTopo()">🔄 重新拼装</button>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+  <div class="card">
+    <h2>📖 为什么要这样连?</h2>
+    <p>教材告诉我们:<b>传感器</b>负责采集土壤湿度等环境信息 → 通过<b>主控板(控制器)</b>和<b>无线网络</b>发送到<b>物联网平台</b> → 平台把数据<b>存储、显示和管理</b>起来,还能<b>反过来给设备下发命令</b> → 控制器收到命令后驱动<b>水泵</b>浇水。这样,我们用<b>手机</b>在任何地方都能给花浇水啦!</p>
+    <p style="margin-top:6px"><span class="pill">感知</span><span class="pill">联网</span><span class="pill">发送</span><span class="pill">接收</span><span class="pill">控制</span><span class="pill">记录</span><span class="pill">安全</span></p>
+  </div>
+</section>
+
+<!-- ================= 模块二:数字孪生实验室 ================= -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>🌱 任务二:远程控制虚拟花盆</h2>
+    <div class="task"><b>任务A:</b>点击「▶ 运行」让时间流动,再点「📱 手机浇水」,看指令怎样一步步跑到水泵。<br><b>任务B:</b>打开「自动浇水」,调整 4 个参数,让植物<b>连续 3 天保持健康(湿度 40%~70%)</b>,且不浪费水。</div>
+    <div class="lab">
+      <!-- 左:数字孪生花盆 -->
+      <div class="card pot-box" style="margin:0">
+        <h3>数字孪生花盆</h3>
+        <div class="drops" id="drops">💦 💦 💦</div>
+        <span class="plant" id="plant">🌿</span>
+        <div class="pot"><div class="wet" id="potWet" style="height:50%"></div></div>
+        <div class="meter"><label><span>土壤湿度</span><span id="soilVal">50%</span></label>
+          <div class="bar"><i id="soilBar" style="width:50%; background:#2eb872"></i></div></div>
+        <div class="meter"><label><span>水箱余量</span><span id="tankVal">100%</span></label>
+          <div class="bar"><i id="tankBar" style="width:100%; background:#2b7de9"></i></div></div>
+        <div class="statebox" id="plantState">植物状态:🌿 健康</div>
+        <div class="statebox">今日已浇水:<b id="todayCount">0</b> 次 | 冷却剩余:<b id="cd">0</b> 分钟<br>水泵:<b id="pumpState">关闭</b> | 控制器:<b id="ctrlState">在线</b></div>
+      </div>
+      <!-- 中:消息管道 -->
+      <div class="card" style="margin:0">
+        <h3>消息传输通道(看得见的数据流)</h3>
+        <div class="clock" id="clock">第 1 天 08:00</div>
+        <div class="pipe-wrap">
+          <div class="pipe" id="pipe">
+            <div class="node" id="n0"><div class="nico">📱</div><small>手机端</small><span class="st" id="st0">待命</span></div>
+            <div class="node" id="n1"><div class="nico">🌐</div><small>网络</small><span class="st" id="st1">畅通</span></div>
+            <div class="node" id="n2"><div class="nico">☁️</div><small>物联网平台</small><span class="st" id="st2">队列 0</span></div>
+            <div class="node" id="n3"><div class="nico">🎛️</div><small>控制器</small><span class="st" id="st3">在线</span></div>
+            <div class="node" id="n4"><div class="nico">🚿</div><small>水泵</small><span class="st" id="st4">关闭</span></div>
+          </div>
+        </div>
+        <div class="why" id="why">💬 点「▶ 运行」开始实验。橙色是<b>下行指令</b>(手机→水泵),绿色是<b>上行数据</b>(传感器→手机)。</div>
+        <h3 style="margin-top:10px">消息状态表</h3>
+        <div class="msglist" id="msglist"><div style="color:#5b7186">暂无消息</div></div>
+      </div>
+      <!-- 右:控制面板 -->
+      <div class="card ctl" style="margin:0">
+        <h3>🎮 控制面板</h3>
+        <div class="runbar">
+          <button class="btn green small" id="btnRun" onclick="toggleRun()">▶ 运行</button>
+          <button class="btn orange small" onclick="stepOnce()">⏭ 单步</button>
+          <button class="btn gray small" onclick="resetSim()">🔄 重置</button>
+          <button class="btn ghost small" onclick="loadExample()">📖 恢复教材示例</button>
+        </div>
+        <label><span>模拟速度</span><output id="spdOut">中</output></label>
+        <input type="range" id="spd" min="1" max="3" value="2" oninput="setSpeed()">
+        <hr style="border:none; border-top:1px dashed var(--line); margin:12px 0">
+        <button class="btn" style="width:100%" onclick="manualWater()">📱 手机浇水(手动指令)</button>
+        <button class="btn purple small" style="width:100%" onclick="requestReport()">📱 请求湿度汇报(上行)</button>
+        <div class="switch"><input type="checkbox" id="autoOn" onchange="autoChanged()"><span>🤖 自动浇水模式</span></div>
+        <label><span>湿度阈值(低于就浇)</span><output id="thOut">35%</output></label>
+        <input type="range" id="th" min="15" max="60" step="5" value="35" oninput="paramChanged('阈值','th','thOut','%')">
+        <label><span>每次浇水时长</span><output id="durOut">20分钟</output></label>
+        <input type="range" id="dur" min="10" max="60" step="10" value="20" oninput="paramChanged('浇水时长','dur','durOut','分钟')">
+        <label><span>冷却时间(两次浇水间隔)</span><output id="cdOut">60分钟</output></label>
+        <input type="range" id="cdSet" min="30" max="240" step="30" value="60" oninput="paramChanged('冷却时间','cdSet','cdOut','分钟')">
+        <label><span>安全上限(每日最多次数)</span><output id="maxOut">4次</output></label>
+        <input type="range" id="maxD" min="1" max="8" value="4" oninput="paramChanged('安全上限','maxD','maxOut','次')">
+        <div class="why" id="paramWhy" style="min-height:34px">💬 试着修改参数,这里会解释它带来的变化。</div>
+      </div>
+    </div>
+    <div class="feedback" id="fb2"></div>
+  </div>
+</section>
+
+<!-- ================= 模块三:网络实验 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>📡 任务三:网络会“捣乱”,怎么办?</h2>
+    <div class="task"><b>任务:</b>真实的网络并不总是可靠的。请逐个完成下面 4 个小实验,观察消息发生了什么,然后回答小问题。(实验会在②号实验室的管道上演示,做完实验可切回去看日志)</div>
+    <div class="netgrid">
+      <div class="expcard">
+        <h4>实验1 ⏱ 网络延迟</h4>
+        <p>把延迟调大,再发一条浇水指令,数一数指令走了几步才到水泵。</p>
+        <label style="display:flex;justify-content:space-between;font-size:14px;font-weight:700"><span>网络延迟</span><output id="latOut">正常</output></label>
+        <input type="range" id="lat" min="0" max="3" value="0" style="width:100%" oninput="setLatency()">
+        <button class="btn small" onclick="expLatency()">发送测试指令</button>
+        <div class="feedback" id="fbLat"></div>
+      </div>
+      <div class="expcard">
+        <h4>实验2 📉 指令丢失</h4>
+        <p>调高丢包率,连发 5 条指令,看看有几条“半路失踪”。</p>
+        <label style="display:flex;justify-content:space-between;font-size:14px;font-weight:700"><span>丢包率</span><output id="lossOut">0%</output></label>
+        <input type="range" id="loss" min="0" max="80" step="10" value="0" style="width:100%" oninput="setLoss()">
+        <button class="btn small" onclick="expLoss()">连发 5 条指令</button>
+        <div class="feedback" id="fbLoss"></div>
+      </div>
+      <div class="expcard">
+        <h4>实验3 📵 断网与过期指令</h4>
+        <p>断网时发的指令会先<b>排队</b>;等太久才送达的指令已经<b>过期</b>,控制器应该拒绝执行——不然半夜可能突然浇水!</p>
+        <button class="btn red small" id="btnOffline" onclick="toggleOffline()">🔌 断开网络</button>
+        <button class="btn small" onclick="expOffline()">断网时发指令</button>
+        <div class="feedback" id="fbOff"></div>
+      </div>
+      <div class="expcard">
+        <h4>实验4 👯 重复指令</h4>
+        <p>手一抖连点两次浇水?先关闭“防重复保护”试试会怎样,再打开保护对比。</p>
+        <div class="switch" style="margin-top:4px"><input type="checkbox" id="dedup" checked><span>🛡 防重复保护</span></div>
+        <button class="btn small" onclick="expDup()">快速连发 2 条相同指令</button>
+        <div class="feedback" id="fbDup"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🧠 实验小测:你观察到了吗?</h2>
+    <div id="quizNet"></div>
+    <div class="feedback" id="fbQuiz"></div>
+  </div>
+</section>
+
+<!-- ================= 模块四:故障排查诊所 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>🔧 任务四:浇花器坏了,当一次小小维修工!</h2>
+    <div class="task"><b>任务:</b>4 台浇花器出了不同的毛病。请按 3 步排查:①读症状 → ②点击检查项收集线索 → ③判断出故障原因并选修复方法。修好一台点亮一颗 ✅!</div>
+    <div class="case-tabs" id="caseTabs"></div>
+    <div id="caseBody"></div>
+  </div>
+</section>
+
+<!-- ================= 模块五:实验日志 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>📋 实验数据日志</h2>
+    <div class="task"><b>说明:</b>实验室会自动记录每条指令、每次湿度汇报和设备状态变化。这些记录只保存在你自己的电脑里,可以随时导出或清空。</div>
+    <div style="margin-bottom:10px">
+      <button class="btn small" onclick="renderLog()">🔄 刷新</button>
+      <button class="btn green small" onclick="exportCSV()">📥 导出日志(CSV)</button>
+      <button class="btn red small" onclick="clearLog()">🗑 清空日志</button>
+      <span class="pill">共 <b id="logCount">0</b> 条记录</span>
+    </div>
+    <div class="logwrap">
+      <table>
+        <thead><tr><th>模拟时间</th><th>类型</th><th>内容</th><th>土壤湿度</th><th>水箱</th><th>设备状态</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="6" style="color:#5b7186">暂无记录,去②号实验室做实验吧!</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 模块六:项目报告 ================= -->
+<section class="tab" id="t6">
+  <div class="card">
+    <h2>📑 任务五:生成我的项目报告</h2>
+    <div class="task"><b>任务:</b>下面的数据是实验室自动统计的,请把 4 个空填完整,然后点「生成报告」。这就是你的项目日志!</div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="sWater">0</b><span>累计浇水次数</span></div>
+      <div class="stat"><b id="sMsg">0</b><span>发送消息总数</span></div>
+      <div class="stat"><b id="sLost">0</b><span>丢失/过期消息数</span></div>
+      <div class="stat"><b id="sAvg">—</b><span>平均土壤湿度</span></div>
+      <div class="stat"><b id="sFix">0/4</b><span>修好的故障</span></div>
+      <div class="stat"><b id="sHealthy">0</b><span>健康天数</span></div>
+    </div>
+    <h3>1️⃣ 我的自动浇水控制规则(当…就…)</h3>
+    <textarea id="r1" placeholder="例:当土壤湿度低于35%,并且冷却时间已过、当天浇水少于4次时,就自动浇水20分钟。"></textarea>
+    <h3>2️⃣ 我遇到的网络问题和解决办法</h3>
+    <textarea id="r2" placeholder="例:实验中丢包率调到40%时,5条指令丢了2条。解决办法是让平台重发,并请控制器回传确认消息。"></textarea>
+    <h3>3️⃣ 优化前后对比(参数改了什么,效果有什么不同)</h3>
+    <textarea id="r3" placeholder="例:一开始阈值设60%,浇水太频繁浪费水;改成35%后,植物照样健康,水箱用得更慢了。"></textarea>
+    <h3>4️⃣ 安全与隐私策略</h3>
+    <textarea id="r4" placeholder="例:设置每日浇水安全上限,防止指令重复导致淹坏植物;过期指令要拒绝执行;平台数据只保存必要的湿度值。"></textarea>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genReport()">📄 生成报告预览</button>
+      <button class="btn" onclick="exportReport()">📥 导出报告(HTML文件)</button>
+    </div>
+    <div class="feedback" id="fb6"></div>
+    <div id="reportPreview"></div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出项目(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入项目</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>智能浇花器数字孪生实验室 · 完全离线运行 · 虚拟设备与本地示例数据 · 不采集不上传任何真实数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态
+============================================================ */
+const $=id=>document.getElementById(id);
+const progress={topo:false,manual:false,auto:false,net:false,fix:0,report:false};
+let logRows=[];          // {time,type,content,soil,tank,dev}
+let stats={water:0,msg:0,lost:0,soilSum:0,soilN:0,healthyDays:0};
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t5')renderLog();
+  if(id==='t6')refreshStats();
+}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function fb(id,cls,html){const e=$(id);e.className='feedback '+cls;e.innerHTML=html;}
+
+/* ============================================================
+   模块一:拓扑拼装(点击选择式,附拖拽同效)
+============================================================ */
+const COMPS=[
+  {k:'phone',ico:'📱',name:'手机端'},
+  {k:'net',ico:'🌐',name:'无线网络'},
+  {k:'platform',ico:'☁️',name:'物联网平台'},
+  {k:'ctrl',ico:'🎛️',name:'主控板(控制器)'},
+  {k:'sensor',ico:'🌡️',name:'土壤湿度传感器'},
+  {k:'pump',ico:'🚿',name:'水泵'},
+  {k:'printer',ico:'🖨️',name:'打印机'},
+  {k:'tv',ico:'📺',name:'电视机'},
+];
+let selComp=null, topoHintLv=0;
+function renderPool(){
+  const pool=$('pool'); pool.innerHTML='';
+  const placed=[...document.querySelectorAll('.slot')].map(s=>s.dataset.has).filter(Boolean);
+  COMPS.filter(c=>!placed.includes(c.k)).sort(()=>Math.random()-.5).forEach(c=>{
+    const d=document.createElement('div'); d.className='comp'; d.dataset.k=c.k;
+    d.innerHTML=`<span class="ico">${c.ico}</span>${c.name}`;
+    d.onclick=()=>{document.querySelectorAll('.comp').forEach(x=>x.classList.remove('sel'));
+      if(selComp===c.k){selComp=null;}else{selComp=c.k;d.classList.add('sel');}};
+    pool.appendChild(d);
+  });
+}
+function slotClick(slot){
+  if(slot.dataset.has){ // 取回
+    slot.dataset.has=''; slot.className='slot';
+    slot.innerHTML=`<span class="hint">${slot.dataset.hint}</span>`;
+    renderPool(); return;
+  }
+  if(!selComp){fb('fb1','info','💡 先在下方“零件仓库”里点击选中一个零件,再点击空位放入。');return;}
+  const c=COMPS.find(x=>x.k===selComp);
+  if(!slot.dataset.hint)slot.dataset.hint=slot.querySelector('.hint').innerHTML;
+  slot.dataset.has=c.k; slot.classList.add('filled');
+  slot.innerHTML=`<span style="font-size:26px">${c.ico}</span><b style="font-size:13.5px">${c.name}</b>`;
+  selComp=null; renderPool();
+}
+function checkTopo(){
+  let allFilled=true, allRight=true, wrongNames=[];
+  document.querySelectorAll('.slot').forEach(s=>{
+    s.classList.remove('right','wrong');
+    if(!s.dataset.has){allFilled=false;return;}
+    if(s.dataset.has===s.dataset.slot){s.classList.add('right');}
+    else{s.classList.add('wrong');allRight=false;wrongNames.push(COMPS.find(c=>c.k===s.dataset.has).name);}
+  });
+  if(!allFilled){fb('fb1','bad','🌱 还有空位没放零件呢!提示:打印机和电视机是干扰项,不属于浇花器系统。');return;}
+  if(allRight){
+    fb('fb1','ok','🎉 太棒了!系统拼装正确!信息的路线是:<b>手机端 → 网络 → 物联网平台 → 控制器 → 传感器/水泵</b>。现在去「② 数字孪生实验室」让它跑起来吧!');
+    progress.topo=true; setBadge(1);
+    addLog('系统','完成系统拓扑拼装','—','—','拼装正确');
+  }else{
+    fb('fb1','bad',`🤔 有 ${wrongNames.length} 个零件放错位置了(红色框):${wrongNames.join('、')}。想想每个位置的提示语,或点「💡 看提示」。`);
+  }
+}
+function topoHint(){
+  topoHintLv=Math.min(topoHintLv+1,3);
+  const hints=[
+    '提示①:指令从你手里出发——第一个位置放你随身携带、能发指令的设备。',
+    '提示②:「☁️ 物联网平台」在中间,它负责接收、存储数据,还能转发指令;它的前面是传送信息的网络。',
+    '提示③:完整顺序是:📱手机端 → 🌐无线网络 → ☁️物联网平台 → 🎛️主控板 → 🌡️传感器 和 🚿水泵。打印机、电视机不需要!'
+  ];
+  fb('fb1','info','💡 '+hints[topoHintLv-1]);
+}
+function resetTopo(){
+  document.querySelectorAll('.slot').forEach(s=>{
+    if(s.dataset.hint){s.innerHTML=`<span class="hint">${s.dataset.hint}</span>`;}
+    s.dataset.has=''; s.className='slot';
+  });
+  selComp=null; topoHintLv=0; renderPool(); fb('fb1','info','已重置,重新开始拼装吧!');
+}
+
+/* ============================================================
+   模块二:数字孪生模拟引擎
+   1 tick = 模拟 10 分钟;一天 = 144 tick
+============================================================ */
+const sim={
+  running:false,tick:0,soil:50,tank:100,wateringLeft:0,cooldown:0,todayCount:0,
+  healthyToday:true,offline:false,ctrlOk:true,pumpOk:true,sensorOk:true,
+  msgs:[],msgId:0,timer:null,speedMs:700,recentCmd:null,recentCmdTick:-99,
+};
+const NODE_X=[0,25,50,75,100]; // 节点位置百分比
+function speedName(v){return{1:'慢',2:'中',3:'快'}[v];}
+function setSpeed(){
+  const v=+$('spd').value; $('spdOut').textContent=speedName(v);
+  sim.speedMs={1:1200,2:700,3:350}[v];
+  if(sim.running){clearInterval(sim.timer);sim.timer=setInterval(tickOnce,sim.speedMs);}
+}
+function toggleRun(){
+  sim.running=!sim.running;
+  $('btnRun').textContent=sim.running?'⏸ 暂停':'▶ 运行';
+  $('btnRun').className='btn small '+(sim.running?'orange':'green');
+  if(sim.running){sim.timer=setInterval(tickOnce,sim.speedMs);}
+  else clearInterval(sim.timer);
+}
+function stepOnce(){if(sim.running)toggleRun();tickOnce();}
+function resetSim(){
+  if(sim.running)toggleRun();
+  Object.assign(sim,{tick:0,soil:50,tank:100,wateringLeft:0,cooldown:0,todayCount:0,healthyToday:true,
+    offline:false,ctrlOk:true,pumpOk:true,sensorOk:true,msgs:[],recentCmd:null,recentCmdTick:-99});
+  document.querySelectorAll('.msg-dot').forEach(d=>d.remove());
+  $('msglist').innerHTML='<div style="color:#5b7186">暂无消息</div>';
+  $('btnOffline').textContent='🔌 断开网络';
+  setWhy('已重置。点「▶ 运行」开始,或用「⏭ 单步」一步步观察。');
+  render();
+}
+function loadExample(){
+  resetSim();
+  $('autoOn').checked=true;$('th').value=35;$('dur').value=20;$('cdSet').value=60;$('maxD').value=4;
+  ['th','dur','cdSet','maxD'].forEach(syncOut);
+  $('lat').value=0;$('loss').value=0;setLatency();setLoss();
+  setWhy('📖 已恢复教材示例:自动模式,湿度低于35%自动浇水20分钟,冷却60分钟,每日上限4次。点「▶ 运行」观察!');
+  addLog('系统','恢复教材示例参数',sim.soil+'%',sim.tank+'%','自动模式');
+}
+function syncOut(id){
+  const v=$(id).value;
+  if(id==='th')$('thOut').textContent=v+'%';
+  if(id==='dur')$('durOut').textContent=v+'分钟';
+  if(id==='cdSet')$('cdOut').textContent=v+'分钟';
+  if(id==='maxD')$('maxOut').textContent=v+'次';
+}
+function paramChanged(name,id,outId,unit){
+  syncOut(id);
+  const v=$(id).value;
+  const why={
+    '阈值':`阈值越高,越"心急"——湿度一低于 ${v}% 就浇水,植物不容易干渴,但可能费水;阈值太低植物会先蔫掉。`,
+    '浇水时长':`每次浇 ${v} 分钟,浇得越久湿度涨得越多,但也更耗水箱,小心浇过头(>70%会烂根)!`,
+    '冷却时间':`两次浇水至少间隔 ${v} 分钟,防止连续浇水把花淹坏。`,
+    '安全上限':`每天最多浇 ${v} 次,这是安全底线——就算指令出错重复发送,也不会无限浇水。`,
+  }[name];
+  $('paramWhy').innerHTML='💬 '+why;
+  addLog('调参',`${name} 改为 ${v}${unit}`,Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','—');
+}
+function autoChanged(){
+  const on=$('autoOn').checked;
+  setWhy(on?'🤖 自动模式开启:控制器会根据湿度阈值自己决定浇水,不需要你点按钮。':'✋ 已切回手动模式,浇水要靠你点「手机浇水」。');
+  addLog('调参','自动模式 '+(on?'开启':'关闭'),Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','—');
+}
+function setWhy(t){$('why').innerHTML='💬 '+t;}
+function clockStr(){
+  const day=Math.floor(sim.tick/144)+1, m=(sim.tick%144)*10, h=Math.floor(m/60)+8;
+  return `第 ${day} 天 ${String(h%24).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+}
+
+/* ---- 消息系统 ---- */
+// msg: {id,label,dir:'down'|'up',hop(0-4小数),status,lost,queued,el,payloadTick,kind}
+function sendMsg(label,dir,kind){
+  stats.msg++;
+  const m={id:++sim.msgId,label,dir,kind,hop:dir==='down'?0:4,status:'发送中',lost:false,queued:false,payloadTick:sim.tick};
+  const el=document.createElement('div');
+  el.className='msg-dot'+(dir==='up'?' up':''); el.textContent=label;
+  $('pipe').appendChild(el); m.el=el;
+  positionMsg(m); sim.msgs.push(m); renderMsgs();
+  return m;
+}
+function positionMsg(m){
+  const pct=NODE_X[0]+(NODE_X[4]-NODE_X[0])*(m.hop/4);
+  m.el.style.left=`calc(${pct}% - 8px)`;
+}
+function finishMsg(m,status,cls){
+  m.status=status; m.done=true;
+  if(cls)m.el.classList.add(cls);
+  setTimeout(()=>{m.el.remove();},1600);
+}
+const latencyExtra=()=>+$('lat').value;      // 每跳额外等待tick
+const lossRate=()=>+$('loss').value/100;
+function advanceMsgs(){
+  for(const m of sim.msgs){
+    if(m.done)continue;
+    if(m.wait>0){m.wait--;m.status='传输中(延迟)';continue;}
+    if(m.queued){
+      if(!sim.offline){m.queued=false;m.status='恢复发送';
+        if(sim.tick-m.payloadTick>18){ // 排队超过3小时→过期
+          m.status='已过期,控制器拒绝执行'; stats.lost++;
+          finishMsg(m,'已过期 ⛔','lost');
+          addLog('安全','过期指令被拒绝执行(排队太久)',Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','安全机制生效');
+          setWhy('⛔ 这条指令在断网期间排队太久,已经<b>过期</b>。控制器拒绝执行它——这是重要的<b>安全机制</b>!');
+          continue;
+        }
+      } else {m.status='排队中(断网)';continue;}
+    }
+    const step=m.dir==='down'?1:-1;
+    const nextHop=m.hop+step;
+    // 网络段(手机↔网络↔平台)可能丢包/断网
+    const inNetSeg=(m.dir==='down'&&m.hop<2)||(m.dir==='up'&&m.hop>2);
+    if(inNetSeg&&sim.offline&&!m.queued){m.queued=true;m.status='排队中(断网)';m.el.classList.add('queued');renderMsgs();continue;}
+    if(inNetSeg&&Math.random()<lossRate()){
+      stats.lost++; finishMsg(m,'丢失 ❌','lost');
+      addLog('网络','消息丢失:'+m.label,Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','丢包');
+      setWhy('❌ 一条消息在网络中<b>丢失</b>了!接收方永远收不到它。这就是为什么物联网需要「确认回执 + 重发」机制。');
+      renderMsgs(); continue;
+    }
+    m.hop=nextHop; m.wait=latencyExtra(); positionMsg(m);
+    flashNode(m.dir==='down'?m.hop:m.hop, true);
+    m.status=['在手机端','经过网络','到达平台','到达控制器','到达水泵'][m.hop]||'传输中';
+    if(m.dir==='down'&&m.hop>=4){ // 指令到达水泵端
+      deliverCommand(m);
+    }
+    if(m.dir==='up'&&m.hop<=0){
+      m.status='📱 手机已收到湿度:'+m.label.replace('湿度',''); finishMsg(m,'已送达 ✅');
+      setWhy('✅ 上行数据到达手机!你在千里之外也能知道土壤湿度——这就是<b>信息的接收</b>。');
+    }
+  }
+  renderMsgs();
+}
+function deliverCommand(m){
+  if(!sim.ctrlOk){finishMsg(m,'控制器离线,未执行 ⚠️','lost');stats.lost++;
+    setWhy('⚠️ 指令到了,但<b>控制器离线</b>,没人执行它!');return;}
+  // 防重复
+  if($('dedup').checked&&sim.recentCmd===m.label&&sim.tick-sim.recentCmdTick<=2&&m.kind==='water'){
+    finishMsg(m,'重复指令,已忽略 🛡'); 
+    addLog('安全','防重复保护:忽略了重复指令',Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','安全机制生效');
+    setWhy('🛡 防重复保护发现这条指令和上一条一模一样、间隔极短,自动忽略了它,避免浇两次!');
+    return;
+  }
+  sim.recentCmd=m.label; sim.recentCmdTick=sim.tick;
+  if(m.kind==='water')execWater(m,'手机指令');
+  if(m.kind==='report'){
+    finishMsg(m,'已送达 ✅');
+    const val=sim.sensorOk?Math.round(sim.soil):-1;
+    const lb=val<0?'湿度:?(传感器异常)':'湿度'+val+'%';
+    sendMsg(lb,'up','data');
+    addLog('上行','传感器汇报 '+lb,Math.round(sim.soil)+'%',Math.round(sim.tank)+'%',sim.sensorOk?'正常':'传感器异常');
+  }
+}
+function execWater(m,source){
+  if(!sim.pumpOk){if(m)finishMsg(m,'水泵故障,无法浇水 ⚠️','lost');
+    addLog('故障','浇水失败:水泵故障',Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','水泵故障');
+    setWhy('⚠️ 指令送达了,可是<b>水泵坏了</b>转不动。去「④ 故障排查诊所」修理它!');return;}
+  if(sim.todayCount>=+$('maxD').value){if(m)finishMsg(m,'超出安全上限,拒绝 ⛔');
+    addLog('安全','已达每日上限,拒绝浇水',Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','安全机制生效');
+    setWhy('⛔ 今天已浇 '+sim.todayCount+' 次,达到安全上限,控制器拒绝继续浇水。');return;}
+  if(sim.cooldown>0){if(m)finishMsg(m,'冷却中,拒绝 🧊');
+    setWhy('🧊 距上次浇水还不足冷却时间,控制器拒绝了这条指令,防止浇太勤。');return;}
+  if(sim.tank<=0){if(m)finishMsg(m,'水箱空了 🫙','lost');
+    setWhy('🫙 水箱空了!点「🔄 重置」重新装满。');return;}
+  if(m)finishMsg(m,'已执行 ✅');
+  sim.wateringLeft=Math.round(+$('dur').value/10);
+  sim.cooldown=Math.round(+$('cdSet').value/10);
+  sim.todayCount++; stats.water++;
+  if(!progress.manual&&source==='手机指令'){progress.manual=true;setBadge(2);
+    fb('fb2','ok','🎉 你完成了第一次<b>远程浇水</b>!指令从手机出发,穿过网络和平台,最终让水泵动了起来。接下来试试自动模式吧!');}
+  addLog('浇水',source+' → 开始浇水'+$('dur').value+'分钟',Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','水泵开启');
+  setWhy('🚿 水泵开始工作!注意看土壤湿度上升、水箱下降。来源:'+source);
+}
+function flashNode(i,ok){
+  const n=$('n'+Math.max(0,Math.min(4,i))); if(!n)return;
+  n.classList.add('active'); setTimeout(()=>n.classList.remove('active'),450);
+}
+function renderMsgs(){
+  const live=sim.msgs.slice(-8).reverse();
+  $('msglist').innerHTML=live.length?live.map(m=>{
+    const cls=/✅|已执行/.test(m.status)?'s-ok':(/丢失|过期|故障|离线/.test(m.status)?'s-bad':'s-wait');
+    return `<div>#${m.id} ${m.dir==='down'?'⬇指令':'⬆数据'}「${m.label}」— <b class="${cls}">${m.status}</b></div>`;
+  }).join(''):'<div style="color:#5b7186">暂无消息</div>';
+}
+
+/* ---- 每 tick 主逻辑 ---- */
+function tickOnce(){
+  sim.tick++;
+  // 新的一天
+  if(sim.tick%144===0){
+    if(sim.healthyToday&&sim.soil>=40&&sim.soil<=70)stats.healthyDays++;
+    else if(sim.healthyToday)stats.healthyDays++;
+    sim.todayCount=0; sim.healthyToday=true;
+    addLog('系统','新的一天开始,浇水计数清零',Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','—');
+    if(stats.healthyDays>=3&&!progress.auto&&$('autoOn').checked){
+      progress.auto=true;setBadge(3);
+      fb('fb2','ok','🏆 挑战成功!植物在自动模式下连续 3 天保持健康!你设计的控制规则很棒,记得写进「⑥ 项目报告」。');
+    }
+  }
+  // 浇水/干燥
+  if(sim.wateringLeft>0&&sim.pumpOk&&sim.tank>0){
+    sim.wateringLeft--; sim.soil=Math.min(100,sim.soil+8); sim.tank=Math.max(0,sim.tank-3);
+    if(sim.wateringLeft===0)addLog('浇水','浇水结束',Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','水泵关闭');
+  }else{
+    sim.soil=Math.max(0,sim.soil-0.9);
+  }
+  if(sim.cooldown>0)sim.cooldown--;
+  if(sim.soil<40||sim.soil>70)sim.healthyToday=sim.healthyToday&&(sim.soil>=25&&sim.soil<=80);
+  stats.soilSum+=sim.soil; stats.soilN++;
+  // 自动控制
+  if($('autoOn').checked&&sim.ctrlOk&&sim.sensorOk&&sim.wateringLeft===0
+     &&sim.soil<+$('th').value&&sim.cooldown===0&&sim.todayCount<+$('maxD').value){
+    execWater(null,'自动规则');
+    setWhy(`🤖 自动规则触发:湿度 ${Math.round(sim.soil)}% &lt; 阈值 ${$('th').value}%,且冷却已过、未超上限 → 自动浇水!`);
+  }
+  // 传感器定时汇报(每2小时)
+  if(sim.tick%12===0&&sim.ctrlOk){
+    const val=sim.sensorOk?Math.round(sim.soil):-1;
+    sendMsg(val<0?'湿度:?':'湿度'+val+'%','up','data');
+  }
+  advanceMsgs(); render();
+}
+function render(){
+  $('clock').textContent=clockStr();
+  const s=Math.round(sim.soil),t=Math.round(sim.tank);
+  $('soilVal').textContent=s+'%'; $('tankVal').textContent=t+'%';
+  $('soilBar').style.width=s+'%';
+  $('soilBar').style.background=s<25?'#e5484d':(s<40?'#f59e0b':(s<=70?'#2eb872':'#8b5cf6'));
+  $('tankBar').style.width=t+'%';
+  $('potWet').style.height=s+'%';
+  const watering=sim.wateringLeft>0&&sim.pumpOk;
+  $('drops').classList.toggle('on',watering);
+  let plant='🌿',state='🌿 健康',color='#2eb872';
+  if(s<20){plant='🥀';state='🥀 快干死了!';color='#e5484d';}
+  else if(s<40){plant='😟';state='😟 有点渴';color='#f59e0b';}
+  else if(s>85){plant='🫠';state='🫠 涝了,快烂根!';color='#8b5cf6';}
+  else if(s>70){plant='💧';state='💧 有点湿';color='#8b5cf6';}
+  $('plant').textContent=plant;
+  $('plantState').innerHTML=`植物状态:<b style="color:${color}">${state}</b>(健康区间 40%~70%)`;
+  $('todayCount').textContent=sim.todayCount;
+  $('cd').textContent=sim.cooldown*10;
+  $('pumpState').textContent=sim.pumpOk?(watering?'💦 浇水中':'关闭'):'⚠️ 故障';
+  $('ctrlState').textContent=sim.ctrlOk?'在线':'⚠️ 离线';
+  $('st0').textContent='待命';
+  $('st1').textContent=sim.offline?'📵 断网':'畅通';
+  $('st2').textContent='队列 '+sim.msgs.filter(m=>m.queued&&!m.done).length;
+  $('st3').textContent=sim.ctrlOk?'在线':'离线';
+  $('st4').textContent=sim.pumpOk?(watering?'浇水中':'关闭'):'故障';
+  $('n1').classList.toggle('err',sim.offline);
+  $('n3').classList.toggle('err',!sim.ctrlOk);
+  $('n4').classList.toggle('err',!sim.pumpOk);
+}
+function manualWater(){
+  sendMsg('浇水'+$('dur').value+'分钟','down','water');
+  addLog('下行','📱 手机发送浇水指令',Math.round(sim.soil)+'%',Math.round(sim.tank)+'%','发送中');
+  setWhy('📱 手机发出了浇水指令,看它沿管道前进:发送 → 网络 → 平台排队转发 → 控制器接收 → 水泵执行。');
+  if(!sim.running)fb('fb2','info','💡 提示:现在是暂停状态,点「⏭ 单步」一步一步看指令走,或点「▶ 运行」让它自动前进。');
+}
+function requestReport(){
+  sendMsg('查询湿度','down','report');
+  setWhy('📱 手机发出「查询湿度」请求,控制器收到后会让传感器把数据<b>沿绿色方向</b>传回来。');
+}
+
+/* ============================================================
+   模块三:网络实验
+============================================================ */
+function setLatency(){
+  const v=+$('lat').value;
+  $('latOut').textContent=['正常','轻微卡顿','明显延迟','严重延迟'][v];
+}
+function setLoss(){$('lossOut').textContent=$('loss').value+'%';}
+function ensureRunning(){if(!sim.running)toggleRun();}
+function expLatency(){
+  ensureRunning(); sendMsg('延迟测试指令','down','water');
+  fb('fbLat','info','👀 已发送!快切到「② 实验室」看指令走得多慢。延迟越大,远程控制越"迟钝"——想象浇水指令 5 秒后才执行的感觉。');
+  progressNet();
+}
+function expLoss(){
+  ensureRunning();
+  if(+$('loss').value===0){fb('fbLoss','bad','先把丢包率调大一点(比如 40%)再实验,不然一条也不会丢哦。');return;}
+  let n=0; const t=setInterval(()=>{sendMsg('测试'+(n+1),'down','test');if(++n>=5)clearInterval(t);},420);
+  fb('fbLoss','info','👀 已连发 5 条!切到「② 实验室」数一数几条变红❌消失了。结果也会记录在「⑤ 实验日志」里。');
+  progressNet();
+}
+function toggleOffline(){
+  sim.offline=!sim.offline;
+  $('btnOffline').textContent=sim.offline?'🔗 恢复网络':'🔌 断开网络';
+  addLog('网络',sim.offline?'网络断开':'网络恢复',Math.round(sim.soil)+'%',Math.round(sim.tank)+'%',sim.offline?'离线':'在线');
+  setWhy(sim.offline?'📵 网络断开了!此时发送的消息会在节点处<b>排队等待</b>。':'🔗 网络恢复!排队的消息继续出发,但太老的指令会被判定<b>过期</b>。');
+  render();
+}
+function expOffline(){
+  if(!sim.offline){fb('fbOff','bad','要先点「🔌 断开网络」,再发指令,才能看到排队现象。');return;}
+  ensureRunning(); sendMsg('断网测试','down','water');
+  fb('fbOff','info','👀 指令发出但网络不通,它会变灰排队。你可以:①马上恢复网络→指令继续送达;②等待较久(模拟3小时)再恢复→指令过期被拒绝。两种都试试!');
+  progressNet();
+}
+function expDup(){
+  ensureRunning();
+  sendMsg('浇水'+$('dur').value+'分钟','down','water');
+  setTimeout(()=>sendMsg('浇水'+$('dur').value+'分钟','down','water'),380);
+  const on=$('dedup').checked;
+  fb('fbDup','info',on?'🛡 保护开着:第二条相同指令会被控制器忽略,只浇一次水。再把保护关掉对比试试!':'⚠️ 保护关了:两条指令都会执行(受冷却时间限制),小心浇过头!看完记得把保护打开。');
+  progressNet();
+}
+let netExpCount=0;
+function progressNet(){
+  netExpCount++;
+  if(netExpCount>=4&&!progress.net){progress.net=true;setBadge(4);}
+}
+/* 网络小测 */
+const NETQ=[
+  {q:'消息在网络中丢失后,水泵会怎样?',opts:['照常浇水','收不到指令,不会浇水','自己猜一个指令执行'],a:1,
+   why:'丢失的消息接收方永远收不到,所以需要「确认回执+重发」机制。'},
+  {q:'断网时排了很久队的浇水指令,恢复网络后控制器应该?',opts:['立刻执行','判断是否过期,过期就拒绝','执行两遍补偿'],a:1,
+   why:'过期指令可能在错误的时间浇水,拒绝执行才安全。'},
+  {q:'防止手抖连点两次导致浇水两次,靠的是?',opts:['把网速调快','防重复保护(相同指令短时间只执行一次)','把水箱放空'],a:1,
+   why:'防重复(防抖)保护让相同指令在短时间内只执行一次。'},
+];
+function renderQuiz(){
+  $('quizNet').innerHTML=NETQ.map((it,i)=>`<h3>${i+1}. ${it.q}</h3>`+
+    it.opts.map((o,j)=>`<button class="opt" id="q${i}o${j}" onclick="answerQ(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')).join('');
+}
+let quizRight=0;
+function answerQ(i,j){
+  const it=NETQ[i];
+  for(let k=0;k<it.opts.length;k++)$('q'+i+'o'+k).classList.remove('right','wrong');
+  if(j===it.a){$('q'+i+'o'+j).classList.add('right');quizRight++;
+    fb('fbQuiz','ok','✅ 答对了!'+it.why);}
+  else{$('q'+i+'o'+j).classList.add('wrong');
+    fb('fbQuiz','bad','再想想:回忆一下刚才实验里看到的现象。提示:'+it.why.slice(0,10)+'……');}
+}
+
+/* ============================================================
+   模块四:故障排查诊所
+============================================================ */
+const CASES=[
+  {name:'病号1:主题写错了',symptom:'小明在手机上点了浇水,平台显示"已发送",可控制器一点反应也没有。日志里发现:手机把指令发到了主题「water/pot1」,而控制器订阅的是「water/potA」。',
+   checks:[
+     {t:'检查网络是否连通',r:'✅ 网络正常,消息确实到达了平台'},
+     {t:'检查控制器是否在线',r:'✅ 控制器在线,电量充足'},
+     {t:'对比发送主题和订阅主题',r:'❗ 发送到 water/pot1,订阅的是 water/potA,不一样!'},
+     {t:'检查水泵接线',r:'✅ 接线牢固'}],
+   causes:['网络太慢了','发送主题和订阅主题不一致,消息没人接收','水箱没水了'],a:1,
+   fixes:['重启手机','把发送主题改成和订阅一致(water/potA)','换一个更大的水泵'],fa:1,
+   lesson:'发布和订阅的主题(Topic)必须完全一致,就像寄信要写对收件地址!'},
+  {name:'病号2:控制器离线',symptom:'指令能到平台,但平台显示控制器"最后在线时间:昨天"。花盆旁的主控板指示灯不亮。',
+   checks:[
+     {t:'检查平台消息记录',r:'✅ 平台已收到指令并尝试转发'},
+     {t:'查看主控板指示灯',r:'❗ 指示灯不亮,主控板没通电!'},
+     {t:'检查拓展板电源开关',r:'❗ 电源开关是关着的(教材提醒过要打开哦)'},
+     {t:'检查湿度传感器读数',r:'⚠️ 无法读取(因为主控板没电)'}],
+   causes:['主题写错了','主控板/拓展板没有通电,控制器离线','网络延迟太高'],a:1,
+   fixes:['给主控板通电并打开拓展板电源开关,重新联网','把丢包率调低','多发几遍指令'],fa:0,
+   lesson:'教材温馨小贴士:使用拓展板时要确保电量充足,并打开电源开关!设备离线时,再多的指令也没人执行。'},
+  {name:'病号3:水泵罢工',symptom:'控制器日志显示"已收到浇水指令,已输出开泵信号",但水一滴也没流出来,土壤湿度持续下降。',
+   checks:[
+     {t:'检查控制器是否收到指令',r:'✅ 已收到并执行了开泵动作'},
+     {t:'听水泵有没有声音',r:'❗ 一点声音都没有'},
+     {t:'检查水泵与主控板的接线',r:'❗ 水泵信号线松脱了!'},
+     {t:'检查水箱',r:'✅ 水箱是满的'}],
+   causes:['水泵与主控板接线松脱,信号传不过去','平台把指令弄丢了','传感器读数错误'],a:0,
+   fixes:['重新插好水泵接线并测试','重启物联网平台','把浇水时长调到最大'],fa:0,
+   lesson:'排查要按"信息流"顺序:指令到了吗→控制器执行了吗→执行器动了吗。问题出在最后一环:执行器接线。'},
+  {name:'病号4:传感器说胡话',symptom:'自动模式下,水泵疯狂浇水停不下来。日志显示传感器一直汇报"湿度 2%",可土壤明明已经湿透了。',
+   checks:[
+     {t:'检查自动规则设置',r:'✅ 规则正常:低于35%才浇水'},
+     {t:'用手摸土壤',r:'❗ 土壤已经非常湿,和读数 2% 完全不符'},
+     {t:'拔下传感器擦干重插',r:'❗ 发现传感器探头上全是泥,已经损坏'},
+     {t:'检查网络延迟',r:'✅ 网络正常'}],
+   causes:['网络把数据改错了','传感器损坏,一直汇报错误的低湿度,骗过了自动规则','水泵功率太大'],a:1,
+   fixes:['更换传感器,并给自动浇水加上"每日安全上限"双保险','把阈值调成0%','关闭防重复保护'],fa:0,
+   lesson:'自动系统依赖传感器数据,数据错了决策就会错。所以要有「安全上限」这样的保底机制,坏数据也不会酿成大祸!'},
+];
+let caseIdx=0; const caseSolved=[false,false,false,false]; let caseHintLv=[0,0,0,0];
+function renderCaseTabs(){
+  $('caseTabs').innerHTML=CASES.map((c,i)=>
+    `<button id="ct${i}" class="${i===caseIdx?'on':''} ${caseSolved[i]?'solved':''}" onclick="openCase(${i})">${c.name}</button>`).join('');
+}
+function openCase(i){
+  caseIdx=i; renderCaseTabs();
+  const c=CASES[i];
+  $('caseBody').innerHTML=`
+    <div class="task"><b>🩺 症状:</b>${c.symptom}</div>
+    <h3>第1步:点击检查项,收集线索</h3>
+    ${c.checks.map((ch,j)=>`<div class="checkline"><button class="btn small ghost" onclick="doCheck(${i},${j})">🔍 ${ch.t}</button><span class="res" id="chk${i}_${j}"></span></div>`).join('')}
+    <h3>第2步:判断出故障原因</h3>
+    ${c.causes.map((o,j)=>`<button class="opt" id="cs${i}o${j}" onclick="pickCause(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')}
+    <h3>第3步:选择修复方法</h3>
+    ${c.fixes.map((o,j)=>`<button class="opt" id="fx${i}o${j}" onclick="pickFix(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')}
+    <div style="margin-top:8px"><button class="btn ghost small" onclick="caseHint(${i})">💡 分层提示</button></div>
+    <div class="feedback" id="fbCase"></div>`;
+}
+function doCheck(i,j){
+  const el=$('chk'+i+'_'+j); if(!el)return;
+  el.textContent=CASES[i].checks[j].r;
+  addLog('排查',CASES[i].name+':'+CASES[i].checks[j].t,'—','—',CASES[i].checks[j].r.slice(0,20));
+}
+let causeOk=[false,false,false,false];
+function pickCause(i,j){
+  const c=CASES[i];
+  if(!$('cs'+i+'o'+j))return;
+  c.causes.forEach((_,k)=>$('cs'+i+'o'+k)?.classList.remove('right','wrong'));
+  if(j===c.a){$('cs'+i+'o'+j).classList.add('right');causeOk[i]=true;
+    fb('fbCase','ok','✅ 判断正确!现在选一个修复方法。');}
+  else{$('cs'+i+'o'+j).classList.add('wrong');causeOk[i]=false;
+    fb('fbCase','bad','🤔 不太对。先把上面的检查项都点一遍,带❗的线索最关键!');}
+}
+function pickFix(i,j){
+  const c=CASES[i];
+  if(!$('fx'+i+'o'+j))return;
+  c.fixes.forEach((_,k)=>$('fx'+i+'o'+k)?.classList.remove('right','wrong'));
+  if(!causeOk[i]){fb('fbCase','bad','先在第2步判断出正确的故障原因哦。');return;}
+  if(j===c.fa){$('fx'+i+'o'+j).classList.add('right');
+    if(!caseSolved[i]){caseSolved[i]=true;progress.fix++;$('bgFix').textContent=progress.fix;
+      if(progress.fix>=4)setBadge(5);
+      addLog('排查',c.name+' 修复成功','—','—','✅ 已修复');}
+    renderCaseTabs();
+    fb('fbCase','ok','🎉 修复成功!<b>本课收获:</b>'+c.lesson+(progress.fix<4?' 继续修下一台吧!':' 四台全修好,你是合格的物联网维修工!'));}
+  else{$('fx'+i+'o'+j).classList.add('wrong');
+    fb('fbCase','bad','这个方法治不了这个病~再看看❗线索指向哪里。');}
+}
+function caseHint(i){
+  caseHintLv[i]=Math.min(caseHintLv[i]+1,3);
+  const lv=caseHintLv[i], c=CASES[i];
+  const hs=[
+    '提示①:把第1步的 4 个检查都点开,注意带 ❗ 的结果。',
+    '提示②:沿着信息流找断点:手机→网络→平台→控制器→执行器,故障出在哪一环?',
+    '提示③:正确原因是 '+'ABC'[c.a]+',对应的修复方法是 '+'ABC'[c.fa]+'。想一想为什么!'
+  ];
+  fb('fbCase','info','💡 '+hs[lv-1]);
+}
+
+/* ============================================================
+   模块五:日志
+============================================================ */
+function addLog(type,content,soil,tank,dev){
+  logRows.push({time:clockStr(),type,content,soil,tank,dev});
+  if(logRows.length>500)logRows.shift();
+}
+function renderLog(){
+  $('logCount').textContent=logRows.length;
+  $('logBody').innerHTML=logRows.length?logRows.slice().reverse().map(r=>
+    `<tr><td>${r.time}</td><td>${r.type}</td><td style="text-align:left">${r.content}</td><td>${r.soil}</td><td>${r.tank}</td><td>${r.dev}</td></tr>`).join('')
+    :'<tr><td colspan="6" style="color:#5b7186">暂无记录</td></tr>';
+}
+function exportCSV(){
+  const head='模拟时间,类型,内容,土壤湿度,水箱,设备状态\n';
+  const body=logRows.map(r=>[r.time,r.type,r.content,r.soil,r.tank,r.dev].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  downloadFile('浇花器实验日志.csv','\ufeff'+head+body,'text/csv');
+}
+function clearLog(){logRows=[];renderLog();}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ============================================================
+   模块六:报告与本机数据
+============================================================ */
+function refreshStats(){
+  $('sWater').textContent=stats.water;
+  $('sMsg').textContent=stats.msg;
+  $('sLost').textContent=stats.lost;
+  $('sAvg').textContent=stats.soilN?Math.round(stats.soilSum/stats.soilN)+'%':'—';
+  $('sFix').textContent=progress.fix+'/4';
+  $('sHealthy').textContent=stats.healthyDays;
+}
+function reportHTML(){
+  const f=id=>($(id).value.trim()||'(还没有填写)');
+  return `<div style="font-family:sans-serif;max-width:720px;margin:auto">
+  <h1 style="color:#1a5cb8">🌱 物联网浇花器项目报告</h1>
+  <p>课程:清华版《信息科技》五年级下册 第2单元第2课 | 生成时间:${new Date().toLocaleString()}</p>
+  <h2>一、实验数据统计</h2>
+  <ul><li>累计浇水次数:${stats.water}</li><li>发送消息总数:${stats.msg}</li>
+  <li>丢失/过期消息:${stats.lost}</li><li>平均土壤湿度:${stats.soilN?Math.round(stats.soilSum/stats.soilN)+'%':'—'}</li>
+  <li>修复故障:${progress.fix}/4</li><li>植物健康天数:${stats.healthyDays}</li>
+  <li>当前参数:阈值${$('th').value}% / 时长${$('dur').value}分钟 / 冷却${$('cdSet').value}分钟 / 每日上限${$('maxD').value}次</li></ul>
+  <h2>二、我的控制规则</h2><p>${f('r1')}</p>
+  <h2>三、网络问题与解决</h2><p>${f('r2')}</p>
+  <h2>四、优化前后对比</h2><p>${f('r3')}</p>
+  <h2>五、安全与隐私策略</h2><p>${f('r4')}</p></div>`;
+}
+function genReport(){
+  const empty=['r1','r2','r3','r4'].filter(id=>!$(id).value.trim());
+  if(empty.length){fb('fb6','bad',`还有 ${empty.length} 个空没填完呢!把你实验中的发现写进去,报告才有价值。`);}
+  else{fb('fb6','ok','✅ 报告已生成!检查一下预览,满意就点「导出报告」保存到电脑。');
+    if(!progress.report){progress.report=true;setBadge(6);}}
+  $('reportPreview').innerHTML='<div class="card" style="margin-top:12px">'+reportHTML()+'</div>';
+  refreshStats();
+}
+function exportReport(){
+  downloadFile('物联网浇花器项目报告.html','<!DOCTYPE html><html><head><meta charset="utf-8"><title>项目报告</title></head><body>'+reportHTML()+'</body></html>','text/html');
+}
+const LS_KEY='u2l2_watering_lab';
+function projectData(){
+  return {ver:1,report:{r1:$('r1').value,r2:$('r2').value,r3:$('r3').value,r4:$('r4').value},
+    params:{th:$('th').value,dur:$('dur').value,cd:$('cdSet').value,max:$('maxD').value,auto:$('autoOn').checked},
+    stats,progress,log:logRows.slice(-100)};
+}
+function applyProject(d){
+  try{
+    if(d.report)['r1','r2','r3','r4'].forEach(k=>$(k).value=d.report[k]||'');
+    if(d.params){$('th').value=d.params.th;$('dur').value=d.params.dur;$('cdSet').value=d.params.cd;
+      $('maxD').value=d.params.max;$('autoOn').checked=!!d.params.auto;
+      ['th','dur','cdSet','maxD'].forEach(syncOut);}
+    if(d.stats)stats=Object.assign(stats,d.stats);
+    if(d.progress){Object.assign(progress,d.progress);
+      if(progress.topo)setBadge(1);if(progress.manual)setBadge(2);if(progress.auto)setBadge(3);
+      if(progress.net)setBadge(4);if(progress.fix>=4)setBadge(5);if(progress.report)setBadge(6);
+      $('bgFix').textContent=progress.fix;}
+    if(Array.isArray(d.log))logRows=d.log;
+    refreshStats();renderLog();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('浇花器项目进度.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{ 
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 项目导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的项目文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'), raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderPool(); renderQuiz(); renderCaseTabs(); openCase(0);
+  setLatency(); setLoss(); ['th','dur','cdSet','maxD'].forEach(syncOut);
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  render(); refreshStats();
+})();
+</script>
+</body>
+</html>
