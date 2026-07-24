@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能穿戴设备探索馆 · 单元1第1课 智能穿戴新纪元——常见穿戴设备</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6;
+    --bg:#eef4fb; --card:#ffffff; --ink:#20344b; --ink-2:#5b7186;
+    --line:#d9e4f0; --soft:#f2f7fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#1a5cb8,#8b5cf6); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(20,60,120,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--green-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--blue);}
+  nav button.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(30,60,110,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--blue); border:2px solid var(--blue);}
+  .btn.gray{background:#8aa0b5;}
+  .btn:disabled{background:#c4d2df; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#e8f1fd; border:1px solid var(--blue); color:var(--blue-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .why{background:#eef7ff; border-left:4px solid var(--blue); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+  @keyframes shake{25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+  /* ---------- 模块一:设备探索墙 ---------- */
+  .wall{display:grid; grid-template-columns:repeat(6,1fr); gap:10px;}
+  @media(max-width:1000px){.wall{grid-template-columns:repeat(3,1fr);}}
+  .dev{border:2px solid var(--line); background:#fff; border-radius:14px; padding:10px 6px; text-align:center; cursor:pointer; transition:.15s; font-weight:700; font-size:14px; position:relative;}
+  .dev .ico{font-size:34px; display:block;}
+  .dev:hover{border-color:var(--blue); transform:translateY(-2px);}
+  .dev.on{border-color:var(--blue); background:#e8f1fd; box-shadow:0 0 0 3px #cfe3fb;}
+  .dev.seen::after{content:"✅"; position:absolute; top:4px; right:6px; font-size:13px;}
+  .pipe4{display:flex; align-items:stretch; gap:4px; justify-content:center; flex-wrap:wrap; margin:12px 0;}
+  .dnode{width:150px; text-align:center; border:2.5px solid var(--line); border-radius:14px; background:var(--soft); padding:10px 6px; transition:.2s;}
+  .dnode .nico{font-size:32px; display:block;}
+  .dnode small{display:block; font-size:13.5px; font-weight:700; margin-top:4px;}
+  .dnode.cur{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 4px #fde9c2;}
+  .dnode.done{border-color:var(--green); background:#e7f9ef;}
+  .darrow{align-self:center; font-size:22px; color:var(--blue); font-weight:900;}
+  .lightdot{display:inline-block; width:14px; height:14px; border-radius:50%; background:#c4d2df; margin-left:6px; vertical-align:middle;}
+  .lightdot.blink{background:#2eb872; animation:blinkG .5s infinite;}
+  @keyframes blinkG{50%{opacity:.25;}}
+  .livegrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:8px;}
+  @media(max-width:800px){.livegrid{grid-template-columns:1fr;}}
+  .livestat{background:var(--soft); border-radius:12px; padding:10px; text-align:center;}
+  .livestat b{font-size:30px; color:var(--blue-d); display:block; font-variant-numeric:tabular-nums;}
+  .livestat b.warn{color:var(--red);}
+  .livestat span{font-size:13px; color:var(--ink-2);}
+  .heart{display:inline-block; animation:beat 1s infinite;}
+  @keyframes beat{0%,100%{transform:scale(1);}20%{transform:scale(1.25);}}
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--blue-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--blue); height:26px;}
+  /* ---------- 模块二:佩戴位置 ---------- */
+  .wearwrap{display:grid; grid-template-columns:1.3fr 1fr; gap:16px;}
+  @media(max-width:900px){.wearwrap{grid-template-columns:1fr;}}
+  .stage{position:relative; min-height:470px; background:var(--soft); border-radius:14px; overflow:hidden;}
+  .p-head{position:absolute; top:16px; left:50%; transform:translateX(-50%); width:60px; height:60px; border-radius:50%; background:#ffe0b3; border:3px solid #eab676; display:flex; align-items:center; justify-content:center; font-size:32px;}
+  .p-body{position:absolute; top:80px; left:50%; transform:translateX(-50%); width:88px; height:125px; background:#8fc7f5; border-radius:18px; border:3px solid #5f9bd6;}
+  .p-arm{position:absolute; top:88px; width:17px; height:100px; background:#ffe0b3; border:2px solid #eab676; border-radius:9px;}
+  .p-arm.l{left:calc(50% - 66px); transform:rotate(9deg);}
+  .p-arm.r{left:calc(50% + 49px); transform:rotate(-9deg);}
+  .p-hand{position:absolute; top:190px; width:22px; height:22px; border-radius:50%; background:#ffe0b3; border:2px solid #eab676;}
+  .p-hand.l{left:calc(50% - 74px);}
+  .p-hand.r{left:calc(50% + 52px);}
+  .p-leg{position:absolute; top:207px; width:24px; height:115px; background:#7d9dd1; border:2px solid #5b79ab; border-radius:10px;}
+  .p-leg.l{left:calc(50% - 30px);}
+  .p-leg.r{left:calc(50% + 6px);}
+  .p-foot{position:absolute; top:322px; width:38px; height:16px; background:#5b4632; border-radius:4px 10px 10px 4px;}
+  .p-foot.l{left:calc(50% - 38px);}
+  .p-foot.r{left:calc(50% + 2px);}
+  .zone{position:absolute; width:180px; min-height:66px; border:2.5px dashed #9db8d4; border-radius:12px; background:rgba(255,255,255,.85); padding:6px; text-align:center; cursor:pointer; transition:.15s; font-size:13px;}
+  .zone b{display:block; font-size:13.5px; color:var(--blue-d);}
+  .zone:hover{border-color:var(--blue);}
+  .zone.right{border-color:var(--green); background:#e7f9ef;}
+  .zone.wrong{border-color:var(--red); background:#fdeaea; animation:shake .3s;}
+  .zchip{display:inline-block; background:#fff; border:2px solid var(--blue); border-radius:10px; padding:2px 7px; margin:2px; font-size:13px; font-weight:700; cursor:pointer;}
+  .wpool{display:flex; flex-wrap:wrap; gap:10px; padding:12px; background:var(--soft); border-radius:12px; min-height:74px;}
+  .comp{border:2px solid var(--line); background:#fff; border-radius:12px; padding:10px 14px; font-size:15px; font-weight:700; cursor:pointer; user-select:none; transition:.15s; text-align:center;}
+  .comp .ico{font-size:26px; display:block;}
+  .comp:hover{border-color:var(--blue); transform:translateY(-2px);}
+  .comp.sel{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 3px #fde9c2;}
+  /* ---------- 模块三:三连配对 ---------- */
+  .tripwrap{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:800px){.tripwrap{grid-template-columns:1fr;}}
+  .tcol h3{text-align:center; background:var(--soft); border-radius:10px; padding:6px;}
+  .titem{display:block; width:100%; text-align:center; border:2px solid var(--line); background:#fff; border-radius:12px; padding:12px 8px; margin:8px 0; font-size:15px; font-weight:700; cursor:pointer; transition:.15s;}
+  .titem:hover{border-color:var(--purple);}
+  .titem.sel{border-color:var(--orange); background:#fff4dd;}
+  .titem.lock{border-color:var(--green); background:#e7f9ef; color:var(--green-d); cursor:default;}
+  .titem.bad{border-color:var(--red); background:#fdeaea; animation:shake .3s;}
+  .chainshow{background:var(--soft); border-radius:10px; padding:8px 12px; margin-top:8px; font-size:14.5px; min-height:38px;}
+  /* ---------- 模块四:联网与场景 ---------- */
+  .netmode{display:flex; gap:8px; flex-wrap:wrap;}
+  .netmode button{flex:1; min-width:110px; border:2px solid var(--line); background:#fff; border-radius:12px; padding:12px 8px; font-size:15px; font-weight:700; cursor:pointer; transition:.15s;}
+  .netmode button.on{border-color:var(--blue); background:#e8f1fd; box-shadow:0 0 0 3px #cfe3fb;}
+  .meter{margin:8px 0;}
+  .meter label{font-size:14px; color:var(--ink-2); display:flex; justify-content:space-between;}
+  .bar{height:18px; background:#e3ecf6; border-radius:9px; overflow:hidden; margin-top:3px;}
+  .bar i{display:block; height:100%; border-radius:9px; transition:width .4s, background .4s;}
+  .linkline{text-align:center; font-size:26px; letter-spacing:2px; margin:8px 0; min-height:36px;}
+  .wave{display:inline-block; animation:wavef 1s infinite;}
+  @keyframes wavef{50%{opacity:.25; transform:translateY(-3px);}}
+  .scene{border:2px solid var(--line); border-radius:12px; padding:12px; margin-bottom:12px;}
+  .scene h4{font-size:15.5px; margin-bottom:4px;}
+  .scene p{font-size:13.5px; color:var(--ink-2); margin-bottom:6px;}
+  .scene.pass{border-color:var(--green); background:#f4fdf8;}
+  .scene select{width:100%; border:2px solid var(--line); border-radius:10px; padding:8px; font-size:14.5px; margin:4px 0; font-family:inherit; background:#fff;}
+  .scene select:focus{outline:none; border-color:var(--blue);}
+  .slabel{font-size:13px; font-weight:700; color:var(--ink-2);}
+  /* ---------- 模块五:隐私法庭 ---------- */
+  .courtcase{border:2px solid var(--line); border-radius:12px; padding:12px; margin-bottom:14px;}
+  .courtcase.solved{border-color:var(--green); background:#f4fdf8;}
+  .ditem{display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:var(--soft); border-radius:10px; padding:8px 12px; margin:6px 0; font-size:15px;}
+  .ditem .dname{font-weight:700; flex:1; min-width:150px;}
+  .ditem .verdict{font-size:13px; min-width:120px;}
+  .ditem.ok{background:#e7f9ef;}
+  .ditem.no{background:#fdeaea;}
+  /* ---------- 日志表 / 报告 ---------- */
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{border:1px solid var(--line); padding:6px 8px; text-align:center;}
+  th{background:var(--soft);}
+  .logwrap{max-height:300px; overflow:auto; border-radius:10px; border:1px solid var(--line);}
+  textarea{width:100%; min-height:74px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  textarea:focus{outline:none; border-color:var(--blue);}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:24px; color:var(--blue-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  pre.saved{background:#20344b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>⌚ 智能穿戴设备探索馆</h1>
+  <p>清华版《信息科技》五年级下册 · 第1单元 第1课 智能穿戴新纪元——常见穿戴设备(教材 P4—11)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 设备探索 <span id="bgExp">0</span>/6</span>
+    <span class="badge" id="bg2">② 佩戴配对</span>
+    <span class="badge" id="bg3">③ 三连配对 <span id="bgChain">0</span>/4</span>
+    <span class="badge" id="bg4">④ 场景设计 <span id="bgScene">0</span>/4</span>
+    <span class="badge" id="bg5">⑤ 隐私法庭 <span id="bgCourt">0</span>/2</span>
+    <span class="badge" id="bg6">⑥ 探索报告</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">🔍 ① 设备探索墙</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">🧍 ② 佩戴位置配对</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">🔗 ③ 三连配对</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">📡 ④ 联网与场景设计</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">⚖️ ⑤ 隐私小法庭</button>
+  <button data-tab="t6" onclick="showTab('t6',this)">📑 ⑥ 探索报告</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:设备探索墙 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>🔍 任务一:逛一逛穿戴设备探索墙</h2>
+    <div class="task"><b>任务:</b>点击下方 6 件展品,再点「▶ 播放演示」看它的工作原理动画:<b>传感器 → 采集数据 → 计算处理 → 实现功能</b>。把 6 件展品全部看完,徽章就会点亮!手表和手环还能<b>拨动滑块做实验</b>哦。</div>
+    <div class="wall" id="wall"></div>
+  </div>
+  <div class="card">
+    <h2 id="devTitle">⌚ 智能手表</h2>
+    <p id="devMeta" style="font-size:14.5px"></p>
+    <h3>工作原理动态演示 <span class="lightdot" id="light"></span></h3>
+    <div class="pipe4" id="demoPipe"></div>
+    <div>
+      <button class="btn green small" id="btnDemo" onclick="playDemo()">▶ 播放演示</button>
+      <button class="btn orange small" onclick="stepDemo()">⏭ 单步</button>
+      <button class="btn gray small" onclick="resetDemo()">🔄 重新演示</button>
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;margin-left:8px">演示速度
+        <input type="range" id="demoSpd" min="1" max="3" value="2" style="width:90px;accent-color:var(--blue)" oninput="demoSpdChanged()">
+        <output id="demoSpdOut">中</output></label>
+    </div>
+    <div class="why" id="demoWhy">💬 点「▶ 播放演示」,看看这件设备是怎样一步步工作的。</div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+  <div class="card ctl" id="liveSim">
+    <h2>🧪 腕上小实验:心率是怎么"算"出来的?</h2>
+    <div class="task"><b>任务:</b>拨动「运动强度」滑块,观察心率、每分钟步数和能量消耗怎样变化;再试试把「佩戴松紧」调得太松或太紧,看看数据会出什么问题。(下面都是虚拟示例数据,不是真实测量)</div>
+    <div class="livegrid">
+      <div class="livestat"><b id="hrVal"><span class="heart">❤️</span> 72</b><span>心率(次/分)</span></div>
+      <div class="livestat"><b id="stepVal">0</b><span>累计步数(虚拟)</span></div>
+      <div class="livestat"><b id="kcalVal">0.0</b><span>能量消耗(千卡)</span></div>
+    </div>
+    <div class="grid2" style="margin-top:8px">
+      <div>
+        <label><span>🏃 运动强度</span><output id="intOut">静坐休息</output></label>
+        <input type="range" id="intensity" min="0" max="10" value="0" oninput="paramChanged('intensity')">
+      </div>
+      <div>
+        <label><span>🎗 佩戴松紧</span><output id="fitOut">松紧合适</output></label>
+        <input type="range" id="fit" min="1" max="5" value="3" oninput="paramChanged('fit')">
+      </div>
+    </div>
+    <div class="why" id="p1Why">💬 试着拨动滑块,这里会解释数据为什么变化。</div>
+  </div>
+</section>
+
+<!-- ================= 模块二:佩戴位置配对 ================= -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>🧍 任务二:把设备"穿戴"到正确的位置</h2>
+    <div class="task"><b>任务:</b>教材告诉我们,穿戴位置不同,能感测的身体数据也不同。请<b>先点击右侧仓库里的设备选中它</b>,再<b>点击人体旁对应的虚线区域</b>放上去。放错了?点一下区域里的设备就能取回。全放好后点「✅ 检查配对」。</div>
+    <div class="wearwrap">
+      <div class="stage" id="stage">
+        <div class="p-head">🙂</div>
+        <div class="p-body"></div>
+        <div class="p-arm l"></div><div class="p-arm r"></div>
+        <div class="p-hand l"></div><div class="p-hand r"></div>
+        <div class="p-leg l"></div><div class="p-leg r"></div>
+        <div class="p-foot l"></div><div class="p-foot r"></div>
+        <div class="zone" data-zone="head" style="top:14px; right:12px" onclick="zoneClick(event,this)"><b>👀 头部 / 面部</b><span id="zc-head"></span></div>
+        <div class="zone" data-zone="wrist" style="top:170px; left:12px" onclick="zoneClick(event,this)"><b>✋ 手臂 / 手腕</b><span id="zc-wrist"></span></div>
+        <div class="zone" data-zone="torso" style="top:120px; right:12px" onclick="zoneClick(event,this)"><b>👕 躯干 / 身上</b><span id="zc-torso"></span></div>
+        <div class="zone" data-zone="feet" style="bottom:14px; right:12px" onclick="zoneClick(event,this)"><b>🦶 脚部 / 鞋内</b><span id="zc-feet"></span></div>
+      </div>
+      <div>
+        <h3>设备仓库(6 件都要放上去)</h3>
+        <div class="wpool" id="wpool"></div>
+        <div style="margin-top:12px">
+          <button class="btn green" onclick="checkWear()">✅ 检查配对</button>
+          <button class="btn ghost" onclick="wearHint()">💡 看提示</button>
+          <button class="btn gray" onclick="resetWear()">🔄 重新配对</button>
+        </div>
+        <div class="feedback" id="fb2"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>📖 为什么位置很重要?</h2>
+    <p>在身体<b>特定位置</b>穿戴的设备,可以感测<b>该部位相关的数据</b>:头部设备能测脑电波、拍照显示图像;手腕设备靠脉搏测心率、记步数;鞋垫能感知脚底压力;智能服饰能监测躯干的体温和心跳。<b>部位不同,能采集的信息就不同</b>,所以佩戴方法也是多样化的。</p>
+    <p style="margin-top:6px"><span class="pill">头部/面部</span><span class="pill">手臂/手腕</span><span class="pill">躯干</span><span class="pill">脚部</span></p>
+  </div>
+</section>
+
+<!-- ================= 模块三:三连配对 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>🔗 任务三:传感器 — 数据 — 功能 三连配对</h2>
+    <div class="task"><b>任务:</b>每种功能背后,都是"<b>传感器</b>采集<b>数据</b>,再算出<b>功能</b>"。请在三列中<b>各点选一项</b>,凑成一条正确的链条。凑对会变绿锁定,凑错会摇头提示。把 4 条链全部连对吧!</div>
+    <div class="tripwrap">
+      <div class="tcol"><h3>🔧 传感器</h3><div id="col0"></div></div>
+      <div class="tcol"><h3>📊 采集的数据</h3><div id="col1"></div></div>
+      <div class="tcol"><h3>✨ 实现的功能</h3><div id="col2"></div></div>
+    </div>
+    <div class="chainshow" id="chainShow">当前选择:(还没有选)</div>
+    <div style="margin-top:8px">
+      <button class="btn ghost" onclick="hint3()">💡 看提示</button>
+      <button class="btn gray" onclick="reset3()">🔄 重新开始</button>
+    </div>
+    <div class="feedback" id="fb3"></div>
+  </div>
+</section>
+
+<!-- ================= 模块四:联网与场景设计 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>📡 任务四(上):联网方式小实验</h2>
+    <div class="task"><b>任务:</b>智能穿戴设备靠网络传递信息。请分别点击 3 种联网方式,再拨动「距离」滑块、切换「所在场景」,观察连接是否成功、速度和耗电有什么不同,想一想它们各适合什么时候用。</div>
+    <div class="grid2">
+      <div>
+        <div class="netmode">
+          <button id="nm-sim" onclick="setNetMode('sim')">📶 手机卡(SIM卡)</button>
+          <button id="nm-wifi" onclick="setNetMode('wifi')">📡 无线网(Wi-Fi模块)</button>
+          <button id="nm-bt" onclick="setNetMode('bt')">🔵 蓝牙</button>
+        </div>
+        <label style="display:flex;justify-content:space-between;font-weight:700;font-size:14.5px;margin-top:12px"><span>📏 设备与手机(或路由器)的距离</span><output id="distOut">5 米</output></label>
+        <input type="range" id="dist" min="1" max="100" value="5" style="width:100%;accent-color:var(--blue)" oninput="paramChanged('dist')">
+        <label style="display:flex;justify-content:space-between;font-weight:700;font-size:14.5px;margin-top:8px"><span>📍 所在场景</span></label>
+        <select id="place" class="sceneSel" style="width:100%;border:2px solid var(--line);border-radius:10px;padding:8px;font-size:14.5px;font-family:inherit" onchange="paramChanged('place')">
+          <option value="home">在家里(有无线网路由器)</option>
+          <option value="out">在户外(没有无线网)</option>
+        </select>
+      </div>
+      <div>
+        <div class="linkline" id="linkLine">⌚ · · · 📱</div>
+        <div class="meter"><label><span>连接状态</span><span id="connVal">未选择</span></label></div>
+        <div class="meter"><label><span>传输速度</span><span id="spdVal">—</span></label>
+          <div class="bar"><i id="spdBar" style="width:0%; background:#2b7de9"></i></div></div>
+        <div class="meter"><label><span>耗电程度</span><span id="pwrVal">—</span></label>
+          <div class="bar"><i id="pwrBar" style="width:0%; background:#f59e0b"></i></div></div>
+      </div>
+    </div>
+    <div class="why" id="netWhy">💬 先点一种联网方式,再调距离和场景,这里会解释发生了什么。</div>
+    <div class="feedback" id="fb4a"></div>
+  </div>
+  <div class="card">
+    <h2>🔢 小知识:每台联网设备都有唯一编号</h2>
+    <p style="font-size:14.5px">教材说:联网计算机有一个<b>唯一的数字编号</b>(叫作"网络地址"),就像每家都有门牌号,信息才能准确送到。点下面的按钮,给你的虚拟手表分配一个<b>虚构的</b>编号看看。</p>
+    <button class="btn purple small" onclick="genIP()">🎲 给虚拟手表分配编号</button>
+    <div class="feedback" id="fbIP"></div>
+  </div>
+  <div class="card">
+    <h2>🎨 任务四(下):应用场景设计器</h2>
+    <div class="task"><b>任务:</b>当一回"穿戴方案设计师"!下面 4 个情境,请为每个情境选出<b>最合适</b>的设备、联网方式和主要功能,然后点「🧐 请系统评价」。全选对的情境会变绿。设计好 2 个以上,徽章点亮;4 个全对更棒!</div>
+    <div class="grid2" id="sceneBox"></div>
+  </div>
+</section>
+
+<!-- ================= 模块五:隐私小法庭 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>⚖️ 任务五:数据最小化·隐私小法庭</h2>
+    <div class="task"><b>任务:</b>你是小法官!设备只应该收集<b>完成功能必需</b>的数据,这叫"<b>数据最小化</b>"。请给每条数据敲下判决:「✅ 必需」还是「🚫 不必需」。判错了没关系,看解释再改判。两个案子都判对,徽章点亮!</div>
+    <div id="courtBox"></div>
+    <div style="margin-top:8px">
+      <button class="btn ghost" onclick="courtHint()">💡 看提示</button>
+      <button class="btn gray" onclick="resetCourt()">🔄 重新审理</button>
+    </div>
+    <div class="feedback" id="fb5"></div>
+  </div>
+</section>
+
+<!-- ================= 模块六:探索报告 ================= -->
+<section class="tab" id="t6">
+  <div class="card">
+    <h2>📑 任务六:生成我的探索报告</h2>
+    <div class="task"><b>任务:</b>下面的数据是探索馆自动统计的,请把 3 个空填完整,然后点「生成报告」,这就是你这节课的成果!</div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="sExp">0/6</b><span>探索的设备</span></div>
+      <div class="stat"><b id="sWear">未完成</b><span>佩戴位置配对</span></div>
+      <div class="stat"><b id="sChain">0/4</b><span>三连配对链条</span></div>
+      <div class="stat"><b id="sScene">0/4</b><span>设计好的场景方案</span></div>
+      <div class="stat"><b id="sCourt">0/2</b><span>判对的隐私案子</span></div>
+      <div class="stat"><b id="sLog">0</b><span>实验记录条数</span></div>
+    </div>
+    <h3>1️⃣ 我的发现(这节课我知道了……)</h3>
+    <textarea id="r1" placeholder="例:我发现智能手环用光电传感器照手腕,通过血液流动的变化算出心率;运动强度越大,心率越高。"></textarea>
+    <h3>2️⃣ 我推荐的设备方案(给谁、用什么设备、怎么联网、实现什么功能)</h3>
+    <textarea id="r2" placeholder="例:我推荐爷爷散步时戴智能手表,用手机卡(SIM卡)联网,监测心率并在异常时提醒家人。"></textarea>
+    <h3>3️⃣ 我的隐私建议(设备应该怎样收集数据才合理)</h3>
+    <textarea id="r3" placeholder="例:计步手环只需要步数和心率数据,不应该要通讯录和照片。安装设备程序时,要检查它申请了哪些权限。"></textarea>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genReport()">📄 生成报告预览</button>
+      <button class="btn" onclick="exportReport()">📥 导出报告(HTML文件)</button>
+      <button class="btn purple" onclick="exportCSV()">📥 导出实验记录(CSV)</button>
+    </div>
+    <div class="feedback" id="fb6"></div>
+    <div id="reportPreview"></div>
+  </div>
+  <div class="card">
+    <h2>📋 实验记录</h2>
+    <p style="font-size:14px;color:var(--ink-2)">探索馆自动记录你的每一次操作和结果,只保存在你自己的电脑里。</p>
+    <div style="margin:8px 0">
+      <button class="btn small" onclick="renderLog()">🔄 刷新</button>
+      <button class="btn red small" onclick="clearLog()">🗑 清空记录</button>
+      <span class="pill">共 <b id="logCount">0</b> 条记录</span>
+    </div>
+    <div class="logwrap">
+      <table>
+        <thead><tr><th>时间</th><th>模块</th><th>内容</th><th>结果</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="4" style="color:#5b7186">暂无记录,去各展馆探索吧!</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出项目(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入项目</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>智能穿戴设备探索馆 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态
+============================================================ */
+const $=id=>document.getElementById(id);
+const progress={explore:[],wear:false,chain:0,scene:[],court:[],report:false};
+let logRows=[];   // {time,mod,content,result}
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t6'){renderLog();refreshStats();}
+}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function fb(id,cls,html){const e=$(id);if(!e)return;e.className='feedback '+cls;e.innerHTML=html;}
+function nowStr(){const d=new Date();return [d.getHours(),d.getMinutes(),d.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');}
+function addLog(mod,content,result){
+  logRows.push({time:nowStr(),mod,content,result});
+  if(logRows.length>500)logRows.shift();
+}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ============================================================
+   模块一:设备探索墙 + 原理动态演示 + 腕上小实验
+============================================================ */
+const DEVICES=[
+  {k:'watch',ico:'⌚',name:'智能手表',pos:'手臂 / 手腕',wrist:true,
+   funcs:['心率监测','计步','能量消耗计算','信息提醒'],
+   meta:'戴在手腕上的"时钟型"设备。靠<b>光电传感器</b>贴着皮肤"看"脉搏,能测心率、记步数,还能给出保持健康的建议。',
+   steps:[
+     {ico:'💡',t:'光电传感器发光',d:'手表底部的小绿灯亮起,把光照向手腕的皮肤。'},
+     {ico:'🩸',t:'检测血液流动',d:'心脏每跳一次,血管里的血液就"涌"一下,反射回来的光也跟着变化一次。'},
+     {ico:'🧮',t:'计算心率',d:'芯片数一数每分钟光变化了多少次,就算出了每分钟心跳的次数。'},
+     {ico:'⌚',t:'显示与提醒',d:'心率数字显示在表盘上;数据还能联网发到手机上查看。'}]},
+  {k:'band',ico:'📿',name:'智能手环',pos:'手臂 / 手腕',wrist:true,
+   funcs:['测心率','记录步数','睡眠监测'],
+   meta:'轻便的"腕带型"设备。教材说:佩戴者可以通过手环<b>测心率、记步数、监测睡眠</b>,在手环屏幕或相连的手机上查看数据。',
+   steps:[
+     {ico:'📈',t:'加速度传感器感知',d:'手臂每摆动一下,加速度传感器就感觉到一次晃动。'},
+     {ico:'🔢',t:'采集运动数据',d:'一天里的晃动次数、夜里翻身的次数,都被记录下来。'},
+     {ico:'🧮',t:'分析计算',d:'白天的摆动算成步数;夜里动得少、心率低,就判断你睡得香。'},
+     {ico:'📱',t:'手机同步查看',d:'数据汇总到手机上,画出你的运动和睡眠曲线。'}]},
+  {k:'vr',ico:'🥽',name:'虚拟现实眼镜',pos:'头部 / 面部',wrist:false,
+   funcs:['显示虚拟画面','与虚拟场景互动'],
+   meta:'戴在头上的"千里眼"。教材说:戴上它可以<b>身临其境</b>,与虚拟场景实时互动,让游戏体验更真实。',
+   steps:[
+     {ico:'🔄',t:'感知头部转动',d:'你一转头,眼镜里的运动传感器立刻感觉到方向变了。'},
+     {ico:'📐',t:'采集方向数据',d:'转了多少度、朝上还是朝下,变成一串方向数据。'},
+     {ico:'🖥️',t:'计算新画面',d:'芯片按照新方向,马上算出你"应该看到"的画面。'},
+     {ico:'👀',t:'画面实时互动',d:'眼前的虚拟世界跟着你的头转动,就像真的身在其中!'}]},
+  {k:'helmet',ico:'⛑️',name:'智能头盔',pos:'头部 / 面部',wrist:false,
+   funcs:['测脑电波','测心跳','安全提醒'],
+   meta:'教材说:头戴式头盔有的可用于<b>测量脑电波和心跳</b>,帮助了解大脑和身体状态。',
+   steps:[
+     {ico:'🧠',t:'脑电传感器接触',d:'头盔里的电极轻轻贴着头皮,捕捉微弱的脑电波。'},
+     {ico:'〰️',t:'采集脑电波信号',d:'紧张、放松、疲劳时,脑电波的"波形"各不相同。'},
+     {ico:'🧮',t:'分析精神状态',d:'芯片对比波形特征,判断你是专注、放松还是太疲劳。'},
+     {ico:'🔔',t:'发出提醒',d:'发现太疲劳时,提醒你休息一下,保护身体。'}]},
+  {k:'cloth',ico:'👕',name:'智能服饰',pos:'躯干 / 身上',wrist:false,
+   funcs:['监测体温','监测心跳','提醒增减衣物'],
+   meta:'教材说:衣服等穿戴设备能对身体的<b>目标部位</b>进行监测,比如躯干的体温和心跳。',
+   steps:[
+     {ico:'🌡️',t:'柔性传感器贴身',d:'衣服里织进了软软的温度和心跳传感器,贴着躯干。'},
+     {ico:'📊',t:'采集体温心跳',d:'一整天的体温和心跳变化被连续记录下来。'},
+     {ico:'🧮',t:'分析身体状态',d:'体温偏低?运动后心跳偏快?芯片来判断。'},
+     {ico:'📳',t:'贴心提醒',d:'天冷提醒加衣,运动过量提醒休息。'}]},
+  {k:'insole',ico:'👟',name:'智能鞋垫',pos:'脚部 / 鞋内',wrist:false,
+   funcs:['感知脚底压力','分析步态','纠正走路姿势'],
+   meta:'教材说:可铺于鞋底的<b>鞋垫型传感器设备</b>,能监测脚部的数据。',
+   steps:[
+     {ico:'🦶',t:'压力传感器受力',d:'每走一步,脚掌压在鞋垫上,传感器感觉到压力。'},
+     {ico:'🗺️',t:'采集压力分布',d:'脚尖重还是脚跟重?左脚右脚是否均匀?都变成数据。'},
+     {ico:'🧮',t:'分析步态',d:'芯片分析出走路的姿势和习惯,顺便数出步数。'},
+     {ico:'💬',t:'给出建议',d:'走路内八字?它会建议你调整姿势,保护脚和膝盖。'}]},
+];
+const demo={dev:'watch',step:-1,timer:null,ms:900};
+function renderWall(){
+  $('wall').innerHTML=DEVICES.map(d=>
+    `<div class="dev ${d.k===demo.dev?'on':''} ${progress.explore.includes(d.k)?'seen':''}" id="dev-${d.k}" onclick="openDevice('${d.k}')"><span class="ico">${d.ico}</span>${d.name}</div>`).join('');
+}
+function openDevice(k){
+  const d=DEVICES.find(x=>x.k===k); if(!d)return;
+  stopDemo(); demo.dev=k; demo.step=-1;
+  $('devTitle').textContent=d.ico+' '+d.name;
+  $('devMeta').innerHTML=d.meta+'<br><span class="pill">📍 佩戴位置:'+d.pos+'</span>'+d.funcs.map(f=>`<span class="pill">✨ ${f}</span>`).join('');
+  renderPipe(); renderWall();
+  $('liveSim').style.display=d.wrist?'block':'none';
+  $('demoWhy').innerHTML='💬 这是「'+d.name+'」。点「▶ 播放演示」或「⏭ 单步」,看它一步步怎样工作。';
+  addLog('探索墙','参观展品:'+d.name,'查看中');
+}
+function renderPipe(){
+  const d=DEVICES.find(x=>x.k===demo.dev);
+  $('demoPipe').innerHTML=d.steps.map((s,i)=>
+    `<div class="dnode ${i<demo.step?'done':''} ${i===demo.step?'cur':''}" id="dn${i}"><span class="nico">${s.ico}</span><small>第${i+1}步 ${s.t}</small></div>`
+  ).join('<span class="darrow">→</span>');
+}
+function stepDemo(){
+  const d=DEVICES.find(x=>x.k===demo.dev);
+  if(demo.step>=3){finishDemo(d);return;}
+  demo.step++;
+  renderPipe();
+  $('light').classList.toggle('blink',demo.step===0);
+  $('demoWhy').innerHTML='💬 <b>第'+(demo.step+1)+'步 '+d.steps[demo.step].t+':</b>'+d.steps[demo.step].d;
+  if(demo.step>=3)setTimeout(()=>{if(demo.step>=3)finishDemo(d);},demo.ms);
+}
+function finishDemo(d){
+  stopDemo();
+  $('light').classList.remove('blink');
+  document.querySelectorAll('.dnode').forEach(n=>{n.classList.remove('cur');n.classList.add('done');});
+  if(!progress.explore.includes(d.k)){
+    progress.explore.push(d.k);
+    $('bgExp').textContent=progress.explore.length;
+    addLog('探索墙','看完原理演示:'+d.name,'✅ 完成');
+    if(progress.explore.length>=6){setBadge(1);
+      fb('fb1','ok','🎉 6 件展品全部探索完毕!你发现了吗?它们都遵循同一条规律:<b>传感器采集数据 → 计算处理 → 实现功能</b>。快去「② 佩戴位置配对」试试身手!');}
+    else fb('fb1','ok','✅ 「'+d.name+'」探索完成!已看完 '+progress.explore.length+'/6 件,继续点其他展品吧。');
+  }
+  renderWall();
+  $('demoWhy').innerHTML='💬 演示结束:<b>'+d.steps.map(s=>s.t).join(' → ')+'</b>。想再看一遍就点「🔄 重新演示」。';
+}
+function playDemo(){
+  if(demo.timer){stopDemo();return;}
+  if(demo.step>=3){demo.step=-1;renderPipe();}
+  $('btnDemo').textContent='⏸ 暂停'; $('btnDemo').className='btn orange small';
+  demo.timer=setInterval(()=>{
+    if(demo.step>=3){stopDemo();return;}
+    stepDemo();
+  },demo.ms);
+  stepDemo();
+}
+function stopDemo(){
+  if(demo.timer){clearInterval(demo.timer);demo.timer=null;}
+  const b=$('btnDemo'); if(b){b.textContent='▶ 播放演示'; b.className='btn green small';}
+}
+function resetDemo(){
+  stopDemo(); demo.step=-1; renderPipe();
+  $('light').classList.remove('blink');
+  $('demoWhy').innerHTML='💬 已重置,点「▶ 播放演示」重新观看。';
+}
+function demoSpdChanged(){
+  const v=+$('demoSpd').value;
+  $('demoSpdOut').textContent={1:'慢',2:'中',3:'快'}[v];
+  demo.ms={1:1500,2:900,3:450}[v];
+  if(demo.timer){clearInterval(demo.timer);demo.timer=setInterval(()=>{if(demo.step>=3){stopDemo();return;}stepDemo();},demo.ms);}
+}
+/* ---- 腕上小实验(虚拟示例数据) ---- */
+const live={steps:0,kcal:0};
+function intName(v){return v<=1?'静坐休息':(v<=4?'慢慢散步':(v<=7?'快步走':'奔跑冲刺'));}
+function fitName(v){return {1:'太松啦',2:'有点松',3:'松紧合适',4:'有点紧',5:'太紧啦'}[v];}
+function paramChanged(which){
+  const it=+$('intensity').value, ft=+$('fit').value;
+  $('intOut').textContent=intName(it);
+  $('fitOut').textContent=fitName(ft);
+  $('distOut').textContent=$('dist').value+' 米';
+  if(which==='intensity'){
+    $('p1Why').innerHTML='💬 运动强度调到「'+intName(it)+'」:身体需要更多氧气,心脏跳得更快给肌肉"送货",所以<b>心率升高</b>;手臂摆动更频繁,<b>步数涨得更快</b>,能量消耗也更多。';
+    addLog('腕上实验','运动强度调为:'+intName(it),'心率随之变化');
+  }else if(which==='fit'){
+    $('p1Why').innerHTML=(ft===1||ft===5)
+      ?'💬 佩戴「'+fitName(ft)+'」:光电传感器没法贴稳皮肤,反射光乱晃,读数会时不时变成「--」——<b>传感器贴合不好,数据就不准</b>!'
+      :'💬 佩戴「'+fitName(ft)+'」:传感器贴合皮肤刚刚好,反射光稳定,心率读数清晰可靠。';
+    addLog('腕上实验','佩戴松紧调为:'+fitName(ft),(ft===1||ft===5)?'数据不稳':'数据可靠');
+  }else if(which==='dist'||which==='place'){
+    evalNet(which);
+  }
+}
+function liveTick(){
+  const it=+$('intensity').value, ft=+$('fit').value;
+  const bad=(ft===1||ft===5)&&Math.random()<0.35;
+  const hr=Math.round(72+it*8+(Math.random()*6-3));
+  const hv=$('hrVal'); if(!hv)return;
+  hv.innerHTML='<span class="heart">❤️</span> '+(bad?'--':hr);
+  hv.classList.toggle('warn',bad);
+  live.steps+=it*2; live.kcal+=it*0.08;
+  $('stepVal').textContent=Math.round(live.steps);
+  $('kcalVal').textContent=live.kcal.toFixed(1);
+}
+
+/* ============================================================
+   模块二:佩戴位置配对(点击选择 → 点击放置)
+============================================================ */
+const WEAR=[
+  {k:'vr',ico:'🥽',name:'虚拟现实眼镜',zone:'head'},
+  {k:'helmet',ico:'⛑️',name:'智能头盔',zone:'head'},
+  {k:'watch',ico:'⌚',name:'智能手表',zone:'wrist'},
+  {k:'band',ico:'📿',name:'智能手环',zone:'wrist'},
+  {k:'cloth',ico:'👕',name:'智能服饰',zone:'torso'},
+  {k:'insole',ico:'👟',name:'智能鞋垫',zone:'feet'},
+];
+const ZONE_NAME={head:'头部/面部',wrist:'手臂/手腕',torso:'躯干/身上',feet:'脚部/鞋内'};
+let placed={};   // 设备k -> zone
+let selWear=null, wearHintLv=0;
+function renderWearPool(){
+  const inPool=WEAR.filter(w=>!placed[w.k]);
+  $('wpool').innerHTML=inPool.length?inPool.map(w=>
+    `<div class="comp ${selWear===w.k?'sel':''}" onclick="pickWear('${w.k}')"><span class="ico">${w.ico}</span>${w.name}</div>`).join('')
+    :'<span style="color:#5b7186;font-size:14px">仓库空啦,所有设备都放到人体上了,点「✅ 检查配对」吧!</span>';
+  Object.keys(ZONE_NAME).forEach(z=>{
+    const chips=WEAR.filter(w=>placed[w.k]===z);
+    $('zc-'+z).innerHTML=chips.length?chips.map(w=>`<span class="zchip" onclick="takeBack(event,'${w.k}')">${w.ico}${w.name}</span>`).join(''):'<span style="color:#8aa0b5">(空)</span>';
+  });
+}
+function pickWear(k){
+  selWear=(selWear===k)?null:k;
+  renderWearPool();
+  if(selWear)fb('fb2','info','💡 已选中「'+WEAR.find(w=>w.k===k).name+'」,现在点击人体旁的一个虚线区域放上去。');
+}
+function zoneClick(ev,zoneEl){
+  const z=zoneEl.dataset.zone;
+  if(!selWear){fb('fb2','info','💡 先在右侧仓库点击选中一件设备,再点区域放置。放好的设备点它一下可以取回。');return;}
+  placed[selWear]=z;
+  const name=WEAR.find(w=>w.k===selWear).name;
+  addLog('佩戴配对','把「'+name+'」放到:'+ZONE_NAME[z],'待检查');
+  selWear=null; renderWearPool();
+  document.querySelectorAll('.zone').forEach(x=>x.classList.remove('right','wrong'));
+}
+function takeBack(ev,k){
+  ev.stopPropagation();
+  delete placed[k]; selWear=null; renderWearPool();
+  document.querySelectorAll('.zone').forEach(x=>x.classList.remove('right','wrong'));
+}
+function checkWear(){
+  const notPlaced=WEAR.filter(w=>!placed[w.k]);
+  if(notPlaced.length){fb('fb2','bad','🌱 还有 '+notPlaced.length+' 件设备在仓库里没放呢:'+notPlaced.map(w=>w.name).join('、')+'。全部放上去再检查。');return;}
+  let wrong=[];
+  document.querySelectorAll('.zone').forEach(zEl=>{
+    const z=zEl.dataset.zone;
+    const bad=WEAR.filter(w=>placed[w.k]===z&&w.zone!==z);
+    if(bad.length){zEl.classList.add('wrong');wrong.push(...bad.map(w=>w.name));}
+    else if(WEAR.some(w=>placed[w.k]===z))zEl.classList.add('right');
+  });
+  if(!wrong.length){
+    progress.wear=true; setBadge(2);
+    fb('fb2','ok','🎉 全部配对正确!头上戴眼镜和头盔,手腕戴手表和手环,身上穿智能服饰,鞋里铺智能鞋垫。<b>部位不同,能感测的数据就不同</b>,这就是按穿戴位置分类的原因!');
+    addLog('佩戴配对','6 件设备全部放置正确','✅ 完成');
+  }else{
+    fb('fb2','bad','🤔 有 '+wrong.length+' 件设备放错了(红色区域):'+wrong.join('、')+'。想想它们贴着身体哪个部位才能采集到数据?点「💡 看提示」可以获得帮助。');
+    addLog('佩戴配对','检查发现放错:'+wrong.join('、'),'需要重试');
+  }
+}
+function wearHint(){
+  wearHintLv=Math.min(wearHintLv+1,3);
+  const hs=[
+    '提示①:想一想设备要"感测"什么——测脑电波的要贴着头,测脉搏的要贴着手腕。',
+    '提示②:眼镜和头盔都戴在头上;手表和手环都戴在手腕上;剩下两件,一件穿在身上,一件放在鞋里。',
+    '提示③:完整答案——🥽虚拟现实眼镜、⛑️智能头盔→头部/面部;⌚智能手表、📿智能手环→手臂/手腕;👕智能服饰→躯干;👟智能鞋垫→脚部。'
+  ];
+  fb('fb2','info','💡 '+hs[wearHintLv-1]);
+}
+function resetWear(){
+  placed={}; selWear=null; wearHintLv=0;
+  document.querySelectorAll('.zone').forEach(x=>x.classList.remove('right','wrong'));
+  renderWearPool(); fb('fb2','info','已重置,重新配对吧!');
+}
+
+/* ============================================================
+   模块三:传感器—数据—功能 三连配对
+============================================================ */
+const CHAINS=[
+  {s:'📈 加速度传感器',d:'手臂摆动的次数',f:'计步功能'},
+  {s:'💡 光电传感器',d:'血液流动的变化',f:'心率监测'},
+  {s:'🧠 脑电传感器',d:'脑电波信号',f:'精神状态监测'},
+  {s:'🕹️ 动作感测装置',d:'身体动作和姿态',f:'虚拟游戏互动'},
+];
+const COL_ORDER=[[1,3,0,2],[2,0,3,1],[0,2,1,3]]; // 打乱后的显示顺序
+let sel3={0:null,1:null,2:null}, solved3=[], hint3Lv=0;
+function render3(){
+  const key=['s','d','f'];
+  for(let c=0;c<3;c++){
+    $('col'+c).innerHTML=COL_ORDER[c].map(idx=>{
+      const cls=solved3.includes(idx)?'lock':(sel3[c]===idx?'sel':'');
+      return `<button class="titem ${cls}" id="ti${c}_${idx}" onclick="pick3(${c},${idx})">${CHAINS[idx][key[c]]}</button>`;
+    }).join('');
+  }
+  const names=['(未选)','(未选)','(未选)'];
+  for(let c=0;c<3;c++)if(sel3[c]!==null)names[c]=CHAINS[sel3[c]][key[c]];
+  $('chainShow').innerHTML='当前选择:<b>'+names[0]+'</b> → <b>'+names[1]+'</b> → <b>'+names[2]+'</b>';
+}
+function pick3(c,idx){
+  if(solved3.includes(idx))return;
+  sel3[c]=(sel3[c]===idx)?null:idx;
+  render3();
+  if(sel3[0]!==null&&sel3[1]!==null&&sel3[2]!==null)check3();
+}
+function check3(){
+  if(sel3[0]===sel3[1]&&sel3[1]===sel3[2]){
+    const idx=sel3[0];
+    solved3.push(idx);
+    progress.chain=solved3.length;
+    $('bgChain').textContent=solved3.length;
+    addLog('三连配对','连对链条:'+CHAINS[idx].s+' → '+CHAINS[idx].d+' → '+CHAINS[idx].f,'✅ 正确');
+    sel3={0:null,1:null,2:null}; render3();
+    if(solved3.length>=4){setBadge(3);
+      fb('fb3','ok','🏆 4 条链全部连对!你已经掌握了穿戴设备的核心秘密:<b>先用传感器采集数据,再通过计算实现功能</b>。');}
+    else fb('fb3','ok','🎉 连对了!<b>'+CHAINS[idx].s+'</b>采集「'+CHAINS[idx].d+'」,算出「'+CHAINS[idx].f+'」。还剩 '+(4-solved3.length)+' 条,继续!');
+  }else{
+    const key=['s','d','f'];
+    for(let c=0;c<3;c++){const el=$('ti'+c+'_'+sel3[c]);if(el)el.classList.add('bad');}
+    const wrongMsg='「'+CHAINS[sel3[0]].s+'」采集不到「'+CHAINS[sel3[1]].d+'」这样的数据';
+    addLog('三连配对','尝试的链条不匹配','需要重试');
+    sel3={0:null,1:null,2:null};
+    setTimeout(()=>render3(),350);
+    fb('fb3','bad','🤔 这条链不通:'+wrongMsg+'。想一想每种传感器"看"到的是什么,再试一次。点「💡 看提示」可以获得帮助。');
+  }
+}
+function hint3(){
+  hint3Lv=Math.min(hint3Lv+1,3);
+  const hs=[
+    '提示①:先从传感器的名字猜它感知什么——"加速度"感知晃动,"光电"和光有关。',
+    '提示②:光电传感器发光照皮肤,看到的是血液流动 → 能算出心率;加速度传感器数手臂摆动 → 能算出步数。',
+    '提示③:四条完整链:加速度传感器→手臂摆动的次数→计步功能;光电传感器→血液流动的变化→心率监测;脑电传感器→脑电波信号→精神状态监测;动作感测装置→身体动作和姿态→虚拟游戏互动。'
+  ];
+  fb('fb3','info','💡 '+hs[hint3Lv-1]);
+}
+function reset3(){
+  sel3={0:null,1:null,2:null}; solved3=[]; hint3Lv=0;
+  progress.chain=0; $('bgChain').textContent=0;
+  render3(); fb('fb3','info','已重置,重新配对吧!');
+}
+
+/* ============================================================
+   模块四:联网方式小实验 + 应用场景设计器
+============================================================ */
+let netMode=null; const netTried=[];
+function setNetMode(m){
+  netMode=m;
+  ['sim','wifi','bt'].forEach(x=>$('nm-'+x).classList.toggle('on',x===m));
+  if(!netTried.includes(m))netTried.push(m);
+  evalNet('mode');
+}
+function evalNet(which){
+  $('distOut').textContent=$('dist').value+' 米';
+  if(!netMode){$('netWhy').innerHTML='💬 先点一种联网方式,再调距离和场景,这里会解释发生了什么。';return;}
+  const dist=+$('dist').value, home=$('place').value==='home';
+  let ok=true, why='', spd=0, pwr=0, name={sim:'手机卡(SIM卡)',wifi:'无线网(Wi-Fi模块)',bt:'蓝牙'}[netMode];
+  if(netMode==='sim'){
+    spd=95; pwr=80; ok=true;
+    why='📶 手机卡(SIM卡)借助移动电话信号联网:只要在信号覆盖范围,<b>走到哪都能连</b>,数据传得又多又快;缺点是<b>耗电量大</b>。';
+  }else if(netMode==='wifi'){
+    spd=85; pwr=45;
+    if(!home){ok=false;why='📡 户外没有无线网路由器,Wi-Fi模块<b>找不到可以连接的局域网信号</b>,连不上!回到"在家里"试试。';}
+    else if(dist>45){ok=false;why='📡 离路由器 '+dist+' 米太远,超出了家里局域网信号的覆盖范围,连接断开了。把距离调近一点试试。';}
+    else why='📡 Wi-Fi模块连上了家里的局域网信号:速度快、比手机卡省电,适合<b>在固定场所</b>使用。';
+  }else{
+    spd=40; pwr=15;
+    if(dist>10){ok=false;why='🔵 蓝牙是<b>短距离</b>无线电技术,一般只能传 10 米以内。现在距离 '+dist+' 米,连接断开了!把滑块调到 10 米以内试试。';}
+    else why='🔵 蓝牙连接成功:距离 '+dist+' 米(10 米内),它<b>耗电少、传播安全性较高</b>,适合和口袋里的手机配对交换数据。';
+  }
+  $('connVal').textContent=ok?'✅ 已连接':'❌ 连接断开';
+  $('connVal').style.color=ok?'var(--green-d)':'var(--red)';
+  $('spdVal').textContent=ok?(spd>=80?'很快':(spd>=60?'较快':'一般')):'—';
+  $('pwrVal').textContent=ok?(pwr>=70?'耗电大':(pwr>=40?'耗电中等':'很省电')):'—';
+  $('spdBar').style.width=(ok?spd:0)+'%';
+  $('pwrBar').style.width=(ok?pwr:0)+'%';
+  $('pwrBar').style.background=pwr>=70?'#e5484d':(pwr>=40?'#f59e0b':'#2eb872');
+  $('linkLine').innerHTML=ok?'⌚ <span class="wave">📳</span><span class="wave" style="animation-delay:.2s">📳</span><span class="wave" style="animation-delay:.4s">📳</span> 📱':'⌚ ✂️ ❌ ✂️ 📱';
+  $('netWhy').innerHTML='💬 '+why;
+  if(which==='mode')addLog('联网实验','切换联网方式:'+name,ok?'连接成功':'连接失败');
+  if(which==='dist')addLog('联网实验','距离调为 '+dist+' 米('+name+')',ok?'仍然连接':'连接断开');
+  if(which==='place')addLog('联网实验','场景切换为:'+(home?'在家里':'在户外')+'('+name+')',ok?'连接成功':'连接失败');
+  if(netTried.length>=3)fb('fb4a','ok','👍 三种联网方式都试过了!小结:<b>手机卡</b>到处能连但耗电大;<b>Wi-Fi</b>要在有局域网的地方;<b>蓝牙</b>省电安全但只能短距离。带着结论去下面设计方案吧!');
+}
+function genIP(){
+  const ip='192.168.'+(Math.floor(Math.random()*200)+1)+'.'+(Math.floor(Math.random()*200)+10);
+  fb('fbIP','ok','🎲 你的虚拟手表分到了编号:<b>'+ip+'</b>(虚构示例)。有了这个唯一编号,网络上的信息才能又快又准地送到这台设备,不会送错人家!');
+  addLog('联网实验','生成虚拟设备编号:'+ip+'(虚构)','了解唯一标识');
+}
+/* ---- 应用场景设计器 ---- */
+const SCENES=[
+  {t:'🏃 情境一:小宇的晨跑',desc:'小宇每天早上绕公园跑步锻炼,不想带手机,但想记录心率和步数,跑完同步给家里。',
+   dev:['智能手表','虚拟现实眼镜','智能服饰'],net:['蓝牙','手机卡(SIM卡)','无线网(Wi-Fi模块)'],fun:['心率与步数监测','播放虚拟游戏画面','提醒增减衣物'],
+   a:{dev:0,net:1,fun:0},
+   why:{dev:'跑步记心率步数,戴在手腕上的智能手表最合适。',net:'户外没有无线网,又没带手机让蓝牙配对,只有手机卡(SIM卡)能直接联网。',fun:'晨跑最需要的是心率与步数监测。'}},
+  {t:'😴 情境二:兰兰的睡眠记录',desc:'兰兰想知道自己晚上睡得好不好。她睡觉时手机就放在床头充电。',
+   dev:['智能手环','智能头盔','智能鞋垫'],net:['手机卡(SIM卡)','蓝牙','不联网也一样'],fun:['睡眠监测','虚拟游戏互动','纠正走路姿势'],
+   a:{dev:0,net:1,fun:0},
+   why:{dev:'轻便的智能手环戴着睡觉不难受,正适合监测睡眠。',net:'手机就在床头 10 米以内,用蓝牙又省电又安全;数据要传到手机上看,不联网可不行。',fun:'教材说手环可以监测睡眠,这正是兰兰需要的。'}},
+  {t:'👴 情境三:爷爷的户外散步',desc:'爷爷喜欢独自去河边散步,家人想随时了解他的心率是否正常,有情况能及时收到提醒。',
+   dev:['智能手表','智能鞋垫','虚拟现实眼镜'],net:['无线网(Wi-Fi模块)','蓝牙','手机卡(SIM卡)'],fun:['心率监测与异常提醒','播放动画片','拍照分享'],
+   a:{dev:0,net:2,fun:0},
+   why:{dev:'智能手表贴着手腕测心率,还能显示提醒,适合爷爷。',net:'河边没有无线网,爷爷独自出门也没法蓝牙配对,手机卡(SIM卡)能一直保持联网,家人才能及时收到消息。',fun:'看护爷爷,最需要的是心率监测与异常提醒。'}},
+  {t:'🎮 情境四:客厅里的虚拟游戏',desc:'周末,小美想在家里客厅玩身临其境的虚拟场景游戏,画面数据量很大。',
+   dev:['虚拟现实眼镜','智能手环','智能服饰'],net:['无线网(Wi-Fi模块)','蓝牙','不联网也一样'],fun:['与虚拟场景实时互动','计步','监测体温'],
+   a:{dev:0,net:0,fun:0},
+   why:{dev:'教材说戴上虚拟现实眼镜可以身临其境地和虚拟场景互动。',net:'家里有局域网,无线网(Wi-Fi模块)速度快,才带得动大画面数据;蓝牙太慢了。',fun:'玩虚拟游戏,要的就是与虚拟场景实时互动。'}},
+];
+let sceneHintLv=[0,0,0,0];
+function renderScenes(){
+  $('sceneBox').innerHTML=SCENES.map((s,i)=>`
+    <div class="scene ${progress.scene.includes(i)?'pass':''}" id="scene${i}">
+      <h4>${s.t} ${progress.scene.includes(i)?'✅':''}</h4>
+      <p>${s.desc}</p>
+      <span class="slabel">选设备:</span>
+      <select id="sc${i}dev"><option value="-1">请选择设备……</option>${s.dev.map((o,j)=>`<option value="${j}">${o}</option>`).join('')}</select>
+      <span class="slabel">选联网方式:</span>
+      <select id="sc${i}net"><option value="-1">请选择联网方式……</option>${s.net.map((o,j)=>`<option value="${j}">${o}</option>`).join('')}</select>
+      <span class="slabel">选主要功能:</span>
+      <select id="sc${i}fun"><option value="-1">请选择主要功能……</option>${s.fun.map((o,j)=>`<option value="${j}">${o}</option>`).join('')}</select>
+      <div style="margin-top:6px">
+        <button class="btn green small" onclick="evalScene(${i})">🧐 请系统评价</button>
+        <button class="btn ghost small" onclick="sceneHint(${i})">💡 看提示</button>
+      </div>
+      <div class="feedback" id="fbsc${i}"></div>
+    </div>`).join('');
+}
+function evalScene(i){
+  const s=SCENES[i];
+  const dv=+$('sc'+i+'dev').value, nt=+$('sc'+i+'net').value, fn=+$('sc'+i+'fun').value;
+  if(dv<0||nt<0||fn<0){fb('fbsc'+i,'bad','还有下拉框没选呢,三项都选好再来评价。');return;}
+  const res=[
+    {ok:dv===s.a.dev, label:'设备', why:s.why.dev},
+    {ok:nt===s.a.net, label:'联网方式', why:s.why.net},
+    {ok:fn===s.a.fun, label:'功能', why:s.why.fun},
+  ];
+  const rightN=res.filter(r=>r.ok).length;
+  const lines=res.map(r=>(r.ok?'✅ ':'❌ ')+r.label+':'+(r.ok?'选得好!':'再想想。')+r.why).join('<br>');
+  if(rightN===3){
+    if(!progress.scene.includes(i)){progress.scene.push(i);$('bgScene').textContent=progress.scene.length;
+      if(progress.scene.length>=2)setBadge(4);}
+    renderScenesKeep(i);
+    fb('fbsc'+i,'ok','🎉 方案满分!<br>'+lines+(progress.scene.length>=4?'<br>🏆 4 个情境全部设计成功,你是优秀的穿戴方案设计师!':''));
+    addLog('场景设计',s.t+' 方案评价','✅ 满分通过');
+  }else{
+    fb('fbsc'+i,'bad','🤔 方案得了 '+rightN+'/3 分,还差一点:<br>'+lines+'<br>调整选择后再评价一次!');
+    addLog('场景设计',s.t+' 方案评价',rightN+'/3 分,重试中');
+  }
+}
+function renderScenesKeep(i){
+  const el=$('scene'+i); if(!el)return;
+  el.classList.add('pass');
+  const h=el.querySelector('h4'); if(h&&!h.textContent.includes('✅'))h.textContent+=' ✅';
+}
+function sceneHint(i){
+  sceneHintLv[i]=Math.min(sceneHintLv[i]+1,3);
+  const s=SCENES[i];
+  const hs=[
+    '提示①:先想功能——这个情境里,主人公最想解决什么问题?',
+    '提示②:再想联网——附近有没有无线网?手机在不在 10 米以内?都不行的话就只剩一种方式了。',
+    '提示③:参考答案——设备选「'+s.dev[s.a.dev]+'」,联网选「'+s.net[s.a.net]+'」,功能选「'+s.fun[s.a.fun]+'」。想一想为什么!'
+  ];
+  fb('fbsc'+i,'info','💡 '+hs[sceneHintLv[i]-1]);
+}
+
+/* ============================================================
+   模块五:数据最小化·隐私小法庭
+============================================================ */
+const COURTS=[
+  {t:'案子一:「乐跑」计步手环',intro:'这款手环提供 3 个功能:计步、心率监测、睡眠监测。它的手机程序申请收集下面 6 种数据,请逐条判决。',
+   items:[
+     {n:'每天的步数',need:true, why:'计步功能就靠它,不收集步数就没法计步。'},
+     {n:'运动时的心率',need:true, why:'它有心率监测功能,心率数据是必需的。'},
+     {n:'夜间的睡眠时间',need:true, why:'它有睡眠监测功能,需要夜间的活动与睡眠数据。'},
+     {n:'你家的详细住址',need:false,why:'计步、测心率、看睡眠都用不着住址——超出功能需要的数据不该收集。'},
+     {n:'手机通讯录',need:false,why:'手环的 3 个功能和通讯录毫无关系,这是过度收集。'},
+     {n:'相册里的照片',need:false,why:'照片和计步、心率、睡眠都无关,坚决说不!'}]},
+  {t:'案子二:「梦境」虚拟现实游戏眼镜',intro:'这款眼镜的功能是:与虚拟场景互动、游戏时间提醒。它申请收集下面 6 种数据,请逐条判决。',
+   items:[
+     {n:'头部转动方向',need:true, why:'画面要跟着头转,不采集头部方向就没法互动。'},
+     {n:'手柄的动作数据',need:true, why:'和虚拟场景互动需要知道你的动作。'},
+     {n:'本次游戏时长',need:true, why:'有"游戏时间提醒"功能,需要记录玩了多久,提醒你休息。'},
+     {n:'全天的实时位置',need:false,why:'在家玩游戏不需要随时定位你在哪,这超出了功能需要。'},
+     {n:'全天开启麦克风录音',need:false,why:'游戏没在进行也一直录音?这是严重的过度收集!'},
+     {n:'家长的身份证号码',need:false,why:'玩游戏用不着身份证号,个人重要信息更要保护好。'}]},
+];
+let courtAns=COURTS.map(c=>c.items.map(()=>null)), courtHintLv=0;
+function renderCourts(){
+  $('courtBox').innerHTML=COURTS.map((c,ci)=>`
+    <div class="courtcase ${progress.court.includes(ci)?'solved':''}" id="court${ci}">
+      <h3>⚖️ ${c.t} ${progress.court.includes(ci)?'✅ 已结案':''}</h3>
+      <p style="font-size:14px;color:var(--ink-2)">${c.intro}</p>
+      ${c.items.map((it,ii)=>`
+        <div class="ditem" id="di${ci}_${ii}">
+          <span class="dname">📄 ${it.n}</span>
+          <button class="btn small green" onclick="judge(${ci},${ii},true)">✅ 必需</button>
+          <button class="btn small red" onclick="judge(${ci},${ii},false)">🚫 不必需</button>
+          <span class="verdict" id="vd${ci}_${ii}">待判决</span>
+        </div>`).join('')}
+    </div>`).join('');
+}
+function judge(ci,ii,ans){
+  const it=COURTS[ci].items[ii];
+  courtAns[ci][ii]=ans;
+  const el=$('di'+ci+'_'+ii), vd=$('vd'+ci+'_'+ii);
+  if(!el||!vd)return;
+  el.classList.remove('ok','no');
+  if(ans===it.need){
+    el.classList.add('ok');
+    vd.innerHTML='⚖️ 判对!'+it.why;
+    addLog('隐私法庭','判决「'+it.n+'」为'+(ans?'必需':'不必需'),'✅ 正确');
+  }else{
+    el.classList.add('no');
+    vd.innerHTML='🤔 再想想:'+it.why+' 可以重新判决。';
+    addLog('隐私法庭','判决「'+it.n+'」为'+(ans?'必需':'不必需'),'❌ 判错,可改判');
+  }
+  checkCourt(ci);
+}
+function checkCourt(ci){
+  const allRight=COURTS[ci].items.every((it,ii)=>courtAns[ci][ii]===it.need);
+  if(allRight&&!progress.court.includes(ci)){
+    progress.court.push(ci);
+    $('bgCourt').textContent=progress.court.length;
+    const el=$('court'+ci); if(el){el.classList.add('solved');
+      const h=el.querySelector('h3'); if(h&&!h.textContent.includes('已结案'))h.innerHTML+=' ✅ 已结案';}
+    addLog('隐私法庭',COURTS[ci].t+' 全部判决正确','✅ 结案');
+    if(progress.court.length>=2){setBadge(5);
+      fb('fb5','ok','🏆 两个案子都判对了!记住小法官的原则:<b>设备只收集完成功能必需的数据(数据最小化)</b>,住址、通讯录、照片这些"多余的要求"要勇敢说不!');}
+    else fb('fb5','ok','🎉 「'+COURTS[ci].t+'」结案!还有一个案子等你审理。');
+  }
+}
+function courtHint(){
+  courtHintLv=Math.min(courtHintLv+1,3);
+  const hs=[
+    '提示①:先看清楚案子开头列出的"功能清单",判决时只认功能不认别的。',
+    '提示②:问自己一句:"少了这条数据,功能还能实现吗?"能实现,就是不必需。',
+    '提示③:规律——和功能直接相关的数据(步数、心率、头部方向等)是必需的;住址、通讯录、照片、全天录音、身份证号都超出了功能需要,是不必需的。'
+  ];
+  fb('fb5','info','💡 '+hs[courtHintLv-1]);
+}
+function resetCourt(){
+  courtAns=COURTS.map(c=>c.items.map(()=>null));
+  progress.court=[]; $('bgCourt').textContent=0; courtHintLv=0;
+  renderCourts(); fb('fb5','info','已重新开庭,请重新判决!');
+}
+
+/* ============================================================
+   模块六:探索报告 + 日志 + 本机数据
+============================================================ */
+function refreshStats(){
+  $('sExp').textContent=progress.explore.length+'/6';
+  $('sWear').textContent=progress.wear?'✅ 完成':'未完成';
+  $('sChain').textContent=progress.chain+'/4';
+  $('sScene').textContent=progress.scene.length+'/4';
+  $('sCourt').textContent=progress.court.length+'/2';
+  $('sLog').textContent=logRows.length;
+}
+function renderLog(){
+  $('logCount').textContent=logRows.length;
+  $('logBody').innerHTML=logRows.length?logRows.slice().reverse().map(r=>
+    `<tr><td>${r.time}</td><td>${r.mod}</td><td style="text-align:left">${r.content}</td><td>${r.result}</td></tr>`).join('')
+    :'<tr><td colspan="4" style="color:#5b7186">暂无记录</td></tr>';
+}
+function exportCSV(){
+  const head='时间,模块,内容,结果\n';
+  const body=logRows.map(r=>[r.time,r.mod,r.content,r.result].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  downloadFile('穿戴设备探索记录.csv','\ufeff'+head+body,'text/csv');
+}
+function clearLog(){logRows=[];renderLog();refreshStats();}
+function reportHTML(){
+  const f=id=>{const v=$(id).value.trim();return v?v.replace(/</g,'&lt;'):'(还没有填写)';};
+  const exploredNames=DEVICES.filter(d=>progress.explore.includes(d.k)).map(d=>d.ico+d.name).join('、')||'(暂无)';
+  return `<div style="font-family:sans-serif;max-width:720px;margin:auto">
+  <h1 style="color:#1a5cb8">⌚ 智能穿戴设备探索报告</h1>
+  <p>课程:清华版《信息科技》五年级下册 第1单元第1课 | 生成时间:${new Date().toLocaleString()}</p>
+  <h2>一、探索数据统计</h2>
+  <ul><li>探索的设备:${progress.explore.length}/6(${exploredNames})</li>
+  <li>佩戴位置配对:${progress.wear?'✅ 全部正确':'未完成'}</li>
+  <li>传感器—数据—功能三连配对:${progress.chain}/4 条</li>
+  <li>设计成功的场景方案:${progress.scene.length}/4 个</li>
+  <li>隐私小法庭结案:${progress.court.length}/2 个</li>
+  <li>实验记录:${logRows.length} 条</li></ul>
+  <h2>二、我的发现</h2><p>${f('r1')}</p>
+  <h2>三、我推荐的设备方案</h2><p>${f('r2')}</p>
+  <h2>四、我的隐私建议</h2><p>${f('r3')}</p>
+  <p style="color:#5b7186;font-size:13px">本报告由"智能穿戴设备探索馆"离线生成,全部为虚拟设备与本地示例数据。</p></div>`;
+}
+function genReport(){
+  const empty=['r1','r2','r3'].filter(id=>!$(id).value.trim());
+  if(empty.length){fb('fb6','bad','还有 '+empty.length+' 个空没填完呢!把你探索中的发现写进去,报告才有价值。');}
+  else{fb('fb6','ok','✅ 报告已生成!检查一下预览,满意就点「导出报告」保存到电脑。');
+    if(!progress.report){progress.report=true;setBadge(6);}}
+  $('reportPreview').innerHTML='<div class="card" style="margin-top:12px">'+reportHTML()+'</div>';
+  refreshStats();
+}
+function exportReport(){
+  downloadFile('智能穿戴设备探索报告.html','<!DOCTYPE html><html><head><meta charset="utf-8"><title>探索报告</title></head><body>'+reportHTML()+'</body></html>','text/html');
+}
+/* ---- 本机数据 ---- */
+const LS_KEY='u1l1_wearable_lab';
+function projectData(){
+  return {ver:1,
+    report:{r1:$('r1').value,r2:$('r2').value,r3:$('r3').value},
+    progress:{explore:progress.explore,wear:progress.wear,chain:progress.chain,scene:progress.scene,court:progress.court,report:progress.report},
+    solved3, courtAns,
+    params:{intensity:$('intensity').value,fit:$('fit').value,dist:$('dist').value,place:$('place').value},
+    log:logRows.slice(-100)};
+}
+function applyProject(d){
+  try{
+    if(d.report)['r1','r2','r3'].forEach(k=>$(k).value=d.report[k]||'');
+    if(d.progress){
+      progress.explore=Array.isArray(d.progress.explore)?d.progress.explore:[];
+      progress.wear=!!d.progress.wear;
+      progress.chain=d.progress.chain||0;
+      progress.scene=Array.isArray(d.progress.scene)?d.progress.scene:[];
+      progress.court=Array.isArray(d.progress.court)?d.progress.court:[];
+      progress.report=!!d.progress.report;
+    }
+    if(Array.isArray(d.solved3))solved3=d.solved3;
+    if(Array.isArray(d.courtAns)&&d.courtAns.length===2)courtAns=d.courtAns;
+    if(d.params){
+      $('intensity').value=d.params.intensity||0; $('fit').value=d.params.fit||3;
+      $('dist').value=d.params.dist||5; $('place').value=d.params.place||'home';
+      $('intOut').textContent=intName(+$('intensity').value);
+      $('fitOut').textContent=fitName(+$('fit').value);
+      $('distOut').textContent=$('dist').value+' 米';
+    }
+    if(Array.isArray(d.log))logRows=d.log;
+    // 恢复徽章与界面
+    $('bgExp').textContent=progress.explore.length;
+    $('bgChain').textContent=progress.chain;
+    $('bgScene').textContent=progress.scene.length;
+    $('bgCourt').textContent=progress.court.length;
+    if(progress.explore.length>=6)setBadge(1);
+    if(progress.wear)setBadge(2);
+    if(progress.chain>=4)setBadge(3);
+    if(progress.scene.length>=2)setBadge(4);
+    if(progress.court.length>=2)setBadge(5);
+    if(progress.report)setBadge(6);
+    renderWall(); render3(); renderScenes(); renderCourts();
+    refreshStats(); renderLog();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('穿戴探索馆项目进度.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 项目导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的项目文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'), raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderWall(); openDevice('watch');
+  renderWearPool(); render3(); renderScenes(); renderCourts();
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  refreshStats();
+  setInterval(liveTick,700);
+})();
+</script>
+</body>
+</html>

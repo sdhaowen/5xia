@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能手表设计工作台 · 单元1第3课 智能穿戴设备项目设计——功能定位与程序设计</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6;
+    --bg:#eef4fb; --card:#ffffff; --ink:#20344b; --ink-2:#5b7186;
+    --line:#d9e4f0; --soft:#f2f7fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#4c46b8,#2b7de9); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(40,40,120,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--green-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--blue);}
+  nav button.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(30,60,110,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--blue); border:2px solid var(--blue);}
+  .btn.gray{background:#8aa0b5;}
+  .btn:disabled{background:#c4d2df; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#e8f1fd; border:1px solid var(--blue); color:var(--blue-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .why{background:#eef7ff; border-left:4px solid var(--blue); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+  /* ---------- 模块一:用户与需求 ---------- */
+  .ucards{display:flex; gap:12px; flex-wrap:wrap;}
+  .ucard{flex:1; min-width:200px; border:3px solid var(--line); border-radius:14px; padding:14px; background:#fff; cursor:pointer; transition:.15s; text-align:center;}
+  .ucard:hover{border-color:var(--blue); transform:translateY(-2px);}
+  .ucard.on{border-color:var(--green); background:#e7f9ef; box-shadow:0 0 0 3px #c9efdb;}
+  .ucard .uico{font-size:44px; display:block;}
+  .ucard b{font-size:18px;}
+  .ucard p{font-size:13px; color:var(--ink-2); margin-top:4px;}
+  .needs{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:10px;}
+  @media(max-width:900px){.needs{grid-template-columns:repeat(2,1fr);}}
+  .need{border:2px solid var(--line); border-radius:12px; padding:10px; background:#fff; cursor:pointer; transition:.15s; text-align:center; position:relative;}
+  .need:hover{border-color:var(--blue);}
+  .need.on{border-color:var(--green); background:#e7f9ef;}
+  .need .ico{font-size:28px; display:block;}
+  .need b{font-size:14.5px;}
+  .tag{display:inline-block; border-radius:10px; padding:1px 8px; font-size:12px; color:#fff; margin-top:4px;}
+  .tag.high{background:var(--green);} .tag.mid{background:var(--orange);} .tag.low{background:var(--red);}
+  .evalline{background:var(--soft); border-radius:10px; padding:8px 12px; margin:6px 0; font-size:14px;}
+  /* ---------- 模块二:配置台 ---------- */
+  .cfg{display:grid; grid-template-columns:300px 1fr 330px; gap:14px;}
+  @media(max-width:1100px){.cfg{grid-template-columns:1fr;}}
+  .watch{display:flex; flex-direction:column; align-items:center; padding:6px 0;}
+  .strap{width:48px; height:42px; transition:.3s;}
+  .strap.top{border-radius:12px 12px 0 0;}
+  .strap.bot{border-radius:0 0 12px 12px;}
+  .wcase{width:158px; height:158px; display:flex; align-items:center; justify-content:center; border:7px solid #555; background:#2c3440; transition:.3s;}
+  .wcase.round{border-radius:50%;} .wcase.square{border-radius:14px;} .wcase.squircle{border-radius:38px;}
+  .wscreen{width:80%; height:80%; background:#0d1b2a; color:#e8f4ff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; transition:.3s; overflow:hidden;}
+  .wcase.round .wscreen{border-radius:50%;} .wcase.square .wscreen{border-radius:8px;} .wcase.squircle .wscreen{border-radius:26px;}
+  .wscreen .wtime{font-family:monospace; font-size:26px; font-weight:700; letter-spacing:1px;}
+  .wscreen .wsub{font-size:13px; margin-top:2px; opacity:.9;}
+  .wscreen .wicons{font-size:15px; margin-top:3px; letter-spacing:2px;}
+  .wscreen.alerting{background:#9a3412; animation:buzz .3s infinite;}
+  @keyframes buzz{25%{transform:translateX(-2px);}75%{transform:translateX(2px);}}
+  .shape-btns button{border:2px solid var(--line); background:#fff; border-radius:10px; padding:7px 12px; font-size:14px; font-weight:700; cursor:pointer; margin:2px;}
+  .shape-btns button.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  .sw{width:32px; height:32px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px var(--line); cursor:pointer; display:inline-block; margin:4px; vertical-align:middle; transition:.15s;}
+  .sw.on{box-shadow:0 0 0 3px var(--orange); transform:scale(1.12);}
+  .optcard{display:flex; align-items:center; gap:8px; border:2px solid var(--line); border-radius:12px; padding:8px 10px; background:#fff; cursor:pointer; transition:.15s; margin:6px 0; font-size:14.5px;}
+  .optcard:hover{border-color:var(--blue);}
+  .optcard.on{border-color:var(--green); background:#e7f9ef;}
+  .optcard .oico{font-size:22px;}
+  .optcard .oname{font-weight:700;}
+  .optcard .onote{font-size:12px; color:var(--ink-2); display:block;}
+  .optcard .ocost{margin-left:auto; flex-shrink:0; font-weight:700; color:var(--blue-d); font-size:13px; background:var(--soft); border-radius:10px; padding:1px 8px;}
+  .costbar{height:20px; background:#e3ecf6; border-radius:10px; overflow:hidden; margin-top:4px;}
+  .costbar i{display:block; height:100%; border-radius:10px; transition:width .3s, background .3s;}
+  .flist{background:var(--soft); border-radius:10px; padding:8px 12px; margin-top:8px; font-size:14px; min-height:56px;}
+  .flist div{padding:2px 0; border-bottom:1px dashed var(--line);}
+  .flist .f-ok{color:var(--green-d);} .flist .f-bad{color:#b3262b;}
+  /* ---------- 模块三:状态机 ---------- */
+  .lab{display:grid; grid-template-columns:300px 1fr 310px; gap:14px;}
+  @media(max-width:1100px){.lab{grid-template-columns:1fr;}}
+  .sm{display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; margin:12px 0;}
+  .snode{border:3px solid var(--line); border-radius:14px; padding:10px 12px; text-align:center; background:#fff; min-width:104px; transition:.2s;}
+  .snode .sico{font-size:26px; display:block;}
+  .snode small{font-weight:700; font-size:14px;}
+  .snode .sst{display:block; font-size:12px; color:var(--ink-2);}
+  .snode.cur{border-color:var(--orange); background:#fff4dd; box-shadow:0 0 0 4px #fde9c2; transform:scale(1.06);}
+  .sarrow{font-size:20px; color:var(--blue); font-weight:900;}
+  .loopnote{text-align:center; font-size:13px; color:var(--ink-2); margin-top:2px;}
+  .judgebox{background:var(--soft); border:2px dashed var(--purple); border-radius:12px; padding:8px 12px; text-align:center; font-size:15px; font-weight:700; margin-top:6px;}
+  .kid{font-size:56px; display:block; text-align:center; transition:.3s;}
+  .statebox{background:var(--soft); border-radius:10px; padding:8px 12px; margin-top:8px; font-size:14px; text-align:left;}
+  .statebox b{color:var(--blue-d);}
+  .clock{font-size:15px; background:#20344b; color:#9fd7e3; font-weight:700; border-radius:10px; padding:6px 12px; display:inline-block; margin-bottom:6px; font-family:monospace;}
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px;}
+  .ctl label output{color:var(--blue-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--blue); height:26px;}
+  .runbar{display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;}
+  .modebtns button{border:2px solid var(--line); background:#fff; border-radius:10px; padding:8px 12px; font-size:14px; font-weight:700; cursor:pointer; margin:2px;}
+  .modebtns button.on{background:var(--purple); border-color:var(--purple); color:#fff;}
+  .actbtns button{border:2px solid var(--line); background:#fff; border-radius:10px; padding:7px 10px; font-size:14px; font-weight:700; cursor:pointer; margin:2px;}
+  .actbtns button.on{background:var(--orange); border-color:var(--orange); color:#fff;}
+  /* ---------- 模块四:测试 ---------- */
+  .tcase{border:2px solid var(--line); border-radius:14px; padding:14px; margin-bottom:12px; background:#fff;}
+  .tcase h4{font-size:16px; margin-bottom:4px;}
+  .tcase.solved{border-color:var(--green); background:#f4fcf7;}
+  .tcase .scene{background:var(--soft); border-radius:10px; padding:8px 12px; font-size:14.5px; margin:6px 0;}
+  .opt{display:inline-block; text-align:left; border:2px solid var(--line); background:#fff; border-radius:10px; padding:9px 16px; margin:4px 6px 4px 0; font-size:15px; font-weight:700; cursor:pointer; transition:.15s;}
+  .opt:hover{border-color:var(--purple);}
+  .opt.picked{border-color:var(--orange); background:#fff4dd;}
+  .opt.right{border-color:var(--green); background:#e7f9ef;}
+  .opt.wrong{border-color:var(--red); background:#fdeaea;}
+  .runlog{background:#20344b; color:#c9e6ff; border-radius:10px; padding:10px 12px; font-size:13px; max-height:170px; overflow:auto; margin-top:8px; white-space:pre-wrap; display:none;}
+  /* ---------- 模块五:方案与日志 ---------- */
+  textarea{width:100%; min-height:74px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  textarea:focus{outline:none; border-color:var(--blue);}
+  input[type=text]{width:100%; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit;}
+  input[type=text]:focus{outline:none; border-color:var(--blue);}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:22px; color:var(--blue-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{border:1px solid var(--line); padding:6px 8px; text-align:center;}
+  th{background:var(--soft);}
+  .logwrap{max-height:280px; overflow:auto; border-radius:10px; border:1px solid var(--line); margin-top:8px;}
+  pre.saved{background:#20344b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>⌚ 智能手表设计工作台</h1>
+  <p>清华版《信息科技》五年级下册 · 第1单元 第3课 智能穿戴设备项目设计——功能定位与程序设计(教材 P21—27)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 用户需求</span>
+    <span class="badge" id="bg2">② 手表配置</span>
+    <span class="badge" id="bg3">③ 程序模拟</span>
+    <span class="badge" id="bg4">④ 测试挑战 <span id="bgTest">0</span>/6</span>
+    <span class="badge" id="bg5">⑤ 项目方案</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">👥 ① 用户与需求</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">⌚ ② 手表配置台</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">🔁 ③ 程序模拟器</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">🧪 ④ 测试挑战</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">📑 ⑤ 项目方案书</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:目标用户与需求分析 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>👥 任务一:为谁设计?需要什么?</h2>
+    <div class="task"><b>任务:</b>设计智能手表的第一步是想清楚<b>给谁用、解决什么问题</b>。请先<b>点击选择一位目标用户</b>,再<b>点击勾选</b>你认为这位用户需要的功能需求(可多选),最后点「评估匹配度」看看你选得准不准。目标:找出<b>至少 3 个"很匹配"</b>的需求,并且<b>不选"不太匹配"</b>的。</div>
+    <h3>第1步:选择目标用户</h3>
+    <div class="ucards" id="ucards"></div>
+    <h3 style="margin-top:14px">第2步:为这位用户勾选需求</h3>
+    <div class="needs" id="needs"></div>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="evalNeeds()">✅ 评估匹配度</button>
+      <button class="btn ghost" onclick="needHint()">💡 看提示</button>
+      <button class="btn gray" onclick="resetNeeds()">🔄 重新选择</button>
+    </div>
+    <div class="feedback" id="fb1"></div>
+    <div id="evalList"></div>
+  </div>
+  <div class="card">
+    <h2>📖 教材里的项目创意思路</h2>
+    <p>教材告诉我们,设计一款智能穿戴设备,可以按这条路思考:<b>确定实用功能 → 确定佩戴位置 → 寻找能监测有效数据的传感器 → 根据硬件和环境设计外观</b>。比如"计步"功能,监测手臂摆动最方便,于是选择腕带式的<b>手表</b>。想清楚"为谁设计、解决什么问题",后面的每一步才不会走偏!</p>
+    <p style="margin-top:6px"><span class="pill">功能定位</span><span class="pill">佩戴位置</span><span class="pill">传感器</span><span class="pill">外观设计</span></p>
+  </div>
+</section>
+
+<!-- ================= 模块二:手表配置台 ================= -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>⌚ 任务二:配置我的智能手表</h2>
+    <div class="task"><b>任务:</b>教材里的项目实施计划要列<b>材料清单</b>和<b>成本预算</b>。请在预算 <b>80 元</b>内(基础套件已花 40 元):①挑选外观;②挑选传感器和联网方式;③勾选功能模块。注意看右侧「功能清单」——功能要有对应的硬件支持才能实现!全部搞定后点「检查配置」。</div>
+    <div class="cfg">
+      <!-- 左:外观与预览 -->
+      <div class="card" style="margin:0">
+        <h3>🎨 外观设计(实时预览)</h3>
+        <div class="watch">
+          <div class="strap top" id="strapT"></div>
+          <div class="wcase round" id="wCase"><div class="wscreen" id="wScreen">
+            <div class="wtime" id="wTime">08:00</div>
+            <div class="wsub" id="wSub">我的智能手表</div>
+            <div class="wicons" id="wIcons"></div>
+          </div></div>
+          <div class="strap bot" id="strapB"></div>
+        </div>
+        <h3>表盘形状</h3>
+        <div class="shape-btns" id="shapeBtns"></div>
+        <h3>表壳颜色</h3>
+        <div id="caseColors"></div>
+        <h3>表带颜色</h3>
+        <div id="strapColors"></div>
+      </div>
+      <!-- 中:硬件 -->
+      <div class="card" style="margin:0">
+        <h3>🔩 基础套件(必备,40 元)</h3>
+        <div class="optcard on" style="cursor:default"><span class="oico">🧠</span><span><span class="oname">主控板 + 屏幕 + 电池</span><span class="onote">手表的"大脑",教材材料清单里的核心</span></span><span class="ocost">40元</span></div>
+        <h3>📟 传感器(点击选购)</h3>
+        <div id="sensorList"></div>
+        <h3>🌐 联网方式(三选一)</h3>
+        <div id="netList"></div>
+      </div>
+      <!-- 右:功能与预算 -->
+      <div class="card" style="margin:0">
+        <h3>🧩 功能模块(软件免费,但要硬件支持)</h3>
+        <div id="funcList"></div>
+        <h3 style="margin-top:12px">💰 成本预算</h3>
+        <div style="display:flex;justify-content:space-between;font-size:14.5px;font-weight:700"><span>已用 <span id="costNow">40</span> 元</span><span>预算 80 元</span></div>
+        <div class="costbar"><i id="costBar" style="width:50%;background:#2eb872"></i></div>
+        <div class="feedback" id="fbCost" style="margin-top:6px"></div>
+        <h3 style="margin-top:10px">📋 功能清单(实时更新)</h3>
+        <div class="flist" id="fStatus"><div style="color:#5b7186">还没有勾选功能模块</div></div>
+        <div class="why" id="cfgWhy">💬 点击任何配置,这里会解释它带来的变化。</div>
+        <div style="margin-top:10px">
+          <button class="btn green" onclick="checkConfig()">✅ 检查配置</button>
+          <button class="btn ghost" onclick="cfgHint()">💡 看提示</button>
+          <button class="btn gray" onclick="resetConfig()">🔄 重置配置</button>
+        </div>
+        <div class="feedback" id="fb2"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>📖 为什么教材建议改用蓝牙?</h2>
+    <p>教材的使用反馈表里写着:手表在室外<b>没有 Wi-Fi 就无法获取时间</b>。这是因为 Wi-Fi 属于<b>局域网</b>,信号覆盖范围有限,离开房间就断网;而一个个局域网连起来组成了范围很大的<b>广域网</b>。改进办法是让主控板用<b>蓝牙连接手机</b>,借助手机上网,户外也能正常使用。配置联网方式时,记得想想你的用户会在哪里戴表!</p>
+  </div>
+</section>
+
+<!-- ================= 模块三:程序状态机模拟器 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>🔁 任务三:让程序"转"起来——状态机模拟器</h2>
+    <div class="task"><b>任务A:</b>点「▶ 运行」,观察程序在 <b>待机 → 检测 → 判断 → 提醒 → 回到待机</b> 之间循环,黄色高亮的就是当前状态。看看虚拟小朋友"小星"久坐后手表什么时候响。<br><b>任务B:</b>把「久坐阈值」调小再调大,比较提醒来得早还是晚;再切换到「心率监测程序」,点「🏃 跑步」把心率拉高,看提醒怎么触发。</div>
+    <div class="lab">
+      <!-- 左:虚拟小朋友与手表 -->
+      <div class="card" style="margin:0; text-align:center">
+        <h3>虚拟用户:小星</h3>
+        <span class="kid" id="kidIco">🪑</span>
+        <div class="statebox" style="text-align:center">小星正在:<b id="kidAct">坐着写作业</b></div>
+        <div class="actbtns" style="margin-top:6px">
+          <button id="actSit" class="on" onclick="setAct('sit')">🪑 坐下</button>
+          <button id="actWalk" onclick="setAct('walk')">🚶 走动</button>
+          <button id="actRun" onclick="setAct('run')">🏃 跑步</button>
+        </div>
+        <div class="watch" style="margin-top:8px">
+          <div class="strap top" id="strapT3"></div>
+          <div class="wcase round" id="wCase3"><div class="wscreen" id="wScreen3">
+            <div class="wtime" id="wTime3">08:00</div>
+            <div class="wsub" id="wHr3">❤️ 78</div>
+            <div class="wsub" id="wSit3">🪑 已坐 0 分钟</div>
+          </div></div>
+          <div class="strap bot" id="strapB3"></div>
+        </div>
+        <div class="statebox">累计触发提醒:<b id="alertN">0</b> 次</div>
+      </div>
+      <!-- 中:状态机 -->
+      <div class="card" style="margin:0">
+        <h3>程序状态机(流程图动起来了!)</h3>
+        <div class="clock" id="simClock">08:00 · 第 0 分钟</div>
+        <div class="sm">
+          <div class="snode cur" id="sn0"><span class="sico">🕐</span><small>待机</small><span class="sst">省电等待</span></div>
+          <span class="sarrow">→</span>
+          <div class="snode" id="sn1"><span class="sico">📡</span><small>检测</small><span class="sst">读传感器数据</span></div>
+          <span class="sarrow">→</span>
+          <div class="snode" id="sn2"><span class="sico">❓</span><small>判断</small><span class="sst">条件成立吗?</span></div>
+          <span class="sarrow">→</span>
+          <div class="snode" id="sn3"><span class="sico">📳</span><small>提醒</small><span class="sst">振动+提示</span></div>
+        </div>
+        <div class="loopnote">↩ 提醒结束(或判断"否")后,回到「待机」,等下一次检测</div>
+        <div class="judgebox" id="judgeBox">判断条件:久坐时间 > 40 分钟?</div>
+        <div class="why" id="simWhy">💬 点「▶ 运行」开始。这就是教材里"程序流程图"的动态版:程序按固定的路线一圈一圈地跑。</div>
+      </div>
+      <!-- 右:控制面板 -->
+      <div class="card ctl" style="margin:0">
+        <h3>🎮 控制面板</h3>
+        <div class="modebtns">
+          <button id="mSit" class="on" onclick="setMode('sit')">🪑 久坐提醒程序</button>
+          <button id="mHr" onclick="setMode('hr')">❤️ 心率监测程序</button>
+        </div>
+        <div class="runbar">
+          <button class="btn green small" id="btnRun" onclick="toggleRun()">▶ 运行</button>
+          <button class="btn orange small" onclick="stepOnce()">⏭ 单步</button>
+          <button class="btn small" onclick="ffwd()">⏩ 快进30分钟</button>
+          <button class="btn gray small" onclick="resetSim()">🔄 重置</button>
+          <button class="btn ghost small" onclick="loadExample()">📖 恢复教材示例</button>
+        </div>
+        <label><span>模拟速度</span><output id="spdOut">中</output></label>
+        <input type="range" id="spd" min="1" max="3" value="2" oninput="setSpeed()">
+        <hr style="border:none; border-top:1px dashed var(--line); margin:12px 0">
+        <label><span>久坐阈值(超过就提醒)</span><output id="thSitOut">40分钟</output></label>
+        <input type="range" id="thSit" min="20" max="60" step="5" value="40" oninput="paramChanged('久坐阈值','thSit')">
+        <label><span>心率上限(超过就提醒)</span><output id="thHrOut">150次/分</output></label>
+        <input type="range" id="thHr" min="120" max="190" step="10" value="150" oninput="paramChanged('心率上限','thHr')">
+        <label><span>检测间隔(每隔几分钟测一次)</span><output id="intvOut">5分钟</output></label>
+        <input type="range" id="intv" min="1" max="10" value="5" oninput="paramChanged('检测间隔','intv')">
+        <div class="why" id="paramWhy" style="min-height:34px">💬 试着修改参数,这里会解释它带来的变化。</div>
+      </div>
+    </div>
+    <div class="feedback" id="fb3"></div>
+  </div>
+</section>
+
+<!-- ================= 模块四:测试挑战 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>🧪 任务四:当一次小小测试员!</h2>
+    <div class="task"><b>任务:</b>程序写好了,还要<b>测试优化</b>(教材任务分解的最后一步)!下面有 6 个测试场景。每个场景请你:①读清参数和场景 → ②<b>先做预测</b>(会提醒 / 不会提醒)→ ③点「▶ 运行验证」看程序实际怎么做。预测错了没关系,看 💡 提示再试一次。全部 6 个验证正确就通关!</div>
+    <div id="tcases"></div>
+  </div>
+</section>
+
+<!-- ================= 模块五:项目方案书 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>📑 任务五:生成我的项目方案书</h2>
+    <div class="task"><b>任务:</b>教材要求填写<b>项目计划书</b>。工作台已经自动汇总了你在前四关的成果,请给项目取个好听的名字,写好小结和改进想法,点「生成方案书」预览,满意就导出保存!</div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="sUser">—</b><span>目标用户</span></div>
+      <div class="stat"><b id="sNeed">0</b><span>选定的需求数</span></div>
+      <div class="stat"><b id="sCost">40元</b><span>配置成本(预算80元)</span></div>
+      <div class="stat"><b id="sAlert">0</b><span>模拟中触发提醒</span></div>
+      <div class="stat"><b id="sMin">0</b><span>模拟总分钟数</span></div>
+      <div class="stat"><b id="sTest">0/6</b><span>测试验证正确</span></div>
+    </div>
+    <h3>1️⃣ 项目名称(给你的手表取个好名字)</h3>
+    <input type="text" id="pName" placeholder="例:小卫士健康手表">
+    <h3>2️⃣ 项目小结(这节课我设计了什么?程序是怎么工作的?)</h3>
+    <textarea id="r1" placeholder="例:我为小学生设计了一款久坐提醒手表。程序在待机、检测、判断、提醒四个状态间循环:每5分钟检测一次,发现连续坐超过40分钟就振动提醒。"></textarea>
+    <h3>3️⃣ 问题与改进想法(像教材的"使用反馈表"一样,写下发现的问题和解决办法)</h3>
+    <textarea id="r2" placeholder="例:测试时发现阈值设60分钟提醒来得太晚;改成40分钟更合适。户外没有Wi-Fi会断网,可以改用蓝牙连手机。"></textarea>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genPlan()">📄 生成方案书预览</button>
+      <button class="btn" onclick="exportPlan()">📥 导出方案书(网页文件)</button>
+      <button class="btn purple" onclick="exportCSV()">📥 导出实验记录(表格文件)</button>
+    </div>
+    <div class="feedback" id="fb5"></div>
+    <div id="planPreview"></div>
+  </div>
+  <div class="card">
+    <h2>📋 实验记录</h2>
+    <p style="font-size:14px;color:var(--ink-2)">工作台自动记录你的每一步操作和程序触发的提醒,只保存在你自己的电脑里。</p>
+    <div style="margin-top:6px">
+      <button class="btn small" onclick="renderLog()">🔄 刷新</button>
+      <button class="btn red small" onclick="clearLog()">🗑 清空记录</button>
+      <span class="pill">共 <b id="logCount">0</b> 条记录</span>
+    </div>
+    <div class="logwrap">
+      <table>
+        <thead><tr><th>时间</th><th>模块</th><th>内容</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="3" style="color:#5b7186">暂无记录,去前面的关卡做实验吧!</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出项目(文件)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入项目</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+</section>
+</main>
+<footer>智能手表设计工作台 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态与工具函数
+============================================================ */
+const $=id=>document.getElementById(id);
+const progress={user:false,cfg:false,sim:false,test:0,plan:false};
+let logRows=[]; // {time,mod,content}
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t5'){refreshStats();renderLog();}
+}
+function setBadge(n){const e=$('bg'+n);if(e)e.classList.add('done');}
+function fb(id,cls,html){const e=$(id);if(!e)return;e.className='feedback '+cls;e.innerHTML=html;}
+function nowStr(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');}
+function addLog(mod,content){logRows.push({time:nowStr(),mod,content});if(logRows.length>500)logRows.shift();}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ============================================================
+   模块一:目标用户与需求分析
+============================================================ */
+const USERS=[
+  {k:'kid',ico:'🧒',name:'小学生',desc:'上课、写作业、上下学,需要健康提醒和安全守护'},
+  {k:'old',ico:'👴',name:'老人',desc:'关注健康指标,遇到意外要能及时求助'},
+  {k:'ath',ico:'🏃',name:'运动员',desc:'训练强度大,需要专业的运动数据'},
+];
+const NEEDS=[
+  {k:'sit',ico:'🪑',name:'久坐提醒',fit:{kid:'high',old:'high',ath:'low'},
+   why:{kid:'写作业、上课一坐就是很久,提醒起来活动特别有用!',old:'老人久坐对身体不好,定时提醒活动很贴心。',ath:'运动员天天训练,很少久坐,这个需求不迫切。'}},
+  {k:'step',ico:'👟',name:'计步记录',fit:{kid:'high',old:'mid',ath:'mid'},
+   why:{kid:'上下学、课间活动记步数,鼓励多运动,和教材里的"智能计步手表"一样!',old:'散步计步有点用,但不是老人最需要的功能。',ath:'运动员更需要专业的配速数据,普通计步只是基础。'}},
+  {k:'hr',ico:'❤️',name:'心率监测',fit:{kid:'mid',old:'high',ath:'high'},
+   why:{kid:'小学生心脏一般很健康,心率监测可以有,但不是最急需的。',old:'心率是老人重要的健康信号,监测它很有必要!',ath:'训练时心率太高要及时放慢,运动员非常需要!'}},
+  {k:'fall',ico:'🆘',name:'跌倒检测',fit:{kid:'low',old:'high',ath:'low'},
+   why:{kid:'小学生摔倒了自己会爬起来喊人,这个功能更适合老人。',old:'老人跌倒后可能起不来,自动检测并求助非常关键!',ath:'运动员身体灵活,跌倒检测意义不大。'}},
+  {k:'med',ico:'💊',name:'用药提醒',fit:{kid:'low',old:'high',ath:'low'},
+   why:{kid:'小学生很少需要天天按时吃药,这个需求不匹配。',old:'老人常要按时吃药,提醒功能雪中送炭!',ath:'健康的运动员一般不需要用药提醒。'}},
+  {k:'pace',ico:'⏱️',name:'配速分析',fit:{kid:'low',old:'low',ath:'high'},
+   why:{kid:'配速分析太专业了,小学生用不上。',old:'老人不做高强度训练,不需要专业配速。',ath:'配速、强度分析是运动员训练的好帮手!'}},
+  {k:'eye',ico:'👀',name:'远眺护眼提醒',fit:{kid:'high',old:'mid',ath:'low'},
+   why:{kid:'看书写字久了提醒望望远处,保护视力,很适合小学生!',old:'有一点用,但老人更需要健康监测类功能。',ath:'运动员训练大多在户外,这个需求不迫切。'}},
+  {k:'call',ico:'📞',name:'一键呼叫家人',fit:{kid:'high',old:'high',ath:'low'},
+   why:{kid:'遇到紧急情况一键联系爸爸妈妈,安全感满满!',old:'身体不舒服时快速呼叫子女,非常实用!',ath:'成年运动员随身有手机,手表呼叫不是刚需。'}},
+];
+const FIT_TAG={high:['high','很匹配'],mid:['mid','可以有'],low:['low','不太匹配']};
+const state={user:null,needs:[],shape:'round',caseColor:'#2b7de9',strapColor:'#2b2b2b',sensors:[],net:null,funcs:[]};
+let needHintLv=0;
+
+function renderUsers(){
+  $('ucards').innerHTML=USERS.map(u=>
+    `<div class="ucard ${state.user===u.k?'on':''}" onclick="pickUser('${u.k}')"><span class="uico">${u.ico}</span><b>${u.name}</b><p>${u.desc}</p></div>`).join('');
+}
+function pickUser(k){
+  if(state.user!==k){state.user=k;state.needs=[];
+    const u=USERS.find(x=>x.k===k);
+    fb('fb1','info',`💡 你选择了<b>${u.name}</b>。想一想:${u.desc}。现在为这位用户勾选需求吧!`);
+    addLog('①用户需求','选择目标用户:'+u.name);
+    $('evalList').innerHTML='';}
+  renderUsers(); renderNeeds();
+}
+function renderNeeds(){
+  if(!state.user){$('needs').innerHTML='<div style="grid-column:1/-1;color:#5b7186;background:var(--soft);border-radius:10px;padding:12px">👆 先在上面选择一位目标用户,再来勾选需求。</div>';return;}
+  $('needs').innerHTML=NEEDS.map(n=>
+    `<div class="need ${state.needs.includes(n.k)?'on':''}" onclick="toggleNeed('${n.k}')"><span class="ico">${n.ico}</span><b>${n.name}</b><span id="tag_${n.k}"></span></div>`).join('');
+}
+function toggleNeed(k){
+  const i=state.needs.indexOf(k);
+  if(i>=0)state.needs.splice(i,1);else state.needs.push(k);
+  renderNeeds();
+}
+function evalNeeds(){
+  if(!state.user){fb('fb1','info','💡 先选择一位目标用户哦。');return;}
+  if(state.needs.length<3){fb('fb1','info','💡 至少为用户勾选 3 个需求,再来评估。想想这位用户一天的生活会遇到什么麻烦。');return;}
+  const u=USERS.find(x=>x.k===state.user);
+  let high=0,mid=0,low=0;
+  const lines=state.needs.map(k=>{
+    const n=NEEDS.find(x=>x.k===k);
+    const fit=n.fit[state.user];
+    if(fit==='high')high++;else if(fit==='mid')mid++;else low++;
+    const t=FIT_TAG[fit];
+    const tagEl=$('tag_'+k);
+    if(tagEl)tagEl.innerHTML=`<span class="tag ${t[0]}">${t[1]}</span>`;
+    return `<div class="evalline">${n.ico} <b>${n.name}</b> <span class="tag ${t[0]}">${t[1]}</span> —— ${n.why[state.user]}</div>`;
+  });
+  $('evalList').innerHTML='<h3>逐条点评(针对'+u.name+'):</h3>'+lines.join('');
+  addLog('①用户需求',`评估:${u.name},很匹配${high}个 / 可以有${mid}个 / 不太匹配${low}个`);
+  if(high>=3&&low===0){
+    progress.user=true;setBadge(1);
+    fb('fb1','ok',`🎉 太棒了!你为<b>${u.name}</b>找到了 ${high} 个"很匹配"的需求,而且没有跑偏的选择。这就是准确的<b>功能定位</b>!带着这份需求清单,去「② 手表配置台」挑选硬件吧!`);
+  }else if(low>0){
+    fb('fb1','bad',`🤔 有 ${low} 个需求被点评为"不太匹配"(红色标签)。读一读下面的点评,把不合适的取消,再评估一次。为用户做设计,不是功能越多越好哦!`);
+  }else{
+    fb('fb1','bad',`🌱 差一点点!"很匹配"的需求只有 ${high} 个(需要 3 个)。再想想这位用户最头疼的问题是什么,补上更贴心的需求。`);
+  }
+}
+function needHint(){
+  needHintLv=Math.min(needHintLv+1,3);
+  const u=state.user?USERS.find(x=>x.k===state.user):null;
+  const best=u?NEEDS.filter(n=>n.fit[state.user]==='high').map(n=>n.name).join('、'):'';
+  const hints=[
+    '提示①:想象这位用户的一天:什么时候会遇到麻烦?手表能在那个时刻帮什么忙?',
+    '提示②:绿色点评要凑够 3 个,红色点评要清零。功能不是越多越好,要"雪中送炭",不要"锦上添花"。',
+    u?`提示③:对<b>${u.name}</b>来说,"很匹配"的需求是:${best}。想一想为什么!`:'提示③:先选择一位目标用户,提示才能更具体。'
+  ];
+  fb('fb1','info','💡 '+hints[needHintLv-1]);
+}
+function resetNeeds(){
+  state.user=null;state.needs=[];needHintLv=0;
+  renderUsers();renderNeeds();$('evalList').innerHTML='';
+  fb('fb1','info','已重置,重新选择用户和需求吧!');
+}
+
+/* ============================================================
+   模块二:手表配置台
+============================================================ */
+const BUDGET=80, BASE=40;
+const SHAPES=[{k:'round',name:'⭕ 圆形'},{k:'square',name:'⬜ 方形'},{k:'squircle',name:'🔲 圆角方'}];
+const COLORS=['#2b2b2b','#2b7de9','#e5484d','#2eb872','#f59e0b','#8b5cf6'];
+const SENSORS=[
+  {k:'acc',ico:'🏃',name:'加速度传感器',cost:10,note:'感知运动和姿态,是计步、久坐提醒的基础'},
+  {k:'hr',ico:'❤️',name:'心率传感器',cost:15,note:'测量每分钟心跳次数'},
+  {k:'temp',ico:'🌡️',name:'温度传感器',cost:8,note:'感知体表或环境温度'},
+  {k:'light',ico:'💡',name:'光线传感器',cost:5,note:'感知环境亮度'},
+  {k:'gps',ico:'📍',name:'定位模块',cost:20,note:'会记录位置信息,按"数据最小化"原则想清楚是否真的需要'},
+];
+const NETS=[
+  {k:'none',ico:'🚫',name:'不联网',cost:0,note:'省钱省电,但无法获取网络时间'},
+  {k:'bt',ico:'📶',name:'蓝牙(连手机)',cost:10,note:'借助手机上网,户外也能用——教材的改进建议!'},
+  {k:'wifi',ico:'📡',name:'无线局域网',cost:15,note:'室内好用,离开信号覆盖范围就断网'},
+];
+const FUNCS=[
+  {k:'time',ico:'🕐',name:'显示时间',needS:[],needNet:true,note:'需要联网获取准确时间'},
+  {k:'step',ico:'👟',name:'计步',needS:['acc'],needNet:false,note:'需要加速度传感器'},
+  {k:'sit',ico:'🪑',name:'久坐提醒',needS:['acc'],needNet:false,note:'需要加速度传感器'},
+  {k:'hrm',ico:'❤️',name:'心率监测',needS:['hr'],needNet:false,note:'需要心率传感器'},
+  {k:'hot',ico:'🌡️',name:'高温提示',needS:['temp'],needNet:false,note:'需要温度传感器'},
+  {k:'bright',ico:'🔆',name:'自动调亮度',needS:['light'],needNet:false,note:'需要光线传感器'},
+  {k:'sos',ico:'📞',name:'紧急呼叫',needS:['gps'],needNet:true,note:'需要定位模块+联网'},
+];
+let cfgHintLv=0;
+
+function calcCost(){
+  let c=BASE;
+  state.sensors.forEach(k=>{c+=SENSORS.find(s=>s.k===k).cost;});
+  if(state.net)c+=NETS.find(n=>n.k===state.net).cost;
+  return c;
+}
+function funcOk(f){
+  const missS=f.needS.filter(s=>!state.sensors.includes(s));
+  const missNet=f.needNet&&(!state.net||state.net==='none');
+  return {ok:missS.length===0&&!missNet,missS,missNet};
+}
+function renderCfgOptions(){
+  $('shapeBtns').innerHTML=SHAPES.map(s=>
+    `<button class="${state.shape===s.k?'on':''}" onclick="setShape('${s.k}')">${s.name}</button>`).join('');
+  $('caseColors').innerHTML=COLORS.map(c=>
+    `<span class="sw ${state.caseColor===c?'on':''}" style="background:${c}" onclick="setColor('case','${c}')"></span>`).join('');
+  $('strapColors').innerHTML=COLORS.map(c=>
+    `<span class="sw ${state.strapColor===c?'on':''}" style="background:${c}" onclick="setColor('strap','${c}')"></span>`).join('');
+  $('sensorList').innerHTML=SENSORS.map(s=>
+    `<div class="optcard ${state.sensors.includes(s.k)?'on':''}" onclick="toggleSensor('${s.k}')"><span class="oico">${s.ico}</span><span><span class="oname">${s.name}</span><span class="onote">${s.note}</span></span><span class="ocost">${s.cost}元</span></div>`).join('');
+  $('netList').innerHTML=NETS.map(n=>
+    `<div class="optcard ${state.net===n.k?'on':''}" onclick="pickNet('${n.k}')"><span class="oico">${n.ico}</span><span><span class="oname">${n.name}</span><span class="onote">${n.note}</span></span><span class="ocost">${n.cost}元</span></div>`).join('');
+  $('funcList').innerHTML=FUNCS.map(f=>
+    `<div class="optcard ${state.funcs.includes(f.k)?'on':''}" onclick="toggleFunc('${f.k}')"><span class="oico">${f.ico}</span><span><span class="oname">${f.name}</span><span class="onote">${f.note}</span></span><span class="ocost">免费</span></div>`).join('');
+}
+function setShape(k){
+  state.shape=k;
+  setCfgWhy(`表盘改成了<b>${SHAPES.find(s=>s.k===k).name}</b>。外观要结合佩戴方式和硬件形状来设计——圆形像传统手表,方形屏幕能显示更多内容。`);
+  renderCfgOptions();renderWatch();
+}
+function setColor(which,c){
+  if(which==='case')state.caseColor=c;else state.strapColor=c;
+  setCfgWhy(`${which==='case'?'表壳':'表带'}颜色换好了!好的外观会让用户更愿意天天佩戴,数据采集才连续。`);
+  renderCfgOptions();renderWatch();
+}
+function toggleSensor(k){
+  const s=SENSORS.find(x=>x.k===k);
+  const i=state.sensors.indexOf(k);
+  if(i>=0){state.sensors.splice(i,1);setCfgWhy(`取下了<b>${s.name}</b>,省下 ${s.cost} 元。注意:依赖它的功能会变成"缺硬件"状态。`);}
+  else{state.sensors.push(k);
+    let extra=k==='gps'?' ⚠️ 定位会记录位置信息,如果你的功能用不到它,建议不装——这就是"数据最小化"。':'';
+    setCfgWhy(`装上了<b>${s.name}</b>(${s.cost} 元)。${s.note}。${extra}`);}
+  addLog('②手表配置',(i>=0?'移除':'添加')+'传感器:'+s.name);
+  renderCfgOptions();renderConfig();
+}
+function pickNet(k){
+  state.net=k;
+  const n=NETS.find(x=>x.k===k);
+  const tips={none:'不联网最省钱,但教材提醒过:没有网络就获取不到准确时间。',
+    bt:'蓝牙连手机——正是教材使用反馈表里的改进建议,户外也不怕断网!',
+    wifi:'无线局域网在室内很稳,但它是"局域网",离开信号覆盖范围(比如去室外)就会断网。'};
+  setCfgWhy(`联网方式选择了<b>${n.name}</b>(${n.cost} 元)。${tips[k]}`);
+  addLog('②手表配置','联网方式:'+n.name);
+  renderCfgOptions();renderConfig();
+}
+function toggleFunc(k){
+  const f=FUNCS.find(x=>x.k===k);
+  const i=state.funcs.indexOf(k);
+  if(i>=0){state.funcs.splice(i,1);setCfgWhy(`取消了功能「${f.name}」。`);}
+  else{state.funcs.push(k);
+    const r=funcOk(f);
+    setCfgWhy(r.ok?`添加了功能「${f.name}」,硬件支持齐全,✅ 可以实现!`
+      :`添加了功能「${f.name}」,但它还缺硬件支持(看右侧功能清单的 ⚠️),先把需要的配件装上!`);}
+  addLog('②手表配置',(i>=0?'取消':'添加')+'功能:'+f.name);
+  renderCfgOptions();renderConfig();
+}
+function setCfgWhy(t){$('cfgWhy').innerHTML='💬 '+t;}
+function renderConfig(){
+  const cost=calcCost();
+  $('costNow').textContent=cost;
+  const pct=Math.min(100,cost/BUDGET*100);
+  $('costBar').style.width=pct+'%';
+  $('costBar').style.background=cost>BUDGET?'#e5484d':(cost>BUDGET-10?'#f59e0b':'#2eb872');
+  if(cost>BUDGET)fb('fbCost','bad',`💸 超出预算 ${cost-BUDGET} 元!需要取舍:去掉不重要的配件,或换更便宜的联网方式。`);
+  else fb('fbCost','ok',`👍 预算还剩 ${BUDGET-cost} 元。`);
+  const rows=state.funcs.map(k=>{
+    const f=FUNCS.find(x=>x.k===k);
+    const r=funcOk(f);
+    if(r.ok)return `<div class="f-ok">✅ ${f.ico} ${f.name} —— 可以实现</div>`;
+    const miss=[...r.missS.map(s=>SENSORS.find(x=>x.k===s).name),...(r.missNet?['联网方式']:[])];
+    return `<div class="f-bad">⚠️ ${f.ico} ${f.name} —— 缺少:${miss.join('、')}</div>`;
+  });
+  $('fStatus').innerHTML=rows.length?rows.join(''):'<div style="color:#5b7186">还没有勾选功能模块</div>';
+  renderWatch();
+}
+function renderWatch(){
+  ['','3'].forEach(sfx=>{
+    const wc=$('wCase'+sfx);if(!wc)return;
+    wc.className='wcase '+state.shape;
+    wc.style.borderColor=state.caseColor;
+    $('strapT'+sfx).style.background=state.strapColor;
+    $('strapB'+sfx).style.background=state.strapColor;
+  });
+  const okIcons=state.funcs.filter(k=>funcOk(FUNCS.find(f=>f.k===k)).ok).map(k=>FUNCS.find(f=>f.k===k).ico);
+  $('wIcons').textContent=okIcons.join(' ')||'···';
+  const canTime=state.net&&state.net!=='none';
+  $('wTime').textContent=canTime?'08:00':'--:--';
+  $('wSub').textContent=canTime?'我的智能手表':'未联网,无法获取时间';
+}
+function checkConfig(){
+  const cost=calcCost();
+  const problems=[];
+  if(cost>BUDGET)problems.push(`超出预算 ${cost-BUDGET} 元,需要做出取舍`);
+  if(state.funcs.length<2)problems.push('功能模块至少要勾选 2 个,不然手表太"单调"了');
+  const badFuncs=state.funcs.filter(k=>!funcOk(FUNCS.find(f=>f.k===k)).ok).map(k=>FUNCS.find(f=>f.k===k).name);
+  if(badFuncs.length)problems.push(`这些功能还缺硬件支持:${badFuncs.join('、')}`);
+  if(!state.net)problems.push('还没有选择联网方式(可以选"不联网",但要主动做出选择)');
+  if(problems.length){
+    fb('fb2','bad','🤔 配置还有 '+problems.length+' 个问题:<br>'+problems.map(p=>'· '+p).join('<br>')+'<br>调整后再检查一次,你一定行!');
+    addLog('②手表配置','检查配置:发现'+problems.length+'个问题');
+    return;
+  }
+  let tie='';
+  if(state.user){
+    const wants=[];
+    if(state.needs.includes('sit')&&!state.funcs.includes('sit'))wants.push('久坐提醒');
+    if(state.needs.includes('hr')&&!state.funcs.includes('hrm'))wants.push('心率监测');
+    if(state.needs.includes('step')&&!state.funcs.includes('step'))wants.push('计步');
+    if(wants.length)tie=`<br>💡 小建议:你在①里为用户选了「${wants.join('、')}」需求,但功能里还没勾选对应模块,可以补上让方案更完整。`;
+  }
+  progress.cfg=true;setBadge(2);
+  fb('fb2','ok',`🎉 配置合格!总成本 ${cost} 元,在 80 元预算内,${state.funcs.length} 个功能全部有硬件支持。这就是一份合格的<b>材料清单+成本预算</b>!${tie}<br>接下来去「③ 程序模拟器」给手表编"大脑"吧!`);
+  addLog('②手表配置',`检查配置通过:成本${cost}元,功能${state.funcs.length}个`);
+}
+function cfgHint(){
+  cfgHintLv=Math.min(cfgHintLv+1,3);
+  const hints=[
+    '提示①:先看右侧「功能清单」,⚠️ 表示功能缺硬件。想实现什么功能,就要装对应的传感器或联网方式。',
+    '提示②:预算不够时想想"取舍":哪个配件对你的目标用户最重要?定位模块最贵(20元),真的需要吗?',
+    '提示③:一套省钱又实用的参考配置:加速度传感器(10元)+心率传感器(15元)+蓝牙(10元),加基础套件共75元,能实现显示时间、计步、久坐提醒、心率监测!'
+  ];
+  fb('fb2','info','💡 '+hints[cfgHintLv-1]);
+}
+function resetConfig(){
+  Object.assign(state,{shape:'round',caseColor:'#2b7de9',strapColor:'#2b2b2b',sensors:[],net:null,funcs:[]});
+  cfgHintLv=0;renderCfgOptions();renderConfig();
+  setCfgWhy('已重置配置,重新开始挑选吧!');
+  fb('fb2','info','配置已重置。');
+}
+
+/* ============================================================
+   模块三:程序状态机模拟器
+   1 个引擎节拍 = 状态机走一步;待机状态下每个节拍过 1 分钟
+============================================================ */
+const sim={running:false,phase:'idle',minute:0,act:'sit',sitMin:0,hr:78,mode:'sit',
+  alerts:0,timer:null,speedMs:550,walkLeft:0,prevAct:'sit',alertFlash:0};
+const ACT_INFO={sit:['🪑','坐着写作业'],walk:['🚶','起身走动'],run:['🏃','跑步锻炼']};
+const HR_TARGET={sit:78,walk:105,run:168};
+
+function speedName(v){return{1:'慢',2:'中',3:'快'}[v];}
+function setSpeed(){
+  const v=+$('spd').value;$('spdOut').textContent=speedName(v);
+  sim.speedMs={1:1000,2:550,3:230}[v];
+  if(sim.running){clearInterval(sim.timer);sim.timer=setInterval(tickOnce,sim.speedMs);}
+}
+function toggleRun(){
+  sim.running=!sim.running;
+  $('btnRun').textContent=sim.running?'⏸ 暂停':'▶ 运行';
+  $('btnRun').className='btn small '+(sim.running?'orange':'green');
+  if(sim.running)sim.timer=setInterval(tickOnce,sim.speedMs);
+  else clearInterval(sim.timer);
+}
+function stepOnce(){if(sim.running)toggleRun();tickOnce();}
+function resetSim(){
+  if(sim.running)toggleRun();
+  Object.assign(sim,{phase:'idle',minute:0,act:'sit',sitMin:0,hr:78,alerts:0,walkLeft:0,prevAct:'sit',alertFlash:0});
+  setSimWhy('已重置。点「▶ 运行」开始,或用「⏭ 单步」一格一格地观察状态机怎么走。');
+  renderActBtns();renderSim();
+}
+function loadExample(){
+  resetSim();
+  $('thSit').value=40;$('thHr').value=150;$('intv').value=5;
+  ['thSit','thHr','intv'].forEach(syncOut);
+  setMode('sit');
+  setSimWhy('📖 已恢复教材示例思路:程序循环运行,每 5 分钟检测一次,久坐超过 40 分钟就提醒——这正是流程图里"循环+判断"的组合。点「▶ 运行」观察!');
+  addLog('③程序模拟','恢复教材示例参数');
+}
+function setMode(m){
+  sim.mode=m;sim.phase='idle';
+  $('mSit').classList.toggle('on',m==='sit');
+  $('mHr').classList.toggle('on',m==='hr');
+  setSimWhy(m==='sit'?'🪑 已切换到<b>久坐提醒程序</b>:判断条件是"连续坐的时间 > 阈值?"。让小星一直坐着试试!'
+    :'❤️ 已切换到<b>心率监测程序</b>:判断条件是"心率 > 上限?"。点「🏃 跑步」把心率拉上去试试!');
+  addLog('③程序模拟','切换程序:'+(m==='sit'?'久坐提醒':'心率监测'));
+  renderSim();
+}
+function setAct(a){
+  sim.act=a;sim.walkLeft=0;sim.prevAct=a;
+  if(a!=='sit')sim.sitMin=0;
+  setSimWhy(`小星现在<b>${ACT_INFO[a][1]}</b>。${a==='sit'?'久坐计时开始累积。':'一活动,久坐计时就清零——传感器感知到了运动!'}${a==='run'?'跑步时心率会慢慢升高,注意观察!':''}`);
+  renderActBtns();renderSim();
+}
+function renderActBtns(){
+  $('actSit').classList.toggle('on',sim.act==='sit');
+  $('actWalk').classList.toggle('on',sim.act==='walk');
+  $('actRun').classList.toggle('on',sim.act==='run');
+}
+function getIntv(){return +$('intv').value;}
+function syncOut(id){
+  const v=$(id).value;
+  if(id==='thSit')$('thSitOut').textContent=v+'分钟';
+  if(id==='thHr')$('thHrOut').textContent=v+'次/分';
+  if(id==='intv')$('intvOut').textContent=v+'分钟';
+}
+function paramChanged(name,id){
+  syncOut(id);
+  const v=$(id).value;
+  const why={
+    '久坐阈值':`阈值改为 ${v} 分钟:阈值越小,手表越"严格",提醒来得越早;阈值太大,提醒来得晚,小星可能已经坐得腰酸背痛了。`,
+    '心率上限':`上限改为 ${v} 次/分:运动时心率一超过它就提醒放慢。上限设太高,提醒可能来不及;设太低,稍微一动手表就"唠叨"。`,
+    '检测间隔':`每 ${v} 分钟检测一次:间隔越短,发现问题越快,但传感器更耗电;间隔太长,可能坐过头了才提醒。这就是设计中的权衡!`,
+  }[name];
+  $('paramWhy').innerHTML='💬 '+why;
+  addLog('③程序模拟',`参数调整:${name} = ${v}`);
+}
+function setSimWhy(t){$('simWhy').innerHTML='💬 '+t;}
+function simTimeStr(){
+  const h=(8+Math.floor(sim.minute/60))%24, m=sim.minute%60;
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+function advanceMinute(){
+  sim.minute++;
+  if(sim.walkLeft>0){
+    sim.walkLeft--;
+    if(sim.walkLeft===0){
+      sim.act=sim.prevAct;renderActBtns();
+      setSimWhy(`小星活动够了,回到「${ACT_INFO[sim.act][1]}」。${sim.mode==='sit'?'久坐计时重新从 0 开始累积。':''}`);
+    }
+  }
+  if(sim.act==='sit')sim.sitMin++;else sim.sitMin=0;
+  const t=HR_TARGET[sim.act];
+  sim.hr+=(t-sim.hr)*0.35+(Math.random()*4-2);
+  sim.hr=Math.max(60,Math.min(200,sim.hr));
+}
+function tickOnce(){
+  if(sim.phase==='idle'){
+    advanceMinute();
+    if(sim.minute%getIntv()===0){
+      sim.phase='sense';
+      setSimWhy(`⏰ 到了检测时间(每 ${getIntv()} 分钟一次),程序从「待机」进入「检测」,去读传感器的数据。`);
+    }
+  }else if(sim.phase==='sense'){
+    sim.phase='judge';
+    setSimWhy(sim.mode==='sit'
+      ?`📡 检测完成:加速度传感器报告——小星已连续坐了 <b>${sim.sitMin} 分钟</b>。进入「判断」。`
+      :`📡 检测完成:心率传感器报告——当前心率 <b>${Math.round(sim.hr)} 次/分</b>。进入「判断」。`);
+  }else if(sim.phase==='judge'){
+    let hit;
+    if(sim.mode==='sit'){
+      const th=+$('thSit').value;hit=sim.sitMin>th;
+      setSimWhy(`❓ 判断:久坐 ${sim.sitMin} 分钟 > 阈值 ${th} 分钟?→ <b>${hit?'是!进入「提醒」':'否,回到「待机」继续等'}</b>。`);
+    }else{
+      const th=+$('thHr').value;hit=Math.round(sim.hr)>th;
+      setSimWhy(`❓ 判断:心率 ${Math.round(sim.hr)} > 上限 ${th}?→ <b>${hit?'是!进入「提醒」':'否,回到「待机」继续等'}</b>。`);
+    }
+    sim.phase=hit?'alert':'idle';
+  }else if(sim.phase==='alert'){
+    doAlert();
+    sim.phase='idle';
+  }
+  if(sim.alertFlash>0)sim.alertFlash--;
+  renderSim();
+}
+function doAlert(){
+  sim.alerts++;sim.alertFlash=5;
+  if(sim.mode==='sit'){
+    addLog('③程序模拟',`${simTimeStr()} 触发久坐提醒(已坐${sim.sitMin}分钟,阈值${$('thSit').value}分钟)`);
+    setSimWhy(`📳 <b>提醒触发!</b>手表振动:"你已经坐了 ${sim.sitMin} 分钟啦,起来活动一下吧!"小星听话地站起来走 3 分钟,久坐计时清零。`);
+    sim.prevAct='sit';
+  }else{
+    addLog('③程序模拟',`${simTimeStr()} 触发心率提醒(心率${Math.round(sim.hr)},上限${$('thHr').value})`);
+    setSimWhy(`📳 <b>提醒触发!</b>手表振动:"心率 ${Math.round(sim.hr)} 太高啦,放慢速度!"小星放慢脚步走 3 分钟。`);
+    sim.prevAct=sim.act==='run'?'run':'walk';
+  }
+  sim.sitMin=0;sim.act='walk';sim.walkLeft=3;renderActBtns();
+  if(!progress.sim){progress.sim=true;setBadge(3);
+    fb('fb3','ok','🎉 你亲眼看到了程序自动触发提醒!试着把阈值调小/调大,比较提醒来得早还是晚;再切换另一个程序试试。这个"状态循环+条件判断"就是智能手表程序的核心!');}
+}
+function ffwd(){
+  const startM=sim.minute;let guard=0;
+  while(sim.minute-startM<30&&guard++<400)tickOnce();
+  setSimWhy(`⏩ 快进了 30 分钟(现在是 ${simTimeStr()})。期间程序照常循环检测,触发的提醒都记在「⑤ 实验记录」里。`);
+  renderSim();
+}
+function renderSim(){
+  $('simClock').textContent=simTimeStr()+' · 第 '+sim.minute+' 分钟';
+  const phaseIdx={idle:0,sense:1,judge:2,alert:3}[sim.phase];
+  for(let i=0;i<4;i++)$('sn'+i).classList.toggle('cur',i===phaseIdx);
+  const th=sim.mode==='sit'?$('thSit').value:$('thHr').value;
+  $('judgeBox').innerHTML=sim.mode==='sit'
+    ?`判断条件:久坐 <b>${sim.sitMin}</b> 分钟 > 阈值 <b>${th}</b> 分钟?`
+    :`判断条件:心率 <b>${Math.round(sim.hr)}</b> > 上限 <b>${th}</b>?`;
+  $('kidIco').textContent=ACT_INFO[sim.act][0];
+  $('kidAct').textContent=ACT_INFO[sim.act][1];
+  $('wTime3').textContent=simTimeStr();
+  $('wHr3').textContent='❤️ '+Math.round(sim.hr);
+  $('wSit3').textContent='🪑 已坐 '+sim.sitMin+' 分钟';
+  $('alertN').textContent=sim.alerts;
+  $('wScreen3').classList.toggle('alerting',sim.alertFlash>0);
+  if(sim.alertFlash>0){$('wTime3').textContent='📳 提醒!';}
+}
+
+/* ============================================================
+   模块四:测试用例挑战
+============================================================ */
+const TESTS=[
+  {mode:'sit',th:40,intv:5,segs:[{act:'sit',min:45}],
+   title:'场景1:一口气坐了45分钟',
+   desc:'参数:久坐阈值 40 分钟,每 5 分钟检测一次。小星从 8:00 开始连续坐了 45 分钟没动。',
+   hint2:'第40分钟检测时,久坐正好40分钟,"40 > 40"成立吗?那第45分钟呢?',
+   reason:'第45分钟检测时,久坐45分钟已经超过阈值40分钟,程序会触发提醒。'},
+  {mode:'sit',th:40,intv:5,segs:[{act:'sit',min:30},{act:'walk',min:5}],
+   title:'场景2:坐了30分钟就起来活动',
+   desc:'参数:久坐阈值 40 分钟,每 5 分钟检测一次。小星坐了 30 分钟,然后起身走动了 5 分钟。',
+   hint2:'最长的连续久坐时间是30分钟,和阈值40分钟比一比。',
+   reason:'连续久坐最多30分钟,没有超过40分钟的阈值,所以程序不会提醒。'},
+  {mode:'sit',th:40,intv:5,segs:[{act:'sit',min:25},{act:'walk',min:5},{act:'sit',min:20}],
+   title:'场景3:中间起来活动了一会儿',
+   desc:'参数:久坐阈值 40 分钟,每 5 分钟检测一次。小星坐了 25 分钟 → 起身活动 5 分钟 → 又坐了 20 分钟。',
+   hint2:'关键:一起身活动,久坐计时就清零!后一段只重新累计到20分钟。',
+   reason:'中途活动让计时清零,两段久坐分别是25分钟和20分钟,都没超过40分钟,不会提醒。25+20=45是陷阱哦!'},
+  {mode:'sit',th:60,intv:5,segs:[{act:'sit',min:50}],
+   title:'场景4:阈值调大之后',
+   desc:'参数:久坐阈值调大到 60 分钟,每 5 分钟检测一次。小星连续坐了 50 分钟。',
+   hint2:'场景和场景1很像,但阈值不一样了。50 和 60 谁大?',
+   reason:'虽然坐了50分钟很久,但阈值被调大到60分钟,50没有超过60,程序不会提醒——参数决定程序的行为!'},
+  {mode:'hr',th:150,intv:1,segs:[{act:'run',min:10,hr:170}],
+   title:'场景5:跑步时心率飙到170',
+   desc:'参数:心率上限 150,每 1 分钟检测一次。小星跑步时心率升到了 170 次/分。',
+   hint2:'把170和上限150比一比,超过了吗?',
+   reason:'心率170超过了上限150,程序会在检测到的那一分钟立刻触发提醒,让小星放慢速度。'},
+  {mode:'hr',th:150,intv:1,segs:[{act:'walk',min:10,hr:110}],
+   title:'场景6:快走时心率110',
+   desc:'参数:心率上限 150,每 1 分钟检测一次。小星快走锻炼,心率保持在 110 次/分左右。',
+   hint2:'110超过150了吗?适度运动心率升高是正常的。',
+   reason:'心率110没有超过上限150,属于健康的运动心率,程序安静地待机,不打扰小星锻炼。'},
+];
+const pred=new Array(TESTS.length).fill(null);
+const solved=new Array(TESTS.length).fill(false);
+const testRec=new Array(TESTS.length).fill(null);
+const tHintLv=new Array(TESTS.length).fill(0);
+
+function runScenario(c){
+  let sitMin=0,m=0;const lines=[];
+  for(const seg of c.segs){
+    for(let i=0;i<seg.min;i++){
+      m++;
+      if(seg.act==='sit')sitMin++;else sitMin=0;
+      const hr=seg.hr||HR_TARGET[seg.act];
+      if(m%c.intv===0){
+        let hit,txt;
+        if(c.mode==='sit'){hit=sitMin>c.th;
+          txt=`第${m}分钟检测:已连续坐 ${sitMin} 分钟,${hit?'超过了':'没有超过'}阈值 ${c.th} 分钟 → ${hit?'📳 提醒!':'不提醒'}`;}
+        else{hit=hr>c.th;
+          txt=`第${m}分钟检测:心率 ${hr} 次/分,${hit?'超过了':'没有超过'}上限 ${c.th} → ${hit?'📳 提醒!':'不提醒'}`;}
+        lines.push(txt);
+        if(hit)return{alert:true,when:m,lines};
+      }
+    }
+  }
+  lines.push('场景结束:全程没有触发提醒。');
+  return{alert:false,when:null,lines};
+}
+function renderTests(){
+  $('tcases').innerHTML=TESTS.map((c,i)=>`
+    <div class="tcase ${solved[i]?'solved':''}" id="tc${i}">
+      <h4>${solved[i]?'✅ ':''}${c.title}</h4>
+      <div class="scene">${c.desc}</div>
+      <b style="font-size:14.5px">我的预测:</b>
+      <button class="opt ${pred[i]===1?'picked':''}" id="p${i}a" onclick="pc(${i},1)">📳 会提醒</button>
+      <button class="opt ${pred[i]===0?'picked':''}" id="p${i}b" onclick="pc(${i},0)">🔕 不会提醒</button>
+      <button class="btn green small" onclick="vt(${i})">▶ 运行验证</button>
+      <button class="btn ghost small" onclick="tHint(${i})">💡 提示</button>
+      <div class="runlog" id="tl${i}"></div>
+      <div class="feedback" id="fbT${i}"></div>
+    </div>`).join('');
+}
+function pc(i,v){
+  pred[i]=v;
+  const a=$('p'+i+'a'),b=$('p'+i+'b');
+  if(a)a.className='opt'+(v===1?' picked':'');
+  if(b)b.className='opt'+(v===0?' picked':'');
+  fb('fbT'+i,'info','已记下你的预测:<b>'+(v===1?'会提醒':'不会提醒')+'</b>。点「▶ 运行验证」看程序实际怎么做!');
+}
+function vt(i){
+  if(pred[i]===null){fb('fbT'+i,'info','💡 先点击做出你的预测(会提醒 / 不会提醒),再运行验证——先想后验才是好测试员!');return;}
+  const c=TESTS[i];
+  const r=runScenario(c);
+  const tl=$('tl'+i);
+  if(tl){tl.style.display='block';tl.textContent=r.lines.join('\n');}
+  const actual=r.alert?1:0;
+  const actualTxt=r.alert?`会提醒(第 ${r.when} 分钟触发)`:'不会提醒';
+  testRec[i]={pred:pred[i]===1?'会提醒':'不会提醒',result:actualTxt,ok:pred[i]===actual};
+  addLog('④测试挑战',`${c.title}:预测${testRec[i].pred},实际${actualTxt},${testRec[i].ok?'预测正确':'预测错误'}`);
+  const a=$('p'+i+'a'),b=$('p'+i+'b');
+  if(a)a.classList.remove('right','wrong');
+  if(b)b.classList.remove('right','wrong');
+  const pickedBtn=pred[i]===1?a:b;
+  if(pred[i]===actual){
+    if(pickedBtn)pickedBtn.classList.add('right');
+    if(!solved[i]){solved[i]=true;updateTestBadge();}
+    const tc=$('tc'+i);if(tc)tc.classList.add('solved');
+    fb('fbT'+i,'ok','🎉 预测正确!'+c.reason+(solved.every(Boolean)?' 六个场景全部通关,你是合格的程序测试员!':''));
+  }else{
+    if(pickedBtn)pickedBtn.classList.add('wrong');
+    fb('fbT'+i,'bad',`🤔 程序实际的结果是:<b>${actualTxt}</b>,和你的预测不一样。看看上面的检测记录,点「💡 提示」想一想,然后重新预测再验证!`);
+  }
+}
+function tHint(i){
+  tHintLv[i]=Math.min(tHintLv[i]+1,3);
+  const c=TESTS[i];
+  const r=runScenario(c);
+  const hs=[
+    '提示①:程序只在"检测时刻"做判断,判断条件是"数值 > 阈值"——正好等于不算超过哦。',
+    '提示②:'+c.hint2,
+    '提示③:答案是「'+(r.alert?'会提醒':'不会提醒')+'」。因为:'+c.reason
+  ];
+  fb('fbT'+i,'info','💡 '+hs[tHintLv[i]-1]);
+}
+function updateTestBadge(){
+  progress.test=solved.filter(Boolean).length;
+  $('bgTest').textContent=progress.test;
+  if(progress.test>=TESTS.length)setBadge(4);
+}
+
+/* ============================================================
+   模块五:项目方案书、实验记录与本机数据
+============================================================ */
+function refreshStats(){
+  const u=state.user?USERS.find(x=>x.k===state.user):null;
+  $('sUser').textContent=u?u.ico+' '+u.name:'—';
+  $('sNeed').textContent=state.needs.length;
+  $('sCost').textContent=calcCost()+'元';
+  $('sAlert').textContent=sim.alerts;
+  $('sMin').textContent=sim.minute;
+  $('sTest').textContent=progress.test+'/6';
+}
+function planHTML(){
+  const u=state.user?USERS.find(x=>x.k===state.user):null;
+  const needRows=state.needs.map(k=>{
+    const n=NEEDS.find(x=>x.k===k);
+    const t=u?FIT_TAG[n.fit[state.user]][1]:'';
+    return `<li>${n.ico} ${n.name}${t?'('+t+')':''}</li>`;
+  }).join('')||'<li>(还没有在①中选择需求)</li>';
+  const sensorRows=state.sensors.map(k=>{const s=SENSORS.find(x=>x.k===k);return `<li>${s.ico} ${s.name}——${s.cost}元</li>`;}).join('')||'<li>(未选购传感器)</li>';
+  const net=state.net?NETS.find(x=>x.k===state.net):null;
+  const funcRows=state.funcs.map(k=>{
+    const f=FUNCS.find(x=>x.k===k);
+    return `<li>${f.ico} ${f.name}——${funcOk(f).ok?'✅ 可实现':'⚠️ 缺硬件'}</li>`;
+  }).join('')||'<li>(未勾选功能)</li>';
+  const testRows=TESTS.map((c,i)=>{
+    const r=testRec[i];
+    return `<tr><td>${c.title}</td><td>${r?r.pred:'—'}</td><td>${r?r.result:'未验证'}</td><td>${r?(r.ok?'✅ 正确':'❌ 错误'):'—'}</td></tr>`;
+  }).join('');
+  const shapeName=SHAPES.find(s=>s.k===state.shape).name;
+  const f=id=>($(id).value.trim()||'(还没有填写)');
+  return `<div style="font-family:sans-serif;max-width:760px;margin:auto">
+  <h1 style="color:#4c46b8">⌚ 智能手表项目方案书</h1>
+  <p>项目名称:<b>${f('pName')}</b> | 课程:清华版《信息科技》五年级下册 第1单元第3课 | 生成时间:${new Date().toLocaleString()}</p>
+  <h2>一、目标用户与需求(功能定位)</h2>
+  <p>目标用户:${u?u.ico+' '+u.name+'——'+u.desc:'(还没有选择)'}</p>
+  <ul>${needRows}</ul>
+  <h2>二、硬件材料清单与成本预算</h2>
+  <ul><li>🧠 基础套件(主控板+屏幕+电池)——40元</li>${sensorRows}
+  <li>🌐 联网方式:${net?net.ico+' '+net.name+'——'+net.cost+'元':'(未选择)'}</li></ul>
+  <p><b>总成本:${calcCost()}元 / 预算 80 元</b></p>
+  <h2>三、外观设计</h2>
+  <p>表盘形状:${shapeName};表壳颜色:<span style="display:inline-block;width:14px;height:14px;background:${state.caseColor};border-radius:3px"></span>;表带颜色:<span style="display:inline-block;width:14px;height:14px;background:${state.strapColor};border-radius:3px"></span></p>
+  <h2>四、功能模块</h2>
+  <ul>${funcRows}</ul>
+  <h2>五、程序设计(状态机流程)</h2>
+  <p>程序循环:<b>待机 → 检测 → 判断 → 提醒 → 回到待机</b></p>
+  <ul><li>久坐阈值:${$('thSit').value} 分钟</li><li>心率上限:${$('thHr').value} 次/分</li>
+  <li>检测间隔:每 ${$('intv').value} 分钟一次</li><li>模拟运行 ${sim.minute} 分钟,共触发提醒 ${sim.alerts} 次</li></ul>
+  <h2>六、任务分解与开发进度</h2>
+  <ol><li>准备材料(按上面的材料清单采购)</li><li>程序编写(按状态机流程图编写并调试)</li><li>外观设计(按第三部分制作表带与表壳)</li><li>测试优化(按第七部分的测试记录逐项验证)</li></ol>
+  <h2>七、测试记录</h2>
+  <table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;font-size:14px">
+  <tr><th>测试场景</th><th>我的预测</th><th>验证结果</th><th>预测是否正确</th></tr>${testRows}</table>
+  <h2>八、项目小结</h2><p>${f('r1')}</p>
+  <h2>九、问题与改进想法</h2><p>${f('r2')}</p></div>`;
+}
+function genPlan(){
+  const empty=[];
+  if(!$('pName').value.trim())empty.push('项目名称');
+  if(!$('r1').value.trim())empty.push('项目小结');
+  if(!$('r2').value.trim())empty.push('问题与改进想法');
+  if(empty.length){
+    fb('fb5','bad',`还差一点:「${empty.join('」「')}」还没填。把你的设计思路写进去,方案书才完整!`);
+  }else{
+    fb('fb5','ok','✅ 方案书已生成!检查一下预览,满意就点「导出方案书」保存到电脑。');
+    if(!progress.plan){progress.plan=true;setBadge(5);addLog('⑤项目方案','生成项目方案书:'+$('pName').value.trim());}
+  }
+  $('planPreview').innerHTML='<div class="card" style="margin-top:12px">'+planHTML()+'</div>';
+  refreshStats();
+}
+function exportPlan(){
+  downloadFile('智能手表项目方案书.html','<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>智能手表项目方案书</title></head><body>'+planHTML()+'</body></html>','text/html');
+}
+function exportCSV(){
+  const head='时间,模块,内容\n';
+  const body=logRows.map(r=>[r.time,r.mod,r.content].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  downloadFile('智能手表实验记录.csv','\ufeff'+head+body,'text/csv');
+}
+function renderLog(){
+  $('logCount').textContent=logRows.length;
+  $('logBody').innerHTML=logRows.length?logRows.slice().reverse().map(r=>
+    `<tr><td>${r.time}</td><td>${r.mod}</td><td style="text-align:left">${r.content}</td></tr>`).join('')
+    :'<tr><td colspan="3" style="color:#5b7186">暂无记录</td></tr>';
+}
+function clearLog(){logRows=[];renderLog();}
+
+const LS_KEY='u1l3_watch_design';
+function projectData(){
+  return {ver:1,
+    state:{user:state.user,needs:state.needs.slice(),shape:state.shape,caseColor:state.caseColor,
+      strapColor:state.strapColor,sensors:state.sensors.slice(),net:state.net,funcs:state.funcs.slice()},
+    params:{thSit:$('thSit').value,thHr:$('thHr').value,intv:$('intv').value},
+    tests:{pred:pred.slice(),solved:solved.slice(),rec:testRec.slice()},
+    texts:{pName:$('pName').value,r1:$('r1').value,r2:$('r2').value},
+    simStat:{alerts:sim.alerts,minute:sim.minute},
+    progress,log:logRows.slice(-100)};
+}
+function applyProject(d){
+  try{
+    if(d.state){Object.assign(state,d.state);}
+    if(d.params){$('thSit').value=d.params.thSit;$('thHr').value=d.params.thHr;$('intv').value=d.params.intv;
+      ['thSit','thHr','intv'].forEach(syncOut);}
+    if(d.tests){
+      (d.tests.pred||[]).forEach((v,i)=>{if(i<pred.length)pred[i]=v;});
+      (d.tests.solved||[]).forEach((v,i)=>{if(i<solved.length)solved[i]=!!v;});
+      (d.tests.rec||[]).forEach((v,i)=>{if(i<testRec.length)testRec[i]=v;});
+    }
+    if(d.texts){$('pName').value=d.texts.pName||'';$('r1').value=d.texts.r1||'';$('r2').value=d.texts.r2||'';}
+    if(d.simStat){sim.alerts=d.simStat.alerts||0;sim.minute=d.simStat.minute||0;}
+    if(d.progress){Object.assign(progress,d.progress);
+      if(progress.user)setBadge(1);if(progress.cfg)setBadge(2);if(progress.sim)setBadge(3);
+      if(progress.plan)setBadge(5);}
+    if(Array.isArray(d.log))logRows=d.log;
+    renderUsers();renderNeeds();renderCfgOptions();renderConfig();renderTests();updateTestBadge();
+    renderSim();refreshStats();renderLog();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('智能手表项目进度.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 项目导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的项目文件。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'),raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';}
+  else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  renderUsers();renderNeeds();
+  renderCfgOptions();renderConfig();
+  ['thSit','thHr','intv'].forEach(syncOut);
+  renderTests();updateTestBadge();
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  renderSim();refreshStats();
+})();
+</script>
+</body>
+</html>

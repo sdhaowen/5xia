@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>植物生长数据采集与分析实验室 · 单元2第4课 植物生长日志——数据采集</title>
+<style>
+  :root{
+    --blue:#2b7de9; --blue-d:#1a5cb8; --green:#2eb872; --green-d:#1e8f56;
+    --orange:#f59e0b; --red:#e5484d; --purple:#8b5cf6;
+    --bg:#eef4fb; --card:#ffffff; --ink:#20344b; --ink-2:#5b7186;
+    --line:#d9e4f0; --soft:#f2f7fd;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;}
+  header{background:linear-gradient(120deg,#1e8f56,#2b7de9); color:#fff; padding:18px 24px; box-shadow:0 2px 10px rgba(20,60,120,.25);}
+  header h1{font-size:26px; letter-spacing:1px;}
+  header p{opacity:.92; margin-top:4px; font-size:14px;}
+  .badges{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.45); border-radius:20px; padding:3px 12px; font-size:13px;}
+  .badge.done{background:#fff; color:var(--green-d); font-weight:700;}
+  nav{display:flex; gap:6px; padding:10px 16px; background:#fff; border-bottom:2px solid var(--line); position:sticky; top:0; z-index:50; overflow-x:auto;}
+  nav button{flex-shrink:0; border:2px solid var(--line); background:var(--soft); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s;}
+  nav button:hover{border-color:var(--blue);}
+  nav button.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  main{max-width:1280px; margin:0 auto; padding:18px;}
+  .tab{display:none;}
+  .tab.on{display:block; animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1;}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(30,60,110,.06);}
+  .card h2{font-size:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .card h3{font-size:16px; margin:10px 0 6px;}
+  .task{background:#fff8e7; border:1px dashed var(--orange); border-radius:10px; padding:10px 14px; margin:8px 0 12px; font-size:15px;}
+  .task b{color:#b45309;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:none; border-radius:12px; padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer; transition:.15s; color:#fff; background:var(--blue); margin:3px;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn.green{background:var(--green);} .btn.orange{background:var(--orange);}
+  .btn.red{background:var(--red);} .btn.purple{background:var(--purple);}
+  .btn.ghost{background:#fff; color:var(--blue); border:2px solid var(--blue);}
+  .btn.gray{background:#8aa0b5;}
+  .btn:disabled{background:#c4d2df; cursor:not-allowed; filter:none;}
+  .btn.small{padding:7px 12px; font-size:14px; border-radius:9px;}
+  .feedback{border-radius:10px; padding:10px 14px; margin-top:10px; font-size:15px; display:none;}
+  .feedback.ok{display:block; background:#e7f9ef; border:1px solid var(--green); color:var(--green-d);}
+  .feedback.bad{display:block; background:#fdeaea; border:1px solid var(--red); color:#b3262b;}
+  .feedback.info{display:block; background:#e8f1fd; border:1px solid var(--blue); color:var(--blue-d);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  /* ---------- 模块一:采集模拟器 ---------- */
+  .lab{display:grid; grid-template-columns:280px 1fr 300px; gap:14px;}
+  @media(max-width:1100px){.lab{grid-template-columns:1fr;}}
+  .plant-big{font-size:60px; display:block; text-align:center; margin:2px auto; transition:.3s;}
+  .meter{margin:8px 0;}
+  .meter label{font-size:14px; color:var(--ink-2); display:flex; justify-content:space-between;}
+  .bar{height:18px; background:#e3ecf6; border-radius:9px; overflow:hidden; margin-top:3px;}
+  .bar i{display:block; height:100%; border-radius:9px; transition:width .3s, background .3s;}
+  .statebox{background:var(--soft); border-radius:10px; padding:8px 12px; margin-top:8px; font-size:14px; text-align:left;}
+  .statebox b{color:var(--blue-d);}
+  .clock{font-size:15px; background:#20344b; color:#9fe3bd; font-weight:700; border-radius:10px; padding:6px 12px; display:inline-block; margin-bottom:6px; font-family:monospace;}
+  .ctl label{display:flex; justify-content:space-between; font-size:14.5px; font-weight:700; margin-top:10px; align-items:center;}
+  .ctl label output{color:var(--blue-d);}
+  .ctl input[type=range]{width:100%; accent-color:var(--blue); height:26px;}
+  .ctl select{font-size:15px; padding:6px 10px; border:2px solid var(--line); border-radius:9px; background:#fff; font-weight:700; color:var(--ink); cursor:pointer;}
+  .runbar{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;}
+  .why{background:#eef7ff; border-left:4px solid var(--blue); padding:8px 10px; font-size:14px; margin-top:8px; border-radius:0 8px 8px 0; min-height:40px;}
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{border:1px solid var(--line); padding:5px 7px; text-align:center;}
+  th{background:var(--soft);}
+  .tblwrap{max-height:330px; overflow:auto; border-radius:10px; border:1px solid var(--line);}
+  td.miss{color:#b45309; background:#fff6e6; font-style:italic;}
+  td.abn{color:var(--red); background:#fdeaea; font-weight:700;}
+  .pill{display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:2px 10px; font-size:13px; margin:2px;}
+  /* ---------- 模块二:图表 ---------- */
+  canvas.chart{width:100%; max-width:960px; display:block; margin:8px auto; border:1px solid var(--line); border-radius:12px; background:#fff;}
+  .chartctl{display:flex; flex-wrap:wrap; gap:14px; align-items:center; background:var(--soft); border-radius:12px; padding:10px 14px;}
+  .chartctl label{font-size:14.5px; font-weight:700; display:flex; align-items:center; gap:6px;}
+  .chartctl select{font-size:15px; padding:6px 10px; border:2px solid var(--line); border-radius:9px; background:#fff; font-weight:700; color:var(--ink); cursor:pointer;}
+  .chartctl input[type=range]{accent-color:var(--blue); width:150px; height:26px;}
+  .chartctl input[type=checkbox]{width:20px; height:20px; accent-color:var(--blue); cursor:pointer;}
+  /* ---------- 模块三:侦探 ---------- */
+  tr.pick{cursor:pointer;}
+  tr.pick:hover td{background:#eef5fd;}
+  tr.sus td{background:#fff2cc !important; box-shadow:inset 0 0 0 1px var(--orange);}
+  tr.found td{background:#e7f9ef !important;}
+  .fixitem{border:2px solid var(--line); border-radius:12px; padding:10px 14px; margin:8px 0; background:var(--soft);}
+  .fixitem b{color:#b3262b;}
+  .fixitem select{font-size:15px; padding:6px 10px; border:2px solid var(--line); border-radius:9px; background:#fff; font-weight:700; cursor:pointer; margin-top:6px;}
+  .fixitem .verdict{font-size:14px; margin-left:8px; font-weight:700;}
+  /* ---------- 模块四:小题 ---------- */
+  .opt{display:block; width:100%; text-align:left; border:2px solid var(--line); background:#fff; border-radius:10px; padding:10px 14px; margin:6px 0; font-size:15px; cursor:pointer; transition:.15s;}
+  .opt:hover{border-color:var(--purple);}
+  .opt.right{border-color:var(--green); background:#e7f9ef;}
+  .opt.wrong{border-color:var(--red); background:#fdeaea;}
+  /* ---------- 模块五 ---------- */
+  textarea{width:100%; min-height:74px; border:2px solid var(--line); border-radius:10px; padding:10px; font-size:15px; font-family:inherit; resize:vertical;}
+  textarea:focus{outline:none; border-color:var(--blue);}
+  input.txt{border:2px solid var(--line); border-radius:10px; padding:8px 12px; font-size:15px; font-family:inherit;}
+  input.txt:focus{outline:none; border-color:var(--blue);}
+  .stat{background:var(--soft); border-radius:12px; padding:12px; text-align:center;}
+  .stat b{font-size:22px; color:var(--blue-d); display:block;}
+  .stat span{font-size:13px; color:var(--ink-2);}
+  pre.saved{background:#20344b; color:#c9e6ff; border-radius:10px; padding:12px; font-size:12.5px; max-height:260px; overflow:auto; margin-top:10px; white-space:pre-wrap;}
+  footer{text-align:center; color:var(--ink-2); font-size:13px; padding:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌱 植物生长数据采集与分析实验室</h1>
+  <p>清华版《信息科技》五年级下册 · 第2单元 第4课 植物生长日志——数据采集(教材 P71—78)</p>
+  <div class="badges" id="badges">
+    <span class="badge" id="bg1">① 采集满3天</span>
+    <span class="badge" id="bg2">② 叠加对比图</span>
+    <span class="badge" id="bg3">③ 数据侦探破案</span>
+    <span class="badge" id="bg4">④ 趋势分析 <span id="bgTd">0</span>/4</span>
+    <span class="badge" id="bg5">⑤ 生长日志</span>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-tab="t1" onclick="showTab('t1',this)">🏡 ① 自动采集模拟器</button>
+  <button data-tab="t2" onclick="showTab('t2',this)">📈 ② 折线图工作台</button>
+  <button data-tab="t3" onclick="showTab('t3',this)">🕵️ ③ 数据侦探</button>
+  <button data-tab="t4" onclick="showTab('t4',this)">🔍 ④ 趋势分析</button>
+  <button data-tab="t5" onclick="showTab('t5',this)">📔 ⑤ 实验日志与导出</button>
+</nav>
+
+<main>
+<!-- ================= 模块一:自动采集模拟器 ================= -->
+<section class="tab on" id="t1">
+  <div class="card">
+    <h2>🏡 任务一:让虚拟大棚自动采集生长数据</h2>
+    <div class="task"><b>任务A:</b>点「▶ 运行」,看传感器按<b>采样间隔</b>自动把温度、土壤湿度、光照、株高一条条记进数据表。<br>
+    <b>任务B:</b>把采样间隔分别调成「每1小时」和「每12小时」,比一比数据表的疏密;再用「⏩ 快进」<b>连续采集满 3 天</b>,点亮第一个徽章!<br>
+    <b>任务C:</b>把「传感器故障概率」调大,观察数据表里出现的<b>空缺</b>和<b>离谱数字</b>——它们是③号模块的"案件"来源。</div>
+    <div class="lab">
+      <!-- 左:虚拟大棚 -->
+      <div class="card" style="margin:0; text-align:center">
+        <h3>虚拟大棚</h3>
+        <div class="clock" id="clock">第 1 天 08:00</div>
+        <span class="plant-big" id="plantEmo">🌱</span>
+        <div class="meter"><label><span>🌡️ 温度</span><span id="tempVal">—</span></label>
+          <div class="bar"><i id="tempBar" style="width:50%; background:#e5484d"></i></div></div>
+        <div class="meter"><label><span>💧 土壤湿度</span><span id="soilVal">—</span></label>
+          <div class="bar"><i id="soilBar" style="width:58%; background:#2b7de9"></i></div></div>
+        <div class="meter"><label><span>☀️ 光照强度</span><span id="lightVal">—</span></label>
+          <div class="bar"><i id="lightBar" style="width:0%; background:#f59e0b"></i></div></div>
+        <div class="meter"><label><span>📏 株高</span><span id="hVal">—</span></label>
+          <div class="bar"><i id="hBar" style="width:13%; background:#2eb872"></i></div></div>
+        <div class="statebox">已采集 <b id="cntN">0</b> 条 | 自动浇水 <b id="cntW">0</b> 次<br>故障数据 <b id="cntF">0</b> 条 | 状态:<b id="runState">暂停</b></div>
+      </div>
+      <!-- 中:数据流入表 -->
+      <div class="card" style="margin:0">
+        <h3>📋 数据表(最新记录在最上面)</h3>
+        <span class="pill">共 <b id="dataCount">0</b> 条记录</span>
+        <div class="tblwrap" style="margin-top:8px">
+          <table>
+            <thead><tr><th>采样时间</th><th>温度(℃)</th><th>湿度(%)</th><th>光照(klx)</th><th>株高(cm)</th><th>浇水</th></tr></thead>
+            <tbody id="dataBody"><tr><td colspan="6" style="color:#5b7186">还没有数据,点「▶ 运行」或「⏩ 快进」开始采集!</td></tr></tbody>
+          </table>
+        </div>
+        <div class="why" id="why">💬 传感器就像不知疲倦的小助手:到了采样时间,它就自动量一次、记一次——这就是<b>自动采集</b>,比人工每天拿本子记又快又准。</div>
+      </div>
+      <!-- 右:控制面板 -->
+      <div class="card ctl" style="margin:0">
+        <h3>🎮 控制面板</h3>
+        <div class="runbar">
+          <button class="btn green small" id="btnRun" onclick="toggleRun()">▶ 运行</button>
+          <button class="btn orange small" onclick="stepOnce()">⏭ 单步(1小时)</button>
+          <button class="btn gray small" onclick="resetSim()">🔄 重置</button>
+        </div>
+        <div class="runbar">
+          <button class="btn small" onclick="fastForward(24)">⏩ 快进1天</button>
+          <button class="btn small" onclick="fastForward(72)">⏩⏩ 快进3天</button>
+          <button class="btn ghost small" onclick="loadExample()">📖 恢复教材示例(7天)</button>
+        </div>
+        <label style="margin-top:12px"><span>采样间隔</span>
+          <select id="itv" onchange="paramChanged('itv')">
+            <option value="1">每 1 小时</option>
+            <option value="2" selected>每 2 小时</option>
+            <option value="6">每 6 小时</option>
+            <option value="12">每 12 小时</option>
+          </select></label>
+        <label><span>模拟速度</span><output id="spdOut">中</output></label>
+        <input type="range" id="spd" min="1" max="3" value="2" oninput="paramChanged('spd')">
+        <label><span>传感器故障概率</span><output id="faultOut">0%</output></label>
+        <input type="range" id="fault" min="0" max="30" step="5" value="0" oninput="paramChanged('fault')">
+        <label><span>自动浇水阈值(湿度低于就浇)</span><output id="thOut">45%</output></label>
+        <input type="range" id="th" min="25" max="65" step="5" value="45" oninput="paramChanged('th')">
+        <div class="why" id="paramWhy" style="min-height:34px">💬 试着调整上面的参数,这里会解释它带来的变化。</div>
+      </div>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+  <div class="card">
+    <h2>📖 为什么要记这四样数据?</h2>
+    <p>教材告诉我们,<b>光照、温度、水分</b>对植物生长特别重要:有的植物喜欢强光(阳性植物),有的喜欢弱光(阴性植物);温度过低会发生冷害,过高会让生长受阻;缺水会旱害,水太多又会涝害。而<b>株高</b>是植物"长没长好"的直接证据。把它们按时间记录下来,就是一份<b>植物生长日志</b>——有了数据,才能发现生长规律!</p>
+    <p style="margin-top:6px"><span class="pill">感知</span><span class="pill">采集</span><span class="pill">记录</span><span class="pill">分析</span><span class="pill">发现规律</span></p>
+  </div>
+</section>
+
+<!-- ================= 模块二:折线图工作台 ================= -->
+<section class="tab" id="t2">
+  <div class="card">
+    <h2>📈 任务二:把数字变成看得懂的折线图</h2>
+    <div class="task"><b>任务A:</b>换着选<b>指标</b>和<b>时间范围</b>,观察折线的形状:光照像"小山"、温度昼高夜低、株高一路向上。<br>
+    <b>任务B:</b>用「叠加对比」把<b>土壤湿度</b>和<b>株高</b>画在同一张图上,再勾选「显示浇水标记💧」,找一找浇水、湿度和长高之间的关系,点亮第二个徽章!</div>
+    <div class="chartctl">
+      <label>主指标
+        <select id="selA" onchange="chartChanged('A')">
+          <option value="temp" selected>温度(℃)</option>
+          <option value="humi">土壤湿度(%)</option>
+          <option value="light">光照强度(klx)</option>
+          <option value="height">株高(cm)</option>
+        </select></label>
+      <label>叠加对比
+        <select id="selB" onchange="chartChanged('B')">
+          <option value="none" selected>不叠加</option>
+          <option value="temp">温度(℃)</option>
+          <option value="humi">土壤湿度(%)</option>
+          <option value="light">光照强度(klx)</option>
+          <option value="height">株高(cm)</option>
+        </select></label>
+      <label>时间范围 <input type="range" id="rng" min="0" max="15" value="0" oninput="chartChanged('rng')"><output id="rngOut">全部</output></label>
+      <label><input type="checkbox" id="ckWater" checked onchange="chartChanged('water')"> 显示浇水标记💧</label>
+      <button class="btn small" onclick="drawChart()">🔄 重绘</button>
+    </div>
+    <canvas id="chart" class="chart" width="960" height="360"></canvas>
+    <div class="why" id="chWhy">💬 折线图能把一串数字变成一条"会说话的线":线往上走是升、往下走是降,一眼就能看出趋势。缺失的数据会让线<b>断开</b>,异常值会画成红色 ✕。</div>
+    <div class="feedback" id="fb2"></div>
+  </div>
+</section>
+
+<!-- ================= 模块三:数据侦探 ================= -->
+<section class="tab" id="t3">
+  <div class="card">
+    <h2>🕵️ 任务三:数据侦探——揪出缺失值和异常值</h2>
+    <div class="task"><b>案情:</b>下面是另一组同学交来的 2 天生长记录,里面混进了 <b>5 处</b>有问题的数据(有的<b>空缺</b>没测到,有的数字<b>离谱得不可能</b>)。<br>
+    <b>破案步骤:</b>① 点击你认为有问题的<b>整行</b>(再点一次可取消)→ ② 点「检查找到的问题」→ ③ 全部找对后,为每处问题选择<b>处理方式</b>。</div>
+    <div style="margin-bottom:8px">
+      <button class="btn green" onclick="detCheck()">✅ 检查找到的问题</button>
+      <button class="btn ghost" onclick="detHint()">💡 分层提示</button>
+      <button class="btn gray" onclick="detGen()">🔁 换一批数据重新破案</button>
+    </div>
+    <div class="tblwrap" style="max-height:420px">
+      <table>
+        <thead><tr><th>行号</th><th>采样时间</th><th>温度(℃)</th><th>湿度(%)</th><th>光照(klx)</th><th>株高(cm)</th></tr></thead>
+        <tbody id="detBody"></tbody>
+      </table>
+    </div>
+    <div class="feedback" id="fbDet"></div>
+    <div id="detFix" style="display:none">
+      <h3>🧰 第二步:怎么处理这些问题数据?</h3>
+      <p style="font-size:14px;color:var(--ink-2)">三种常用办法:<b>补测</b>=马上重新测一次(只适合刚发生、还来得及测的情况);<b>剔除</b>=把这个数删掉不用;<b>标记存疑</b>=保留但注明"这个数不可信"。</p>
+      <div id="detFixList"></div>
+      <button class="btn green" onclick="detSubmit()">📮 提交处理方案</button>
+      <div class="feedback" id="fbFix"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>📖 为什么 88℃ 不合理?</h2>
+    <p>判断数据靠不靠谱,先想想<b>合理范围</b>:教室和大棚里的温度一般在 0~40℃ 之间,88℃ 连人都受不了,水都快烧开了,植物早就"熟"了——所以它一定是传感器出错。湿度是百分比,最大只能是 100%;植物只会慢慢长高,不会一夜之间变矮。<b>用常识给数据"体检",是数据分析的第一步!</b></p>
+  </div>
+</section>
+
+<!-- ================= 模块四:趋势分析 ================= -->
+<section class="tab" id="t4">
+  <div class="card">
+    <h2>🔍 任务四:从数据里发现生长规律</h2>
+    <div class="task"><b>任务:</b>下面 4 道题的答案<b>都藏在你自己采集的数据里</b>(系统会用你的真实数据来判卷)。答题前先保证至少有 3 天数据——不够就点下面的按钮快进。答对全部 4 题点亮徽章!</div>
+    <button class="btn purple" onclick="quickCollect()">⏩ 一键采集 7 天示例数据</button>
+    <div class="feedback" id="fbT"></div>
+  </div>
+  <div id="trendBox"></div>
+</section>
+
+<!-- ================= 模块五:实验日志与导出 ================= -->
+<section class="tab" id="t5">
+  <div class="card">
+    <h2>📔 任务五:生成我的植物生长实验日志</h2>
+    <div class="task"><b>任务:</b>下面的统计是实验室根据你的数据表自动算出来的。请填好<b>植物名称</b>、<b>我的发现</b>和<b>我的养护建议</b>,再点「生成日志」——这就是可以和同学交流分享的成果!</div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="s1">0</b><span>记录条数</span></div>
+      <div class="stat"><b id="s2">—</b><span>观察天数</span></div>
+      <div class="stat"><b id="s3">—</b><span>平均温度</span></div>
+      <div class="stat"><b id="s4">—</b><span>最高 / 最低温度</span></div>
+      <div class="stat"><b id="s5">—</b><span>平均土壤湿度</span></div>
+      <div class="stat"><b id="s6">0</b><span>自动浇水次数</span></div>
+      <div class="stat"><b id="s7">—</b><span>总生长量</span></div>
+      <div class="stat"><b id="s8">—</b><span>平均生长速度</span></div>
+      <div class="stat"><b id="s9">0</b><span>缺失 + 异常数据</span></div>
+    </div>
+    <h3>🪴 植物名称(虚拟示例植物)</h3>
+    <input class="txt" id="plantName" value="小番茄(虚拟)" style="width:260px">
+    <h3>1️⃣ 我的发现(从图表和数据里看出了什么规律?)</h3>
+    <textarea id="f1" placeholder="例:光照每天中午最强;浇水之后湿度马上升高;湿度保持在45%~65%的那几天,株高长得最快。"></textarea>
+    <h3>2️⃣ 我的养护建议(根据数据,该怎么照顾它?)</h3>
+    <textarea id="f2" placeholder="例:把自动浇水阈值定在45%,让土壤不太干也不太湿;发现温度超过35℃就要通风降温;传感器偶尔出错,要定期检查数据。"></textarea>
+    <div style="margin-top:12px">
+      <button class="btn green" onclick="genLog()">📄 生成日志预览</button>
+      <button class="btn" onclick="exportLog()">📥 导出日志(HTML文件)</button>
+      <button class="btn purple" onclick="exportCSV()">📊 导出数据表(CSV)</button>
+      <button class="btn orange" onclick="document.getElementById('impCsv').click()">📂 导入CSV继续分析</button>
+      <input type="file" id="impCsv" accept=".csv" style="display:none" onchange="importCSV(this)">
+      <button class="btn red" onclick="clearRecords()">🗑 清空数据记录</button>
+    </div>
+    <div class="feedback" id="fb5"></div>
+    <div id="logPreview"></div>
+  </div>
+  <div class="card">
+    <h2>💾 本机项目数据管理</h2>
+    <p style="font-size:14px;color:var(--ink-2)">所有数据只保存在<b>你这台电脑</b>的浏览器里,不会上传网络。示例数据全部为虚构。</p>
+    <div style="margin-top:8px">
+      <button class="btn small" onclick="saveProject()">💾 保存进度</button>
+      <button class="btn small green" onclick="exportProject()">📤 导出项目(JSON)</button>
+      <button class="btn small purple" onclick="document.getElementById('impFile').click()">📥 导入项目</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importProject(this)">
+      <button class="btn small ghost" onclick="viewSaved()">👀 查看当前保存内容</button>
+      <button class="btn small red" onclick="clearSaved()">🗑 清除本机数据</button>
+    </div>
+    <div class="feedback" id="fbSave"></div>
+    <pre class="saved" id="savedView" style="display:none"></pre>
+  </div>
+  <div class="card">
+    <h2>📖 数据与知识</h2>
+    <p>教材拓展阅读告诉我们:通过实验采集数据,能帮我们获得<b>可靠的证据</b>;对数据进行收集、分析和解释,就能得到<b>知识</b>(比如"这种植物湿度 45%~65% 时长得最快");而知识又反过来帮我们看懂新的数据。<b>数据是知识的基础,知识让数据更有用</b>——你刚才做的,就是一次完整的"数据 → 知识"之旅!</p>
+  </div>
+</section>
+</main>
+<footer>植物生长数据采集与分析实验室 · 完全离线运行 · 虚拟设备与本地示例数据 · 不上传任何数据</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   全局状态与工具函数
+============================================================ */
+const $=id=>document.getElementById(id);
+const LS_KEY='u2l4_datalog_lab';
+const progress={collect:false,chart:false,det:false,trend:false,log:false};
+let trendDone=[false,false,false,false];
+
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  $(id).classList.add('on'); btn.classList.add('on');
+  if(id==='t2')drawChart();
+  if(id==='t5')renderStats();
+}
+function setBadge(n){$('bg'+n).classList.add('done');}
+function fb(id,cls,html){const e=$(id);e.className='feedback '+cls;e.innerHTML=html;}
+function setWhy(t){$('why').innerHTML='💬 '+t;}
+function downloadFile(name,content,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime+';charset=utf-8'}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ============================================================
+   指标定义与合理范围
+============================================================ */
+const METRICS={
+  temp:{name:'温度',unit:'℃',color:'#e5484d',min:0,max:45,lo:0,hi:45},
+  humi:{name:'土壤湿度',unit:'%',color:'#2b7de9',min:0,max:100,lo:0,hi:100},
+  light:{name:'光照强度',unit:'klx',color:'#f59e0b',min:0,max:60,lo:0,hi:100},
+  height:{name:'株高',unit:'cm',color:'#2eb872',min:0,max:30,lo:0,hi:300},
+};
+function plaus(k,v){
+  if(v==null||!isFinite(v))return false;
+  const M=METRICS[k]; return v>=M.lo&&v<=M.hi;
+}
+
+/* ============================================================
+   模块一:自动采集模拟引擎(1 tick = 模拟 1 小时)
+============================================================ */
+const MAX_H=8+24*60;   // 最多模拟 60 天
+const sim={
+  running:false,timer:null,speedMs:450,quiet:false,
+  hour:8,               // 从第1天 08:00 开始
+  soil:58,height:4.0,temp:22,light:20,
+  lastWater:-99,waterCount:0,faultCount:0,pendingWater:0,
+};
+let records=[];   // {t,d,h,temp,humi,light,height,water}
+let events=[];    // 浇水事件 {d,h}
+const dayOf=()=>Math.floor(sim.hour/24)+1;
+function clockStr(){
+  return `第 ${dayOf()} 天 ${String(sim.hour%24).padStart(2,'0')}:00`;
+}
+// 每天一个"天气系数"(0.72~1.0,模拟阴晴),同一天结果固定
+function weather(d){const x=Math.abs(Math.sin(d*12.9898)*43758.5453)%1;return 0.72+0.28*x;}
+
+function tickOnce(){
+  if(sim.hour>=MAX_H){
+    if(sim.running)toggleRun();
+    if(!sim.quiet)setWhy('已经模拟满 60 天啦!点「🔄 重置」可以重新开始。');
+    return;
+  }
+  sim.hour++;
+  const hod=sim.hour%24, d=dayOf();
+  // 环境:温度昼高夜低、光照白天像小山
+  sim.temp=21.5+5.5*Math.sin((hod-9)/24*2*Math.PI)+(Math.random()*1.4-0.7);
+  sim.light=(hod>=6&&hod<=18)?Math.max(0,55*Math.sin((hod-6)/12*Math.PI)*weather(d)+(Math.random()*4-2)):0;
+  // 土壤水分蒸发(越热蒸发越快)
+  sim.soil=Math.max(3,sim.soil-(0.55+Math.max(0,sim.temp-18)*0.04+Math.random()*0.35));
+  // 自动浇水(白天,低于阈值,间隔至少4小时)
+  if(sim.soil<+$('th').value&&hod>=6&&hod<=20&&sim.hour-sim.lastWater>=4){
+    sim.soil=Math.min(92,sim.soil+18);
+    sim.lastWater=sim.hour; sim.waterCount++; sim.pendingWater++;
+    events.push({d,h:hod});
+    if(!sim.quiet)setWhy(`💧 ${clockStr()}:湿度低于阈值 ${$('th').value}%,浇花器自动浇水,湿度回升!这条浇水记录也会写进日志。`);
+  }
+  // 生长:温度、水分、光照都合适时长得最快
+  let g=0.030;
+  g*=(sim.temp>=15&&sim.temp<=32)?1:0.35;
+  g*=(sim.soil>=35&&sim.soil<=75)?1:(sim.soil<20?0.15:0.55);
+  g*=sim.light>3?1.35:0.6;
+  sim.height+=g;
+  // 到采样时间就记录一条
+  if(hod%(+$('itv').value)===0)doSample();
+  if(!progress.collect&&sim.hour-8>=72){
+    progress.collect=true;setBadge(1);
+    fb('fb1','ok','🎉 已连续采集满 3 天!数据表越来越厚了。去「② 折线图工作台」把这些数字画成图看看吧!');
+  }
+  if(!sim.quiet)render();
+}
+function doSample(){
+  const hod=sim.hour%24, d=dayOf();
+  const row={
+    t:sim.hour,d,h:hod,
+    temp:+sim.temp.toFixed(1),
+    humi:Math.round(sim.soil),
+    light:Math.round(sim.light),
+    height:+sim.height.toFixed(1),
+    water:sim.pendingWater,
+  };
+  sim.pendingWater=0;
+  // 传感器故障注入
+  const fp=+$('fault').value;
+  if(fp>0&&Math.random()*100<fp){
+    const ks=['temp','humi','light'];
+    const k=ks[Math.floor(Math.random()*3)];
+    let kind;
+    if(Math.random()<0.5){row[k]=null;kind='缺失(没测到)';}
+    else{row[k]={temp:88,humi:(Math.random()<0.5?150:-8),light:999}[k];kind='异常值';}
+    sim.faultCount++;
+    if(!sim.quiet)setWhy(`💥 糟糕!${clockStr()} 的${METRICS[k].name}传感器打了个盹,这条记录出现<b>${kind}</b>。去「③ 数据侦探」练练怎么处理这类问题!`);
+  }
+  records.push(row);
+  if(records.length>2000)records.shift();
+  if(!sim.quiet){renderTable();drawChart();}
+}
+function render(){
+  $('clock').textContent=clockStr();
+  const t=sim.temp,s=sim.soil,l=sim.light,h=sim.height;
+  $('tempVal').textContent=t.toFixed(1)+'℃';
+  $('tempBar').style.width=Math.min(100,t/45*100)+'%';
+  $('tempBar').style.background=t>32?'#e5484d':(t<15?'#8b5cf6':'#f59e0b');
+  $('soilVal').textContent=Math.round(s)+'%';
+  $('soilBar').style.width=Math.round(s)+'%';
+  $('soilBar').style.background=s<30?'#e5484d':(s>75?'#8b5cf6':'#2b7de9');
+  $('lightVal').textContent=Math.round(l)+' klx';
+  $('lightBar').style.width=Math.min(100,l/60*100)+'%';
+  $('hVal').textContent=h.toFixed(1)+' cm';
+  $('hBar').style.width=Math.min(100,h/30*100)+'%';
+  $('plantEmo').textContent=h<5?'🌱':(h<8?'🌿':(h<12?'🪴':(h<16?'🌾':'🌻')));
+  $('cntN').textContent=records.length;
+  $('cntW').textContent=sim.waterCount;
+  $('cntF').textContent=sim.faultCount;
+  $('runState').textContent=sim.running?'▶ 采集中':'⏸ 暂停';
+}
+function renderTable(){
+  $('dataCount').textContent=records.length;
+  const rows=records.slice(-12).reverse();
+  if(!rows.length){
+    $('dataBody').innerHTML='<tr><td colspan="6" style="color:#5b7186">还没有数据,点「▶ 运行」或「⏩ 快进」开始采集!</td></tr>';
+    return;
+  }
+  const cell=(r,k,unit)=>{
+    const v=r[k];
+    if(v==null)return '<td class="miss">空缺</td>';
+    if(!plaus(k,v))return '<td class="abn">'+v+unit+' ⚠</td>';
+    return '<td>'+v+unit+'</td>';
+  };
+  $('dataBody').innerHTML=rows.map(r=>
+    `<tr><td>第${r.d}天 ${String(r.h).padStart(2,'0')}:00</td>${cell(r,'temp','')}${cell(r,'humi','')}${cell(r,'light','')}${cell(r,'height','')}<td>${r.water?'💧×'+r.water:'—'}</td></tr>`
+  ).join('');
+}
+function toggleRun(){
+  sim.running=!sim.running;
+  $('btnRun').textContent=sim.running?'⏸ 暂停':'▶ 运行';
+  $('btnRun').className='btn small '+(sim.running?'orange':'green');
+  if(sim.running){sim.timer=setInterval(tickOnce,sim.speedMs);}
+  else clearInterval(sim.timer);
+  render();
+}
+function stepOnce(){if(sim.running)toggleRun();tickOnce();}
+function fastForward(n){
+  sim.quiet=true;
+  for(let i=0;i<n;i++){if(sim.hour>=MAX_H)break;tickOnce();}
+  sim.quiet=false;
+  render();renderTable();drawChart();renderStats();
+  setWhy(`⏩ 时间快进了 ${Math.round(n/24*10)/10} 天,传感器在这段时间里自动采集了数据——这就是自动采集的好处:<b>人不在,数据照样一条不落</b>。`);
+}
+function resetSim(){
+  if(sim.running)toggleRun();
+  Object.assign(sim,{hour:8,soil:58,height:4.0,temp:22,light:20,lastWater:-99,waterCount:0,faultCount:0,pendingWater:0});
+  records=[];events=[];
+  render();renderTable();drawChart();renderStats();
+  setWhy('已重置,大棚回到第 1 天早上 8 点。点「▶ 运行」重新开始采集。');
+  fb('fb1','info','🔄 已重置。徽章进度会保留,数据表清空了,重新采集吧!');
+}
+function loadExample(){
+  resetSim();
+  $('itv').value='2';$('fault').value='8';$('th').value='45';$('spd').value='2';
+  syncOuts();
+  fastForward(24*7);
+  setWhy('📖 已恢复教材示例:每 2 小时采样一次、故障概率 8%、浇水阈值 45%,并快进采集了 7 天数据。去②③④号模块用这批数据做实验吧!');
+  fb('fb1','ok','📖 教材示例已就绪:7 天 × 每2小时 = '+records.length+' 条记录,自动浇水 '+events.length+' 次。');
+}
+function syncOuts(){
+  $('spdOut').textContent={1:'慢',2:'中',3:'快'}[+$('spd').value];
+  $('faultOut').textContent=$('fault').value+'%';
+  $('thOut').textContent=$('th').value+'%';
+}
+function paramChanged(kind){
+  syncOuts();
+  if(kind==='spd'){
+    sim.speedMs={1:850,2:450,3:200}[+$('spd').value];
+    if(sim.running){clearInterval(sim.timer);sim.timer=setInterval(tickOnce,sim.speedMs);}
+    $('paramWhy').innerHTML='💬 模拟速度只改变"放映快慢",不改变数据本身——就像快放录像,内容不变。';
+  }
+  if(kind==='itv'){
+    const v=$('itv').value;
+    $('paramWhy').innerHTML=`💬 采样间隔改为<b>每 ${v} 小时</b>:采得<b>密</b>(间隔短),数据细,能看清中午的高温、浇水后湿度的快速回升,但数据量大、占存储多;采得<b>疏</b>(间隔长),省存储,却可能<b>漏掉</b>这些快速变化。间隔要根据观察目的来选!`;
+  }
+  if(kind==='fault'){
+    const v=+$('fault').value;
+    $('paramWhy').innerHTML=v===0?'💬 故障概率 0%:传感器状态完美,每条数据都可靠。真实世界可没这么理想哦~'
+      :`💬 故障概率 ${v}%:大约每 100 条记录里有 ${v} 条会"出毛病"——不是空缺就是离谱数字。概率越高,「③ 数据侦探」越忙!`;
+  }
+  if(kind==='th'){
+    const v=$('th').value;
+    $('paramWhy').innerHTML=`💬 浇水阈值调到 ${v}%:阈值<b>高</b>,浇水更勤,土壤更湿(小心涝害);阈值<b>低</b>,浇水更省,但植物可能先"渴"一阵(小心旱害)。调完快进一天,看看浇水次数和株高的变化!`;
+  }
+}
+
+/* ============================================================
+   模块二:canvas 手绘折线图(不用任何图表库)
+============================================================ */
+function scaleFor(k){
+  if(k==='height'){
+    let m=10;
+    records.forEach(r=>{if(plaus('height',r.height)&&r.height+2>m)m=Math.ceil(r.height+2);});
+    return{min:0,max:m};
+  }
+  return{min:METRICS[k].min,max:METRICS[k].max};
+}
+function drawSeries(ctx,view,k,s,xs,T,B){
+  const ys=v=>B-(v-s.min)/((s.max-s.min)||1)*(B-T);
+  // 折线(缺失/异常处断开)
+  ctx.strokeStyle=METRICS[k].color;ctx.lineWidth=2;
+  ctx.beginPath();let prev=false;
+  for(const r of view){
+    const v=r[k];
+    if(plaus(k,v)){const x=xs(r.t),y=ys(v);if(prev)ctx.lineTo(x,y);else ctx.moveTo(x,y);prev=true;}
+    else prev=false;
+  }
+  ctx.stroke();
+  // 数据点、异常✕、缺失?
+  for(const r of view){
+    const v=r[k],x=xs(r.t);
+    if(plaus(k,v)){
+      ctx.fillStyle=METRICS[k].color;
+      ctx.beginPath();ctx.arc(x,ys(v),2.4,0,7);ctx.fill();
+    }else if(v!=null&&isFinite(v)){
+      const y=Math.max(T+4,Math.min(B-4,ys(v)));
+      ctx.strokeStyle='#e5484d';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(x-4,y-4);ctx.lineTo(x+4,y+4);ctx.moveTo(x+4,y-4);ctx.lineTo(x-4,y+4);ctx.stroke();
+    }else{
+      ctx.fillStyle='#b6892b';ctx.font='12px sans-serif';ctx.textAlign='center';
+      ctx.fillText('?',x,B-6);
+    }
+  }
+}
+function drawChart(){
+  const cv=$('chart');if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
+  if(!records.length){
+    ctx.fillStyle='#5b7186';ctx.font='16px sans-serif';ctx.textAlign='center';
+    ctx.fillText('还没有数据。先去「① 自动采集模拟器」采集,或点「📖 恢复教材示例」。',W/2,H/2);
+    return;
+  }
+  const kA=$('selA').value,kB=$('selB').value;
+  const maxT=records[records.length-1].t;
+  const rngV=+$('rng').value;
+  const minT=rngV===0?records[0].t:Math.max(records[0].t,maxT-rngV*24);
+  const view=records.filter(r=>r.t>=minT);
+  const L=56,R=W-56,T=32,B=H-36;
+  const xs=t=>L+(t-minT)/((maxT-minT)||1)*(R-L);
+  // 竖网格 + 天标签
+  const days=Math.max(1,Math.ceil((maxT-minT)/24));
+  const stepD=Math.max(1,Math.ceil(days/10));
+  ctx.font='12px sans-serif';
+  for(let t=Math.ceil(minT/24)*24;t<=maxT;t+=24*stepD){
+    const x=xs(t);
+    ctx.strokeStyle='#e3ecf6';ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,B);ctx.stroke();
+    ctx.fillStyle='#5b7186';ctx.textAlign='center';
+    ctx.fillText('第'+(Math.floor(t/24)+1)+'天',x,B+16);
+  }
+  // 横网格 + 左轴刻度(主指标颜色)
+  const sA=scaleFor(kA);
+  for(let i=0;i<=4;i++){
+    const y=B-(B-T)*i/4;
+    ctx.strokeStyle='#eef3f9';ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.stroke();
+    ctx.fillStyle=METRICS[kA].color;ctx.textAlign='right';
+    ctx.fillText(String(Math.round(sA.min+(sA.max-sA.min)*i/4)),L-6,y+4);
+  }
+  // 右轴刻度(叠加指标颜色)
+  let sB=null;
+  if(kB!=='none'){
+    sB=scaleFor(kB);
+    for(let i=0;i<=4;i++){
+      const y=B-(B-T)*i/4;
+      ctx.fillStyle=METRICS[kB].color;ctx.textAlign='left';
+      ctx.fillText(String(Math.round(sB.min+(sB.max-sB.min)*i/4)),R+6,y+4);
+    }
+  }
+  // 坐标轴
+  ctx.strokeStyle='#9db8d4';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(L,T);ctx.lineTo(L,B);ctx.lineTo(R,B);
+  if(sB){ctx.moveTo(R,T);ctx.lineTo(R,B);}
+  ctx.stroke();
+  // 浇水标记
+  if($('ckWater').checked){
+    ctx.strokeStyle='#7cc0ff';ctx.setLineDash([5,4]);ctx.lineWidth=1.5;
+    for(const e of events){
+      const et=(e.d-1)*24+e.h;
+      if(et<minT||et>maxT)continue;
+      const x=xs(et);
+      ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,B);ctx.stroke();
+      ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillStyle='#2b7de9';
+      ctx.fillText('💧',x,T-6);
+    }
+    ctx.setLineDash([]);
+  }
+  // 折线
+  drawSeries(ctx,view,kA,sA,xs,T,B);
+  if(sB)drawSeries(ctx,view,kB,sB,xs,T,B);
+  // 图例
+  ctx.font='13px sans-serif';ctx.textAlign='left';
+  let lx=L+8;
+  const leg=k=>{
+    const txt=METRICS[k].name+'('+METRICS[k].unit+')';
+    ctx.fillStyle=METRICS[k].color;ctx.fillRect(lx,10,12,12);
+    ctx.fillStyle='#20344b';ctx.fillText(txt,lx+16,21);
+    lx+=16+ctx.measureText(txt).width+18;
+  };
+  leg(kA); if(sB)leg(kB);
+}
+function chartChanged(kind){
+  $('rngOut').textContent=+$('rng').value===0?'全部':'最近'+$('rng').value+'天';
+  drawChart();
+  const kA=$('selA').value,kB=$('selB').value;
+  if(kind==='A')$('chWhy').innerHTML=`💬 主指标换成了<b>${METRICS[kA].name}</b>(左侧刻度)。${kA==='light'?'光照白天像一座"小山",夜里是 0——这就是昼夜规律。':kA==='temp'?'温度线一起一伏:白天高、夜里低。':kA==='humi'?'湿度线像"锯齿":慢慢下降(蒸发),浇水后猛地跳高。':'株高是一条稳稳向上的线——植物只长不缩。'}`;
+  if(kind==='B')$('chWhy').innerHTML=kB==='none'?'💬 已取消叠加,现在只显示一条线,看单个指标更清楚。'
+    :`💬 叠加了<b>${METRICS[kB].name}</b>(右侧刻度)。两条线放在一起,就能<b>对比</b>着找关系了——比如湿度高的日子,株高的线是不是爬得更陡?`;
+  if(kind==='rng')$('chWhy').innerHTML=+$('rng').value===0?'💬 显示全部数据:适合看<b>长期趋势</b>(株高一路上升)。'
+    :`💬 只看最近 ${$('rng').value} 天:放大细节,适合看<b>一天之内</b>的变化(温度起伏、浇水后的湿度跳变)。`;
+  if(kind==='water')$('chWhy').innerHTML=$('ckWater').checked?'💬 打开浇水标记:每条蓝色虚线💧就是一次自动浇水。看看虚线之后,湿度线是不是马上抬头?'
+    :'💬 关闭了浇水标记,图面更干净,但就看不出浇水和湿度的关系了。';
+  if(kB!=='none'&&records.length&&!progress.chart){
+    progress.chart=true;setBadge(2);
+    fb('fb2','ok','🎉 你完成了一次<b>叠加对比</b>!两个指标画在一张图上,规律就藏在两条线的"配合"里。带着这张图去「④ 趋势分析」答题吧!');
+  }
+}
+
+/* ============================================================
+   模块三:数据侦探(缺失值与异常值)
+============================================================ */
+let det={rows:[],problems:[],flag:new Set(),hint:0,step1:false,solved:false};
+const DET_KINDS=[
+  {metric:'temp',kind:'异常值',apply:(rows,i)=>{rows[i].temp=88;},
+   desc:'温度 88℃',why:'大棚温度不可能到 88℃(0~40℃才正常),多半是传感器接触不良。',ok:['剔除','标记存疑'],
+   no:'88℃ 发生在过去,时间不能倒流,没法"补测"当时的温度——只能剔除或标记存疑。'},
+  {metric:'humi',kind:'异常值',apply:(rows,i)=>{rows[i].humi=150;},
+   desc:'湿度 150%',why:'湿度是百分比,最大只能 100%,150% 一定是错的。',ok:['剔除','标记存疑'],
+   no:'150% 是历史数据,没法回到当时补测——只能剔除或标记存疑。'},
+  {metric:'height',kind:'异常值',apply:(rows,i)=>{rows[i].height=+(Math.max(0.5,rows[i-1].height-5)).toFixed(1);},
+   desc:'株高一夜骤降 5 厘米',why:'植物只会慢慢长高,不会突然变矮,应该是尺子读错或传感器松动。',ok:['剔除','标记存疑'],
+   no:'那一刻已经过去,没法补测——只能剔除或标记存疑。'},
+  {metric:'temp',kind:'缺失',apply:(rows,i)=>{rows[i].temp=null;},
+   desc:'温度空缺(没测到)',why:'传感器断线或没电,这一格是空的。',ok:['补测','标记存疑'],
+   no:'一整行数据还在,只缺一个数;直接剔除整行太可惜。刚发现时马上补测最好,来不及就标记存疑。'},
+  {metric:'light',kind:'缺失',apply:(rows,i)=>{rows[i].light=null;},
+   desc:'光照空缺(没测到)',why:'采样那一刻传感器"打盹"了,数据没记上。',ok:['补测','标记存疑'],
+   no:'缺失的数最好及时补测;来不及就标记存疑。剔除整行会把好好的温度、湿度也一起丢掉。'},
+];
+function detGen(){
+  det={rows:[],problems:[],flag:new Set(),hint:0,step1:false,solved:det.solved,};
+  let soil=62,height=8+Math.random()*1.5;
+  for(let d=1;d<=2;d++){
+    const w=weather(d+30);
+    for(let h=0;h<24;h+=2){
+      const temp=+(21.5+5.5*Math.sin((h-9)/24*2*Math.PI)+(Math.random()*1.2-0.6)).toFixed(1);
+      const light=(h>=6&&h<=18)?Math.round(Math.max(0,55*Math.sin((h-6)/12*Math.PI)*w+(Math.random()*4-2))):0;
+      soil=Math.max(5,soil-(1.7+Math.random()*0.9));
+      if(soil<45)soil=Math.min(90,soil+19);
+      height+=0.085+Math.random()*0.035;
+      det.rows.push({d,h,temp,humi:Math.round(soil),light,height:+height.toFixed(1)});
+    }
+  }
+  // 注入 5 处问题(随机不重复行,行号从第3行起,保证株高骤降有"前一行"可比)
+  const idxs=[];
+  while(idxs.length<DET_KINDS.length){
+    const i=2+Math.floor(Math.random()*(det.rows.length-2));
+    if(!idxs.includes(i))idxs.push(i);
+  }
+  idxs.sort((a,b)=>a-b);
+  DET_KINDS.forEach((K,j)=>{
+    K.apply(det.rows,idxs[j]);
+    det.problems.push({idx:idxs[j],K});
+  });
+  renderDet();
+  $('detFix').style.display='none';$('detFixList').innerHTML='';
+  fb('fbDet','info','🕵️ 新案件已生成:48 行记录里藏着 5 处问题数据。点击可疑的整行,把它们全部揪出来!');
+  const ff=$('fbFix');ff.className='feedback';ff.innerHTML='';
+}
+function renderDet(){
+  const cell=(r,k)=>{
+    const v=r[k];
+    return v==null?'<td class="miss">(空白)</td>':'<td>'+v+'</td>';
+  };
+  $('detBody').innerHTML=det.rows.map((r,i)=>{
+    const cls=['pick'];
+    if(det.flag.has(i))cls.push('sus');
+    if(det.step1&&det.problems.some(p=>p.idx===i))cls.push('found');
+    return `<tr class="${cls.join(' ')}" onclick="detToggle(${i})"><td>${i+1}</td><td>第${r.d}天 ${String(r.h).padStart(2,'0')}:00</td>${cell(r,'temp')}${cell(r,'humi')}${cell(r,'light')}${cell(r,'height')}</tr>`;
+  }).join('');
+}
+function detToggle(i){
+  if(det.step1)return;
+  if(det.flag.has(i))det.flag.delete(i);else det.flag.add(i);
+  renderDet();
+}
+function detCheck(){
+  if(det.step1){fb('fbDet','info','问题已经全部找到啦,去下面第二步选择处理方式吧!');return;}
+  if(det.flag.size===0){fb('fbDet','info','💡 还没有选中任何行哦。先点击你觉得有问题的整行(它会变黄),再来检查。');return;}
+  const truth=new Set(det.problems.map(p=>p.idx));
+  let hit=0,extra=0;
+  det.flag.forEach(i=>{if(truth.has(i))hit++;else extra++;});
+  const missed=truth.size-hit;
+  if(missed===0&&extra===0){
+    det.step1=true;renderDet();
+    fb('fbDet','ok','🎉 火眼金睛!5 处问题数据全部锁定(绿色行)。接下来完成第二步:给每处问题选一个处理方式。');
+    detBuildFix();
+  }else{
+    fb('fbDet','bad',`🔎 已抓到 <b>${hit}</b> 个真问题,还有 <b>${missed}</b> 个漏网之鱼${extra?`,另有 <b>${extra}</b> 行是被"冤枉"的正常数据(再点一次取消高亮)`:''}。需要帮助就点「💡 分层提示」。`);
+  }
+}
+function detHint(){
+  det.hint=Math.min(det.hint+1,3);
+  const abn=det.problems.filter(p=>p.K.kind==='异常值').length;
+  const mis=det.problems.length-abn;
+  const hints=[
+    '提示①:给每个数"体检"——温度合理范围 0~45℃,湿度 0~100%,光照 0~60klx;株高只会慢慢变大。写着「(空白)」的格子也是问题!',
+    `提示②:这批数据里一共有 ${det.problems.length} 处问题:${abn} 处是<b>离谱的异常值</b>,${mis} 处是<b>空缺的缺失值</b>。逐列扫一遍,别漏了株高那一列的"突然变矮"。`,
+    '提示③:问题藏在第 '+det.problems.map(p=>p.idx+1).join('、')+' 行,分别是:'+det.problems.map(p=>p.K.desc).join(';')+'。对照着选中它们吧!'
+  ];
+  fb('fbDet','info','💡 '+hints[det.hint-1]);
+}
+function detBuildFix(){
+  $('detFix').style.display='block';
+  $('detFixList').innerHTML=det.problems.map((p,j)=>`
+    <div class="fixitem"><b>问题${j+1}:第 ${p.idx+1} 行 — ${p.K.desc}</b>(${p.K.kind})
+      <p style="font-size:14px;color:var(--ink-2)">${p.K.why}</p>
+      <select id="detS${j}">
+        <option value="">请选择处理方式…</option>
+        <option value="补测">补测(马上重新测一次)</option>
+        <option value="剔除">剔除(删掉这个数)</option>
+        <option value="标记存疑">标记存疑(保留但注明不可信)</option>
+      </select><span class="verdict" id="detR${j}"></span>
+    </div>`).join('');
+}
+function detSubmit(){
+  if(!det.step1){fb('fbFix','info','先完成第一步:把 5 处问题数据全部找出来。');return;}
+  let unset=0,right=0;
+  det.problems.forEach((p,j)=>{
+    const v=$('detS'+j).value;
+    if(!v){unset++;$('detR'+j).innerHTML='';return;}
+    if(p.K.ok.includes(v)){right++;$('detR'+j).innerHTML='<span style="color:var(--green-d)">✅ 合理!</span>';}
+    else{$('detR'+j).innerHTML='<span style="color:var(--red)">❌ '+p.K.no+'</span>';}
+  });
+  if(unset){fb('fbFix','info',`还有 ${unset} 处问题没选处理方式,选完再提交。`);return;}
+  if(right===det.problems.length){
+    fb('fbFix','ok','🏆 破案成功!5 处问题全部处理得当。记住侦探法则:<b>异常值</b>回不到过去,只能剔除或标记;<b>缺失值</b>发现得早就补测,来不及就标记。干净的数据才能得出可靠的结论!');
+    if(!det.solved){det.solved=true;progress.det=true;setBadge(3);}
+  }else{
+    fb('fbFix','bad',`🤔 有 ${det.problems.length-right} 处的处理方式还不合适(看每条后面的红色说明)。改一改再提交,你一定行!`);
+  }
+}
+
+/* ============================================================
+   模块四:趋势分析与关联发现(用学生真实数据判卷)
+============================================================ */
+function tqValid(){
+  if(records.length<10)return false;
+  return records[records.length-1].t-records[0].t>=48;
+}
+function firstLast(k){
+  const a=records.filter(r=>plaus(k,r[k]));
+  return a.length<2?null:[a[0],a[a.length-1]];
+}
+function dayGrowth(){
+  // 每天株高增长量:{d,grow,avgHumi}
+  const byDay=new Map();
+  records.forEach(r=>{
+    if(!byDay.has(r.d))byDay.set(r.d,{hs:[],hum:[]});
+    const o=byDay.get(r.d);
+    if(plaus('height',r.height))o.hs.push(r.height);
+    if(plaus('humi',r.humi))o.hum.push(r.humi);
+  });
+  const out=[];
+  byDay.forEach((o,d)=>{
+    if(o.hs.length>=2&&o.hum.length)
+      out.push({d,grow:o.hs[o.hs.length-1]-o.hs[0],avgHumi:o.hum.reduce((a,b)=>a+b,0)/o.hum.length});
+  });
+  return out;
+}
+const TRENDQ=[
+  {q:'从第一天到最后一天,株高的总体趋势是?',
+   opts:['总体上升','总体下降','基本不变'],
+   ans(){const fl=firstLast('height');if(!fl)return null;
+     const dv=fl[1].height-fl[0].height;
+     return dv>0.8?0:(dv<-0.8?1:2);},
+   why(){const fl=firstLast('height');
+     return `你的数据里,株高从 ${fl[0].height}cm 长到了 ${fl[1].height}cm——把时间拉长看,生长的<b>趋势</b>就藏不住了。`;},
+   hints:['先到「② 折线图工作台」把主指标选成株高,看整条线往哪边走。',
+     '比一比:数据表里第一天的株高和最后一天的株高,哪个数字大?',
+     '如果最后一天比第一天高,总体趋势就是"上升"。']},
+  {q:'一天当中,光照强度最强的时段通常是?',
+   opts:['清晨(5点~8点)','中午前后(10点~15点)','深夜(21点~次日4点)'],
+   ans(){
+     const b=[0,0,0],n=[0,0,0];
+     records.forEach(r=>{
+       if(!plaus('light',r.light))return;
+       let i=-1;
+       if(r.h>=5&&r.h<=8)i=0;else if(r.h>=10&&r.h<=15)i=1;else if(r.h>=21||r.h<=4)i=2;
+       if(i>=0){b[i]+=r.light;n[i]++;}
+     });
+     if(!n[0]&&!n[1]&&!n[2])return null;
+     const avg=b.map((s,i)=>n[i]?s/n[i]:-1);
+     return avg.indexOf(Math.max(...avg));},
+   why(){return '光照曲线每天都是一座"小山",山顶在中午前后——太阳升得最高的时候,光照最强。这就是<b>昼夜规律</b>。';},
+   hints:['把图表主指标换成光照强度,时间范围调成最近1~2天,看"小山"的形状。',
+     '想一想:太阳什么时候升得最高?',
+     '光照的"山顶"出现在10点到15点之间——对照你的图确认一下。']},
+  {q:'每次自动浇水之后,土壤湿度会怎样变化?',
+   opts:['明显上升','明显下降','几乎不变'],
+   ans(){
+     if(!events.length)return 'noev';
+     let sum=0,n=0;
+     for(const e of events){
+       const et=(e.d-1)*24+e.h;
+       let before=null,after=null;
+       for(const r of records){
+         if(r.t<=et&&plaus('humi',r.humi))before=r.humi;
+         if(r.t>et&&r.t<=et+6&&after===null&&plaus('humi',r.humi))after=r.humi;
+       }
+       if(before!=null&&after!=null){sum+=after-before;n++;}
+     }
+     if(!n)return null;
+     const avg=sum/n;
+     return avg>2?0:(avg<-2?1:2);},
+   why(){return '浇水就是给土壤补水,所以浇水标记💧之后,湿度线会马上"抬头"。<b>控制记录</b>(浇水)和<b>传感数据</b>(湿度)对照着看,系统有没有起作用一目了然!';},
+   hints:['在图表里把主指标选成土壤湿度,并勾选「显示浇水标记💧」。',
+     '盯住一条蓝色虚线:虚线之后,湿度线是往上还是往下?',
+     '对比浇水前后最近的两条湿度记录,数字变大了就是"上升"。']},
+  {q:'株高增长最快的那一天,平均土壤湿度大多落在什么范围?',
+   opts:['低于 40%','40% ~ 70%','高于 70%'],
+   ans(){
+     const g=dayGrowth();
+     if(g.length<2)return null;
+     let best=g[0];
+     g.forEach(x=>{if(x.grow>best.grow)best=x;});
+     return best.avgHumi<40?0:(best.avgHumi<=70?1:2);},
+   why(){
+     const g=dayGrowth();let best=g[0];
+     g.forEach(x=>{if(x.grow>best.grow)best=x;});
+     return `长得最快的是第 ${best.d} 天(长高约 ${best.grow.toFixed(1)}cm),那天平均湿度约 ${Math.round(best.avgHumi)}%。水分合适,植物才能撒欢儿长——这就是数据告诉我们的<b>生长规律</b>!`;},
+   hints:['先算每天长了多少:用当天最后一条株高减去当天第一条株高。',
+     '找到长得最多的那一天,再看那天湿度列的数字们大概是多少。',
+     '把那天的湿度加起来除以条数,得到平均值,看它落在哪个范围。']},
+];
+function renderTrendQ(){
+  $('trendBox').innerHTML=TRENDQ.map((q,i)=>`
+    <div class="card"><h3>${i+1}. ${q.q}</h3>
+      ${q.opts.map((o,j)=>`<button class="opt" id="tq${i}o${j}" onclick="answerTrend(${i},${j})">${'ABC'[j]}. ${o}</button>`).join('')}
+      <button class="btn ghost small" onclick="trendHint(${i})">💡 分层提示</button>
+      <div class="feedback" id="fbq${i}"></div>
+    </div>`).join('');
+}
+function answerTrend(i,j){
+  const q=TRENDQ[i];
+  q.opts.forEach((_,k)=>{const b=$('tq'+i+'o'+k);if(b)b.classList.remove('right','wrong');});
+  if(!tqValid()){fb('fbq'+i,'info','🌱 你的数据还不满 3 天,规律还看不清。点上面的「⏩ 一键采集 7 天示例数据」,或去①号模块多快进几天。');return;}
+  const a=q.ans();
+  if(a==='noev'){fb('fbq'+i,'info','💧 你的数据里还没有浇水记录。去①号模块把浇水阈值调高一点,再快进一两天就有了。');return;}
+  if(a===null){fb('fbq'+i,'info','这项数据不够完整(可能缺失太多),回①号模块再采集一些吧。');return;}
+  if(j===a){
+    $('tq'+i+'o'+j).classList.add('right');
+    const first=!trendDone[i];
+    trendDone[i]=true;
+    $('bgTd').textContent=trendDone.filter(Boolean).length;
+    fb('fbq'+i,'ok','✅ 答对了!'+q.why());
+    if(trendDone.every(Boolean)&&!progress.trend){
+      progress.trend=true;setBadge(4);
+      if(first)fb('fbq'+i,'ok','✅ 答对了!'+q.why()+'<br>🏆 <b>四题全对!</b>你已经会从数据里"读出"生长规律了,快去「⑤ 实验日志」写下你的发现!');
+    }
+  }else{
+    $('tq'+i+'o'+j).classList.add('wrong');
+    fb('fbq'+i,'bad','🤔 这个答案和你采集到的数据对不上哦。点「💡 分层提示」,再到②号图表里亲眼看一看——答案就画在线里!');
+  }
+}
+function trendHint(i){
+  const q=TRENDQ[i];
+  q._h=Math.min((q._h||0)+1,3);
+  fb('fbq'+i,'info','💡 提示'+'①②③'[q._h-1]+':'+q.hints[q._h-1]);
+}
+function quickCollect(){
+  const target=8+24*7;
+  if(sim.hour>=target){
+    fb('fbT','info','📊 你已经有 '+Math.floor((sim.hour-8)/24)+' 天的数据啦('+records.length+' 条),直接答题吧!');
+    return;
+  }
+  if(+$('fault').value===0)$('fault').value='5';
+  syncOuts();
+  fastForward(target-sim.hour);
+  fb('fbT','ok','⏩ 已快进到第 '+dayOf()+' 天:共 '+records.length+' 条记录、自动浇水 '+events.length+' 次。数据就绪,开始答题!');
+}
+
+/* ============================================================
+   模块五:统计、日志导出、CSV 导入导出
+============================================================ */
+function computeStats(){
+  const val=k=>records.map(r=>r[k]).filter(v=>plaus(k,v));
+  const t=val('temp'),h=val('humi'),he=val('height');
+  let miss=0,abn=0;
+  records.forEach(r=>['temp','humi','light','height'].forEach(k=>{
+    const v=r[k];
+    if(v==null)miss++;else if(!plaus(k,v))abn++;
+  }));
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const days=records.length?(records[records.length-1].t-records[0].t)/24:0;
+  return{
+    n:records.length,days,miss,abn,water:events.length,
+    avgT:avg(t),maxT:t.length?Math.max(...t):null,minT:t.length?Math.min(...t):null,
+    avgH:avg(h),
+    grow:he.length>1?he[he.length-1]-he[0]:null,
+    speed:(he.length>1&&days>0.2)?(he[he.length-1]-he[0])/days:null,
+  };
+}
+function renderStats(){
+  const s=computeStats();
+  $('s1').textContent=s.n;
+  $('s2').textContent=s.days?s.days.toFixed(1)+' 天':'—';
+  $('s3').textContent=s.avgT!=null?s.avgT.toFixed(1)+'℃':'—';
+  $('s4').textContent=s.maxT!=null?s.maxT.toFixed(1)+'℃ / '+s.minT.toFixed(1)+'℃':'—';
+  $('s5').textContent=s.avgH!=null?Math.round(s.avgH)+'%':'—';
+  $('s6').textContent=s.water;
+  $('s7').textContent=s.grow!=null?s.grow.toFixed(1)+' cm':'—';
+  $('s8').textContent=s.speed!=null?s.speed.toFixed(2)+' cm/天':'—';
+  $('s9').textContent=s.miss+s.abn;
+}
+function dailySummary(){
+  const byDay=new Map();
+  records.forEach(r=>{
+    if(!byDay.has(r.d))byDay.set(r.d,{t:[],h:[],l:[],he:[],w:0});
+    const o=byDay.get(r.d);
+    if(plaus('temp',r.temp))o.t.push(r.temp);
+    if(plaus('humi',r.humi))o.h.push(r.humi);
+    if(plaus('light',r.light))o.l.push(r.light);
+    if(plaus('height',r.height))o.he.push(r.height);
+    o.w+=r.water||0;
+  });
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const out=[];
+  byDay.forEach((o,d)=>out.push({
+    d,
+    avgT:avg(o.t),avgH:avg(o.h),maxL:o.l.length?Math.max(...o.l):null,
+    he:o.he.length?o.he[o.he.length-1]:null,w:o.w,
+  }));
+  out.sort((a,b)=>a.d-b.d);
+  return out;
+}
+function logHTML(){
+  drawChart();
+  const img=$('chart').toDataURL('image/png');
+  const s=computeStats();
+  const fx=(v,d,u)=>v!=null?v.toFixed(d)+u:'—';
+  const f=id=>{
+    const v=$(id).value.trim();
+    return v?v.replace(/</g,'&lt;').replace(/\n/g,'<br>'):'(还没有填写)';
+  };
+  const rows=dailySummary().map(r=>
+    `<tr><td>第${r.d}天</td><td>${fx(r.avgT,1,'℃')}</td><td>${r.avgH!=null?Math.round(r.avgH)+'%':'—'}</td><td>${r.maxL!=null?Math.round(r.maxL)+'klx':'—'}</td><td>${fx(r.he,1,'cm')}</td><td>${r.w}次</td></tr>`).join('');
+  return `<div style="font-family:sans-serif;max-width:760px;margin:auto">
+  <h1 style="color:#1e8f56">🌱 植物生长实验日志</h1>
+  <p>课程:清华版《信息科技》五年级下册 第2单元第4课 | 植物:${($('plantName').value.trim()||'(未填写)').replace(/</g,'&lt;')} | 生成时间:${new Date().toLocaleString()}</p>
+  <h2>一、数据采集统计</h2>
+  <ul>
+    <li>记录条数:${s.n} 条(观察约 ${s.days.toFixed(1)} 天,采样间隔:每 ${$('itv').value} 小时)</li>
+    <li>平均温度:${fx(s.avgT,1,'℃')}(最高 ${fx(s.maxT,1,'℃')} / 最低 ${fx(s.minT,1,'℃')})</li>
+    <li>平均土壤湿度:${s.avgH!=null?Math.round(s.avgH)+'%':'—'} | 自动浇水:${s.water} 次(阈值 ${$('th').value}%)</li>
+    <li>总生长量:${fx(s.grow,1,' cm')} | 平均生长速度:${fx(s.speed,2,' cm/天')}</li>
+    <li>发现并需要处理的缺失/异常数据:${s.miss+s.abn} 条</li>
+  </ul>
+  <h2>二、生长曲线图</h2>
+  <img src="${img}" style="width:100%;border:1px solid #ccc;border-radius:8px" alt="生长曲线图">
+  <h2>三、每日观察摘要</h2>
+  <table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;width:100%;font-size:14px">
+    <tr style="background:#f2f7fd"><th>日期</th><th>平均温度</th><th>平均湿度</th><th>最强光照</th><th>株高</th><th>浇水</th></tr>${rows||'<tr><td colspan="6">暂无数据</td></tr>'}
+  </table>
+  <h2>四、我的发现</h2><p>${f('f1')}</p>
+  <h2>五、我的养护建议</h2><p>${f('f2')}</p>
+  <p style="color:#888;font-size:13px">本日志由"植物生长数据采集与分析实验室"生成 · 虚拟设备与本地示例数据 · 不上传任何数据</p></div>`;
+}
+function genLog(){
+  const empty=['f1','f2'].filter(id=>!$(id).value.trim());
+  if(!records.length){
+    fb('fb5','info','数据表还是空的。先去①号模块采集(或点「恢复教材示例」),日志才有内容。');
+  }else if(empty.length){
+    fb('fb5','bad',`还有 ${empty.length} 个空没填呢!把你从图表里看到的规律写进"我的发现",日志才有价值。`);
+  }else{
+    fb('fb5','ok','✅ 日志已生成!检查一下预览,满意就点「导出日志」保存到电脑,和同学交流分享。');
+    if(!progress.log){progress.log=true;setBadge(5);}
+  }
+  $('logPreview').innerHTML='<div class="card" style="margin-top:12px">'+logHTML()+'</div>';
+  renderStats();
+}
+function exportLog(){
+  downloadFile('植物生长实验日志.html','<!DOCTYPE html><html><head><meta charset="utf-8"><title>植物生长实验日志</title></head><body>'+logHTML()+'</body></html>','text/html');
+}
+function exportCSV(){
+  const head='天,时刻,温度(℃),土壤湿度(%),光照(klx),株高(cm),浇水次数\n';
+  const body=records.map(r=>[r.d,r.h,r.temp==null?'':r.temp,r.humi==null?'':r.humi,r.light==null?'':r.light,r.height==null?'':r.height,r.water||0].join(',')).join('\n');
+  downloadFile('植物生长日志数据.csv','\ufeff'+head+body,'text/csv');
+  fb('fb5','ok','📊 数据表已导出为 CSV,可以用表格软件打开,也可以以后点「导入CSV」接着分析。');
+}
+function importCSV(input){
+  const file=input.files[0]; if(!file)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const lines=String(rd.result).replace(/^\ufeff/,'').split(/\r?\n/).filter(x=>x.trim());
+      const out=[];
+      for(const line of lines){
+        if(/[天温度株高时刻]/.test(line)&&!/^\d/.test(line.trim()))continue; // 表头
+        const c=line.split(',').map(x=>x.replace(/^"|"$/g,'').trim());
+        if(c.length<6)continue;
+        const d=+c[0],h=+c[1];
+        if(!isFinite(d)||!isFinite(h)||d<1||h<0||h>23)continue;
+        const num=x=>x===''?null:(isFinite(+x)?+x:null);
+        out.push({t:(d-1)*24+h,d,h,temp:num(c[2]),humi:num(c[3]),light:num(c[4]),height:num(c[5]),water:Math.max(0,Math.round(num(c[6])||0))});
+      }
+      if(out.length<2){fb('fb5','bad','导入失败:文件里没有找到有效的数据行。请选择本工具导出的 CSV 文件。');input.value='';return;}
+      out.sort((a,b)=>a.t-b.t);
+      records=out;
+      events=[];
+      out.forEach(r=>{for(let i=0;i<(r.water||0);i++)events.push({d:r.d,h:r.h});});
+      const last=out[out.length-1];
+      sim.hour=last.t;
+      const lastH=[...out].reverse().find(r=>plaus('height',r.height));
+      const lastS=[...out].reverse().find(r=>plaus('humi',r.humi));
+      sim.height=lastH?lastH.height:sim.height;
+      sim.soil=lastS?lastS.humi:sim.soil;
+      sim.waterCount=events.length;
+      render();renderTable();drawChart();renderStats();
+      fb('fb5','ok','📂 成功导入 '+out.length+' 条记录(到第 '+last.d+' 天)。可以继续采集,也可以直接去②③④号模块分析!');
+    }catch(e){fb('fb5','bad','导入失败:文件格式不对。请选择本工具导出的 CSV 文件。');}
+    input.value='';
+  };
+  rd.readAsText(file);
+}
+function clearRecords(){
+  resetSim();
+  fb('fb5','info','🗑 数据记录已清空,模拟器回到第 1 天。徽章进度保留。');
+  renderStats();
+}
+
+/* ============================================================
+   本机项目数据(localStorage,仅本机,不上传)
+============================================================ */
+function projectData(){
+  return{ver:1,
+    records:records.slice(-1500),events:events.slice(-400),
+    sim:{hour:sim.hour,soil:sim.soil,height:sim.height,water:sim.waterCount,faults:sim.faultCount,lastWater:sim.lastWater},
+    params:{itv:$('itv').value,spd:$('spd').value,fault:$('fault').value,th:$('th').value,
+      selA:$('selA').value,selB:$('selB').value,rng:$('rng').value,ckWater:$('ckWater').checked},
+    progress,trendDone,detSolved:det.solved,
+    text:{plant:$('plantName').value,f1:$('f1').value,f2:$('f2').value}};
+}
+function applyProject(d){
+  try{
+    if(Array.isArray(d.records))records=d.records.filter(r=>r&&isFinite(r.t));
+    if(Array.isArray(d.events))events=d.events.filter(e=>e&&isFinite(e.d));
+    if(d.sim){
+      sim.hour=isFinite(d.sim.hour)?d.sim.hour:sim.hour;
+      sim.soil=isFinite(d.sim.soil)?d.sim.soil:sim.soil;
+      sim.height=isFinite(d.sim.height)?d.sim.height:sim.height;
+      sim.waterCount=d.sim.water||0;sim.faultCount=d.sim.faults||0;
+      sim.lastWater=isFinite(d.sim.lastWater)?d.sim.lastWater:-99;
+    }
+    if(d.params){
+      $('itv').value=d.params.itv||'2';$('spd').value=d.params.spd||'2';
+      $('fault').value=d.params.fault||'0';$('th').value=d.params.th||'45';
+      $('selA').value=d.params.selA||'temp';$('selB').value=d.params.selB||'none';
+      $('rng').value=d.params.rng||'0';$('ckWater').checked=d.params.ckWater!==false;
+      syncOuts();
+      $('rngOut').textContent=+$('rng').value===0?'全部':'最近'+$('rng').value+'天';
+    }
+    if(d.progress){
+      Object.assign(progress,d.progress);
+      if(progress.collect)setBadge(1);if(progress.chart)setBadge(2);
+      if(progress.det)setBadge(3);if(progress.trend)setBadge(4);if(progress.log)setBadge(5);
+    }
+    if(Array.isArray(d.trendDone)){trendDone=d.trendDone.slice(0,4);while(trendDone.length<4)trendDone.push(false);
+      $('bgTd').textContent=trendDone.filter(Boolean).length;}
+    if(d.detSolved)det.solved=true;
+    if(d.text){$('plantName').value=d.text.plant||'小番茄(虚拟)';$('f1').value=d.text.f1||'';$('f2').value=d.text.f2||'';}
+    render();renderTable();drawChart();renderStats();
+    return true;
+  }catch(e){return false;}
+}
+function saveProject(){
+  localStorage.setItem(LS_KEY,JSON.stringify(projectData()));
+  fb('fbSave','ok','💾 已保存到本机浏览器。下次打开本页面会自动恢复。');
+}
+function exportProject(){downloadFile('植物生长日志项目进度.json',JSON.stringify(projectData(),null,2),'application/json');}
+function importProject(input){
+  const f=input.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{const ok=applyProject(JSON.parse(rd.result));
+      fb('fbSave',ok?'ok':'bad',ok?'📥 项目导入成功!':'导入失败:文件内容不完整。');}
+    catch(e){fb('fbSave','bad','导入失败:这不是有效的项目文件(JSON)。');}
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+function viewSaved(){
+  const v=$('savedView'),raw=localStorage.getItem(LS_KEY);
+  if(v.style.display==='none'){
+    v.style.display='block';
+    v.textContent=raw?JSON.stringify(JSON.parse(raw),null,2):'(本机还没有保存过数据)';
+  }else v.style.display='none';
+}
+function clearSaved(){
+  localStorage.removeItem(LS_KEY);
+  fb('fbSave','ok','🗑 本机保存的数据已清除。页面上的内容不受影响,可重新保存。');
+  $('savedView').style.display='none';
+}
+
+/* ============================================================
+   启动
+============================================================ */
+window.addEventListener('beforeunload',()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(projectData()));}catch(e){}});
+(function init(){
+  syncOuts();
+  renderTrendQ();
+  detGen();
+  const raw=localStorage.getItem(LS_KEY);
+  if(raw){try{applyProject(JSON.parse(raw));}catch(e){}}
+  render();renderTable();drawChart();renderStats();
+})();
+</script>
+</body>
+</html>
